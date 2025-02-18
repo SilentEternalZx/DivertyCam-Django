@@ -1,0 +1,73 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="{% static 'login/login.css' %}"> <!-- Reutiliza estilos del login -->
+</head>
+<body>
+
+<div class="container"> <!-- Estructura igual que login -->
+ <div class="container-form">
+    <div class="comeback-button">
+        <a href="index.html">Volver atrás</a>
+    </div>
+
+    <!-- Formulario -->
+    <form class="sign-up" action="{% url 'register' %}" method="post">
+        {% csrf_token %}
+
+        {% if mensaje %}
+        <p style="color: red;">{{ mensaje }}</p>
+        {% endif %}
+        
+        <h2>Registrarse</h2>
+        <span>Complete los campos para crear su cuenta</span>
+        
+        <div class="container-input">
+            <ion-icon name="person-outline"></ion-icon>
+            <input type="text" id="nombre_usuario" placeholder="Nombre de usuario" name="nombre_usuario" required>
+        </div>
+        
+        <div class="container-input">
+            <ion-icon name="mail-outline"></ion-icon>
+            <input type="email" id="email" placeholder="Correo electrónico" name="email" required>
+        </div>
+
+        <div class="container-input">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña" required>
+        </div>
+        
+        <div class="container-input">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input type="password" id="confirmacion" placeholder="Confirmar contraseña" name="confirmacion" required>
+        </div>
+        
+        <div class="button-input"> 
+            <button type="submit">Registrarse</button>
+        </div>
+    </form>
+</div>
+
+<!-- Forma similar a login -->
+<div class="container">
+    <div class="container-shape">
+        <div class="shape-content">
+            <h3>¡Bienvenido!</h3>
+            <p>Regístrate para acceder al sitio</p>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Scripts -->
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>

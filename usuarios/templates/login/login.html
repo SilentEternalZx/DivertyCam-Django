@@ -1,0 +1,61 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de sesión</title>
+    <link rel="stylesheet" href="{% static 'login/login.css' %}"> <!--Llamar estilo css-->
+</head>
+<body>
+   
+<div class="container"> <!--División de contenido-->
+ <div class="container-form">
+    <div class="comeback-button">
+        <a href="index.html">Volver atrás</a>
+    </div>
+
+    <!--Formulario-->
+    <form class="sign-in" action="{% url 'login' %}" method="post">
+        {% csrf_token %}
+
+        {% if mensaje %}
+        <p style="color: red;">{{ mensaje }}</p>
+        {% endif %}
+        
+        <h2>Iniciar sesión</h2>
+        <span>Use su nombre de usuario y contraseña</span>
+        <div class="container-input">
+           <ion-icon name="person-outline"></ion-icon>
+           <input type="text" id="nombre_usuario" placeholder="Nombre de usuario" name="nombre_usuario">
+        </div>
+         <div class="container-input">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña">
+         </div>
+        <a href="password.html">¿Olvidaste tu contraseña?</a>
+        <div class="button-input"> 
+            <button type="submit">Iniciar sesión</button>
+        </div>
+    </form>
+</div>
+
+<!--Forma-->
+<div class="container">
+    <div class="container-shape">
+        <div class="shape-content">
+            <h3>¡Hola!</h3>
+            <p>Inicia sesión para acceder al sitio</p>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!--Scripts-->
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>
