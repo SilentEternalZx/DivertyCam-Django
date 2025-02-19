@@ -1,0 +1,127 @@
+@import url('https://fonss.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+:root {
+    --primary-color: #8A2BE2; /* blueviolet */
+    --secondary-color: #f5f5f5;
+    --text-color: #333;
+    --border-radius: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Open Sans", sans-serif;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
+    background-image: url('../svg/style.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center bottom;/
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.password {
+    width: 90%;
+    max-width: 800px;
+    height: auto;
+    min-height: 500px;
+    display: flex;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
+    position: relative;
+    z-index: 1;
+    border:2px solid black;
+}
+
+.password-form {
+    width: 100%;
+    padding: 40px;
+}
+
+.password-form form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.password-form h2 {
+    font-size: 36px;
+    margin-bottom: 30px;
+    color: black;
+}
+
+.password-input {
+    width: 100%;
+    max-width: 300px;
+    height: 40px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 15px;
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+}
+
+.password-input input {
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    font-size: 16px;
+}
+
+.button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #a3a8a6;
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+   
+}
+
+.button:hover {
+    background-color: #606261;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+    .password {
+        width: 95%;
+        height: auto;
+    }
+    
+    .password-form {
+        padding: 30px;
+    }
+
+    .password-form h2 {
+        font-size: 28px;
+    }
+}

@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio de sesión</title>
-    <link rel="stylesheet" href="{% static 'login/login.css' %}"> <!--Llamar estilo css-->
+    <link rel="stylesheet" href="{% static 'login/css/login.css' %}"> <!--Llamar estilo css-->
 </head>
 <body>
    
@@ -34,7 +34,7 @@
             <ion-icon name="lock-closed-outline"></ion-icon>
             <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña">
          </div>
-        <a href="password.html">¿Olvidaste tu contraseña?</a>
+        <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
         <div class="button-input"> 
             <button type="submit">Iniciar sesión</button>
         </div>
