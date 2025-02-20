@@ -1,0 +1,124 @@
+@import url('https://fonss.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+/*Tipografía*/
+*{
+    margin: 0px;    
+    padding:0px ;
+    box-sizing: border-box;
+    font-family: "Open Sans", sans-serif;
+}/* Selector universal */
+
+body{
+    width: 100%;/* Ancho del borde*/
+    height:100vh;
+    display: flex;
+    justify-content: center;  /*Centrar recuadro*/
+    align-items: center;
+
+}
+.container{ /*Acceder a la clase container*/
+    width: 800px;
+    height:500px;
+    display:flex;
+   
+}
+.container-form{ /*Acceder a la clase container-form*/
+width:100%
+}
+.container-form form{  /*Acceder al formulario*/
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+}
+.container-form h2{ /*Acceder al h2 del formulario*/
+    font-size:40px;	
+    margin-bottom: 20px;
+
+}
+
+.container-form span{
+    font-size:12px;
+    margin-bottom: 15px;
+
+}
+.container-input{
+    width:300px;
+    height:30px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    padding:0 15px;
+    background-color: #EEEEEE;
+
+}
+.container-input input{
+    border:none;
+    outline:none;
+    width: 100%;
+    height:100%;
+    background-color:inherit ;
+}
+.container-form a{
+    color:black;
+    font-size: 14px;
+    margin-bottom: 20px;
+    margin-top: 5px;
+}
+.button-input button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #a3a8a6;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    border: none; /* Añade esto para quitar cualquier borde */
+    cursor: pointer; /* Añade esto para que el cursor cambie al pasar por encima */
+}
+
+
+
+.container-shape{
+    background-color:#a3a8a6;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50% 0 0 50%;
+    color: white;
+}
+.shape-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.shape-content h3 {
+    margin-bottom: 10px; /* Ajusta este valor según necesites */
+    font-size: 44px; /* Ajusta el tamaño según prefieras */
+}
+
+.shape-content p {
+    font-size: 16px; /* Ajusta el tamaño según prefieras */
+}
+.comeback-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #a3a8a6;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    
+    
+}
+
+.comeback-button a{
+    color:white;
+    text-decoration: none;
+}
+
