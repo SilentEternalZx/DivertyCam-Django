@@ -1,4 +1,8 @@
 .env
 
 __pycache__/
+<<<<<<< HEAD
+=======
+
+>>>>>>> f8b0470 (new changes)
 *.pyc
