@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 .env
 
 __pycache__/
-
 *.pyc
-=======
-.env
->>>>>>> recuperar-commits
