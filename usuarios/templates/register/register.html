@@ -16,6 +16,13 @@
         <a href="index.html">Volver atrás</a>
     </div>
 
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     <!-- Formulario -->
     <form class="sign-up" action="{% url 'register' %}" method="post">
         {% csrf_token %}
