@@ -54,24 +54,6 @@ def register_view(request):
             return redirect("index")
 
     return render(request, "register/register.html", {"mensaje": mensaje})
-# Obtener permisos de un usuario
-@login_required
-def obtener_permisos_usuario(request):
-    permisos = request.user.roles.values_list("permisos__nombre", flat=True).distinct()
-    return JsonResponse({"permisos": list(permisos)}, status=200)
-
-# Asignar un rol a un usuario
-@login_required
-def asignar_rol_usuario(request, usuario_id, rol_id):
-    try:
-        usuario = User.objects.get(id=usuario_id)
-        rol = Rol.objects.get(id=rol_id)
-        usuario.roles.add(rol)
-        return JsonResponse({"mensaje": "Rol asignado correctamente"}, status=200)
-    except User.DoesNotExist:
-        return JsonResponse({"mensaje": "Usuario no encontrado"}, status=404)
-    except Rol.DoesNotExist:
-        return JsonResponse({"mensaje": "Rol no encontrado"}, status=404)
 
 
 
