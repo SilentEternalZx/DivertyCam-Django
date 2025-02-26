@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
 
-from .models import User, Rol, Permiso
+from .models import*
 
-def index(request):
+def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
+
 
 def login_view(request):
     mensaje = ""  # Mensaje de error si las credenciales fallan
@@ -22,13 +23,15 @@ def login_view(request):
         else:
             mensaje = "Usuario o contraseña inválidos"
 
-    return render(request, "login/login.html", {"mensaje": mensaje})
+    return render(request, "login/login.html", {
+        "mensaje": mensaje
+        })
 
 # Cerrar sesión
 @login_required
 def logout_view(request):
     logout(request)
-    messages.success(request,"Sesión cerrada con éxito")
+   
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
 # Registro de usuarios
@@ -50,10 +53,12 @@ def register_view(request):
         else:
             usuario = User.objects.create_user(username=nombre_usuario, email=email, password=contraseña)
             usuario.save()
+            messages.success(request, "Usuario creado con éxito")
             login(request, usuario)
             return redirect("index")
 
     return render(request, "register/register.html", {"mensaje": mensaje})
 
 
-
+def descargar_foto(request):
+    return render(request,"fotografias/descargarFoto.html")
