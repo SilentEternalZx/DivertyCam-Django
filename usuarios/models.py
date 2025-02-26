@@ -1,15 +1,33 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission, Group
 from django.utils.timezone import now
-from django.contrib.auth.models import Group, Permission
 
 # Modelo de Usuario personalizado
 class User(AbstractUser):
+   pass
+
+
+class Permiso(Permission):
     pass
-# Modelo de Roles
+
 class Rol(Group):
     pass
 
-# Modelo de Permisos
-class Permiso(Permission):
-    pass
+
+class Invitado(models.Model):
+    nombre=models.CharField(max_length=20)
+    telefono=models.CharField(max_length=20)
+    
+    def __str__(self):
+        return f'{self.nombre} {self.telefono}'
+    
+
+
+class Fotografia(models.Model):
+    
+    img=models.ImageField(null=True,blank=True, upload_to="list_image/")
+    descripcion=models.TextField(max_length=100)
+    invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f'{self.descripcion} {self.invitado}'
