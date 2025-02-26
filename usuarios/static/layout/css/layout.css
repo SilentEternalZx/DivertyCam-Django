@@ -1,21 +1,28 @@
 body {
     font-family: 'Roboto', sans-serif;
-   
 }
+
 .navbar {
     background-color: #212529;
     padding-top: 1rem;
     padding-bottom: 1rem;
+   
 }
+
 .navbar-brand {
     color: #ffffff;
     font-weight: bold;
+    
 }
+
+ 
 .navbar-nav .nav-link {
     color: white;
-    font-size: 0.95rem;
+    font-size: 0.75rem;
     letter-spacing: 0.0625em;
+   
 }
+
 .masthead {
     padding-top: 10.5rem;
     padding-bottom: 6rem;
@@ -28,6 +35,7 @@ body {
     background-size: cover;
     margin-bottom: 100px;
 }
+
 .masthead-heading {
     font-size: 3.25rem;
     font-weight: 700;
@@ -35,28 +43,34 @@ body {
     margin-bottom: 2rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
+
 .container {
     margin-top: 2rem;
     margin-bottom: 2rem;
 }
+
 .card {
     border: none;
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
+
 .card-header {
     background-color: rgb(62, 60, 63);
     color: white;
     border-radius: 15px 15px 0 0 !important;
     padding: 20px;
 }
+
 .card-body {
     padding: 30px;
 }
+
 .portfolio-item {
 position: relative;
 overflow: hidden;
 }
+
 .portfolio-image-container {
 position: relative;
 overflow: hidden;
