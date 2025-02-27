@@ -38,6 +38,8 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'usuarios',
     'jazzmin',
+    'multiselectfield',
+    'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -86,7 +88,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': 'Axel2201',  # La contraseña del usuario
+        'PASSWORD': '123456',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
         'PORT': '5433',  # El puerto por defecto de PostgreSQL
     }
