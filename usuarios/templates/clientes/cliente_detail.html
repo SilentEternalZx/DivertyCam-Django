@@ -1,0 +1,53 @@
+{# templates/clientes/cliente_detail.html #}
+{% extends 'clientes/base.html' %}
+
+
+{% block title %}{{ cliente.nombre }} {{ cliente.apellido }}{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<div class="card">
+    <div class="card-header">
+        <h2>Detalles del Cliente</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Información Personal</h4>
+                <dl class="row">
+                    <dt class="col-sm-4">Nombre</dt>
+                    <dd class="col-sm-8">{{ cliente.nombre }}</dd>
+
+                    <dt class="col-sm-4">Apellido</dt>
+                    <dd class="col-sm-8">{{ cliente.apellido }}</dd>
+
+                    <dt class="col-sm-4">Cédula</dt>
+                    <dd class="col-sm-8">{{ cliente.cedula }}</dd>
+
+                    <dt class="col-sm-4">Fecha de Nacimiento</dt>
+                    <dd class="col-sm-8">{{ cliente.fechaNacimiento }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <h4>Información de Contacto</h4>
+                <dl class="row">
+                    <dt class="col-sm-4">Dirección</dt>
+                    <dd class="col-sm-8">{{ cliente.direccion }}</dd>
+
+                    <dt class="col-sm-4">Correo</dt>
+                    <dd class="col-sm-8">{{ cliente.correo }}</dd>
+
+                    <dt class="col-sm-4">Teléfono</dt>
+                    <dd class="col-sm-8">{{ cliente.telefono }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-sm btn-warning">Editar</a>
+        <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-danger">Eliminar</a>
+        <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Volver al Listado</a>
+    </div>
+</div>
+{% endblock %}
