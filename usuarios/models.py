@@ -21,8 +21,6 @@ class Invitado(models.Model):
     def __str__(self):
         return f'{self.nombre} {self.telefono}'
     
-
-
 class Fotografia(models.Model):
     
     img=models.ImageField(null=True,blank=True, upload_to="list_image/")
