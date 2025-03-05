@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.conf import settings
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -8,9 +9,10 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Cliente
-from .forms import ClienteForm
+from .forms import ClienteForm, FotografiaForm, RegistroForm
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
+import requests
 
 
 def index(request):  #Función  para retornar vista principal
@@ -42,7 +44,7 @@ def logout_view(request):
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
 # Registro de usuarios
-def register_view(request):
+# def register_view(request):
     mensaje = ""
     if request.method == "POST":
         nombre_usuario = request.POST.get("nombre_usuario")
@@ -66,6 +68,18 @@ def register_view(request):
 
     return render(request, "register/register.html", {"mensaje": mensaje})
 
+
+def register_view(request):
+    if request.method == "POST":
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+            login(request, usuario)
+            return redirect("index")
+    else:
+        form = RegistroForm()
+
+    return render(request, "register/register.html", {"form": form})
 
 def descargar_foto(request):
     return render(request,"fotografias/descargarFoto.html")
@@ -121,4 +135,44 @@ class ClienteDeleteView( DeleteView):   #LoginRequiredMixin,
     context_object_name = 'cliente'
     template_name = 'clientes/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente_list')
+    
+def lista_fotos(request):
+    fotos = Fotografia.objects.all()
+    return render(request, "fotografias/foto_list.html", {"fotografias": fotos})
 
+def subir_foto(request):
+    if request.method == "POST":
+        form = FotografiaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("lista_fotos")  # Redirige a la lista de fotos
+    else:
+        form = FotografiaForm()
+    return render(request, "fotografias/subir_foto.html", {"form": form})
+
+def publicar_foto_facebook(request, foto_id):
+    foto = get_object_or_404(Fotografia, id=foto_id)
+    page_id = settings.FACEBOOK_PAGE_ID  # 📌 Obtiene el Page ID desde settings.py
+    access_token = settings.FACEBOOK_ACCESS_TOKEN  # 📌 Obtiene el Token de Página
+
+    # Reemplazar la URL local con la de ngrok
+    imagen_url = request.build_absolute_uri(foto.img.url).replace(
+        "http://127.0.0.1:8000", "https://5782-190-130-105-253.ngrok-free.app"
+    )
+
+    url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
+    payload = {
+        "url": imagen_url,  # URL pública de la imagen
+        "caption": Fotografia.descripcion,
+        "access_token": access_token
+    }
+
+    response = requests.post(url, data=payload)
+    print(response.json())  # 📌 Ver la respuesta de Facebook en la terminal
+
+    if response.status_code == 200:
+        print("✅ Foto publicada en la página DivertyApp correctamente.")
+        return redirect("lista_fotos")
+    else:
+        print("❌ Error al publicar en Facebook:", response.json())  
+        return render(request, "error.html", {"error": response.json()})

@@ -1,0 +1,12 @@
+{% extends "layout/layout.html" %}
+
+{% block content %}
+<div class="container mt-5 pt-5">  <!-- Ajusta margen superior -->
+    <h2>Subir Fotografía</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Subir Foto</button>
+    </form>
+</div>
+{% endblock %}

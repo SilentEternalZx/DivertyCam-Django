@@ -17,5 +17,8 @@ urlpatterns = [
     path('nuevo/', views.ClienteCreateView.as_view(), name='cliente_create'),
     path('<int:pk>/editar/', views.ClienteUpdateView.as_view(), name='cliente_update'),
     path('<int:pk>/eliminar/', views.ClienteDeleteView.as_view(), name='cliente_delete'),
+    path("subir_foto/", views.subir_foto, name="subir_foto"),
+    path("fotos/", views.lista_fotos, name="lista_fotos"),
+     path("publicar_foto/<int:foto_id>/", views.publicar_foto_facebook, name="publicar_foto"),
    
 ]

@@ -1,0 +1,24 @@
+{% extends "layout/layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Lista de Fotografías</h2>
+    
+    <div class="row">
+        {% for foto in fotografias %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="{{ foto.img.url }}" class="card-img-top" alt="Foto de {{ foto.invitado.nombre }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ foto.descripcion }}</h5>
+                    <p class="card-text">Invitado: {{ foto.invitado.nombre }}</p>
+                    <a href="{% url 'publicar_foto' foto.id %}" class="btn btn-primary">Publicar en Facebook</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No hay fotos disponibles.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

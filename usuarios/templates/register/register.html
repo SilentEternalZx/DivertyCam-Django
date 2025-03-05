@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div class="container"> <!-- Estructura igual que login -->
+<div class="container">
  <div class="container-form">
     <div class="comeback-button">
         <a href="index.html">Volver atrás</a>
@@ -23,8 +23,9 @@
         {% endfor %}
     </ul>
     {% endif %}
+
     <!-- Formulario -->
-    <form class="sign-up" action="{% url 'register' %}" method="post">
+    <form class="sign-up" action="{% url 'register' %}" method="post" onsubmit="return validarFormulario()">
         {% csrf_token %}
 
         {% if mensaje %}
@@ -47,11 +48,13 @@
         <div class="container-input">
             <ion-icon name="lock-closed-outline"></ion-icon>
             <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña" required>
+            <p id="error-contraseña" style="color: red; font-size: 14px;"></p>
         </div>
         
         <div class="container-input">
             <ion-icon name="lock-closed-outline"></ion-icon>
             <input type="password" id="confirmacion" placeholder="Confirmar contraseña" name="confirmacion" required>
+            <p id="error-confirmacion" style="color: red; font-size: 14px;"></p>
         </div>
         
         <div class="button-input"> 
@@ -60,7 +63,7 @@
     </form>
 </div>
 
-<!-- Forma similar a login -->
+<!-- Mensaje de bienvenida -->
 <div class="container">
     <div class="container-shape">
         <div class="shape-content">
@@ -75,6 +78,58 @@
 <!-- Scripts -->
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+<!-- Validaciones en JavaScript -->
+<script>
+function validarFormulario() {
+    let password = document.getElementById("contraseña").value;
+    let confirmPassword = document.getElementById("confirmacion").value;
+    let errorPassword = document.getElementById("error-contraseña");
+    let errorConfirmacion = document.getElementById("error-confirmacion");
+
+    // Resetear mensajes
+    errorPassword.innerText = "";
+    errorConfirmacion.innerText = "";
+
+    // Expresiones regulares para validar la contraseña
+    let regexMayuscula = /[A-Z]/;
+    let regexMinuscula = /[a-z]/;
+    let regexNumero = /\d/;
+    let regexEspecial = /[!@#$%^&*(),.?":{}|<>]/;
+
+    // Validaciones
+    if (password.length < 8 || password.length > 20) {
+        errorPassword.innerText = "La contraseña debe tener entre 8 y 20 caracteres.";
+        return false;
+    }
+    if (!regexMayuscula.test(password)) {
+        errorPassword.innerText = "Debe contener al menos una letra mayúscula.";
+        return false;
+    }
+    if (!regexMinuscula.test(password)) {
+        errorPassword.innerText = "Debe contener al menos una letra minúscula.";
+        return false;
+    }
+    if (!regexNumero.test(password)) {
+        errorPassword.innerText = "Debe contener al menos un número.";
+        return false;
+    }
+    if (!regexEspecial.test(password)) {
+        errorPassword.innerText = "Debe contener al menos un carácter especial (!@#$%^&*(),.?\":{}|<>).";
+        return false;
+    }
+    if (/^\d+$/.test(password)) {
+        errorPassword.innerText = "La contraseña no puede ser solo números.";
+        return false;
+    }
+    if (password !== confirmPassword) {
+        errorConfirmacion.innerText = "Las contraseñas no coinciden.";
+        return false;
+    }
+
+    return true;
+}
+</script>
 
 </body>
 </html>

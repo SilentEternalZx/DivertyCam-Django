@@ -30,7 +30,16 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['5782-190-130-105-253.ngrok-free.app']
+
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO0x7MslsBRPJvK3l9SeGmHiiMEHlSOJ49KwV6ZAZB6vyZCiElrw0ElxI6PO2SrTBojReIwYZBk3JvmD9smJJqAmUJiZAyc2aacFNHUmST9rRrzucC1jcTx9sbFIfVJlsDbCPJlIlvlB3qipGnSwwhcYYBqZCuORlPZBcGIe5KIPsDaf56um8xcaJRZC27onK7H5OsMXhmP57CxAG"
+FACEBOOK_PAGE_ID = "612248578630248"
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+
 
 
 # Application definition
@@ -40,6 +49,7 @@ INSTALLED_APPS = [
     'jazzmin',
     'multiselectfield',
     'widget_tweaks',
+    'requests',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +67,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://5782-190-130-105-253.ngrok-free.app"
 ]
 
 ROOT_URLCONF = 'DivertyCam.urls'
@@ -88,7 +102,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': '123456',  # La contraseña del usuario
+        'PASSWORD': 'Axel2201',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
         'PORT': '5433',  # El puerto por defecto de PostgreSQL
     }
@@ -100,8 +114,9 @@ AUTH_USER_MODEL = 'usuarios.User'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+     {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},  # 📌 Mínimo 8 caracteres
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -130,7 +145,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
