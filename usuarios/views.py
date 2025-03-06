@@ -1,3 +1,4 @@
+from urllib import request
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,10 @@ from .models import Cliente
 from .forms import ClienteForm
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
+from django.contrib.messages.views import SuccessMessageMixin
+from .models import Evento
+from .forms import EventoForm
+from django.contrib import messages
 
 
 def index(request):  #Función  para retornar vista principal
@@ -104,11 +109,15 @@ class ClienteDetailView(DetailView):   #LoginRequiredMixin
     context_object_name = 'cliente'
     template_name = 'clientes/cliente_detail.html'
 
-class ClienteCreateView( CreateView):  #LoginRequiredMixin,
+class ClienteCreateView(CreateView):  #LoginRequiredMixin,
     model = Cliente
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
     success_url = reverse_lazy('cliente_list')
+    
+    
+    
+    
 
 class ClienteUpdateView( UpdateView):
     model = Cliente
@@ -121,4 +130,62 @@ class ClienteDeleteView( DeleteView):   #LoginRequiredMixin,
     context_object_name = 'cliente'
     template_name = 'clientes/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente_list')
+
+class EventoListView(ListView):
+    model = Evento
+    context_object_name = 'eventos'
+    paginate_by = 10
+    template_name = 'eventos/evento_list.html'
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        q = self.request.GET.get('q')
+        
+        if q:
+            # Búsqueda usando el vector de búsqueda
+            search_query = SearchQuery(q)
+            queryset = queryset.annotate(
+                rank=SearchRank('search_vector', search_query)
+            ).filter(search_vector=search_query).order_by('-rank')
+            
+            # Si no hay resultados con la búsqueda de texto completo, intentamos con LIKE
+            if not queryset.exists():
+                queryset = Evento.objects.filter(
+                    Q(nombre__icontains=q) |
+                    Q(cliente__nombre__icontains=q) |
+                    Q(cliente__apellido__icontains=q) |
+                    Q(direccion__icontains=q)
+                )
+                
+        return queryset
+
+class EventoDetailView(DetailView):
+    model = Evento
+    context_object_name = 'evento'
+    template_name = 'eventos/evento_detail.html'
+
+class EventoCreateView( SuccessMessageMixin, CreateView):  
+    model = Evento
+    form_class = EventoForm
+    template_name = 'eventos/evento_form.html'
+    success_url = reverse_lazy('evento_list')
+    success_message = ("Evento creado exitosamente")
+
+class EventoUpdateView(SuccessMessageMixin, UpdateView):
+    model = Evento
+    form_class = EventoForm
+    template_name = 'eventos/evento_form.html'
+    success_message = ("Evento actualizado exitosamente")
+    
+    def get_success_url(self):
+        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
+
+class EventoDeleteView(SuccessMessageMixin, DeleteView):
+    model = Evento
+    context_object_name = 'evento'
+    template_name = 'eventos/evento_confirm_delete.html'
+    success_url = reverse_lazy('evento_list')
+    success_message = ("Evento eliminado exitosamente")
+
+
 

@@ -14,8 +14,13 @@ urlpatterns = [
     path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"), 
     path('cliente_list', views.ClienteListView.as_view(), name='cliente_list'),
     path('<int:pk>/', views.ClienteDetailView.as_view(), name='cliente_detail'),
-    path('nuevo/', views.ClienteCreateView.as_view(), name='cliente_create'),
+    path('cliente/nuevo/', views.ClienteCreateView.as_view(), name='cliente_create'),
     path('<int:pk>/editar/', views.ClienteUpdateView.as_view(), name='cliente_update'),
     path('<int:pk>/eliminar/', views.ClienteDeleteView.as_view(), name='cliente_delete'),
+    path('evento_list', views.EventoListView.as_view(), name='evento_list'),
+    path('evento_list/nuevo/', views.EventoCreateView.as_view(), name='evento_create'),
+    path('evento_list/<int:pk>/', views.EventoDetailView.as_view(), name='evento_detail'),
+    path('evento_list/<int:pk>/editar/', views.EventoUpdateView.as_view(), name='evento_update'),
+    path('evento_list/<int:pk>/eliminar/', views.EventoDeleteView.as_view(), name='evento_delete'),
    
 ]

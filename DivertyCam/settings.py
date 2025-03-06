@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'crispy_bootstrap5',
+    
     
 ]
 
@@ -138,7 +141,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 #SMTP configuration
 

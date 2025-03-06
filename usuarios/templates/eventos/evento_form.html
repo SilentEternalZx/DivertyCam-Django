@@ -1,9 +1,8 @@
-{# templates/clientes/cliente_form.html #}
-
-{% extends 'clientes/base.html' %}
+{# templates/eventos/evento_form.html #}
+{% extends 'eventos/base.html' %}
 {% load widget_tweaks %}
 
-{% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento{% endblock %}
 
 {% block content %}
 <br>
@@ -14,7 +13,7 @@
 <br>
 <div class="card">
     <div class="card-header">
-        <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente</h2>
+        <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento</h2>
     </div>
     <div class="card-body">
         <form method="post" novalidate>
@@ -24,7 +23,15 @@
             <div class="mb-3">
                 <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                 {{ field.errors }}
-                {{ field|add_class:"form-control" }}
+                {% if field.name == 'cliente' %}
+                    {{ field|add_class:"form-select" }}
+                {% elif field.name == 'servicios' %}
+                    <div class="form-check">
+                        {{ field }}
+                    </div>
+                {% else %}
+                    {{ field|add_class:"form-control" }}
+                {% endif %}
                 {% if field.help_text %}
                 <div class="form-text">{{ field.help_text }}</div>
                 {% endif %}
@@ -33,8 +40,7 @@
             
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">Guardar</button>
-                
-                <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Cancelar</a>
+                <a href="{% url 'evento_list' %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
