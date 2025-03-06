@@ -74,8 +74,9 @@ def register_view(request):
         form = RegistroForm(request.POST)
         if form.is_valid():
             usuario = form.save()
-            login(request, usuario)
-            return redirect("index")
+            login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
+        else:
+            print("❌ Errores del formulario:", form.errors)  # 🔹 Imprimir errores en la terminal
     else:
         form = RegistroForm()
 
