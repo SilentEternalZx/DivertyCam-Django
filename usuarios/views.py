@@ -43,30 +43,7 @@ def logout_view(request):
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
-# Registro de usuarios
-# def register_view(request):
-    mensaje = ""
-    if request.method == "POST":
-        nombre_usuario = request.POST.get("nombre_usuario")
-        email = request.POST.get("email")
-        contraseña = request.POST.get("contraseña")
-        confirmacion = request.POST.get("confirmacion")
 
-        if contraseña != confirmacion:
-            
-            mensaje = "Las contraseñas no coinciden"
-        elif User.objects.filter(username=nombre_usuario).exists():
-            mensaje = "El nombre de usuario ya está en uso"
-        elif User.objects.filter(email=email).exists():
-            mensaje = "El correo electrónico ya está en uso"
-        else:
-            usuario = User.objects.create_user(username=nombre_usuario, email=email, password=contraseña)
-            usuario.save()
-            messages.success(request, "Usuario creado con éxito")
-            login(request, usuario)
-            return redirect("index")
-
-    return render(request, "register/register.html", {"mensaje": mensaje})
 
 
 def register_view(request):
@@ -75,6 +52,7 @@ def register_view(request):
         if form.is_valid():
             usuario = form.save()
             login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
+            return redirect("index")
         else:
             print("❌ Errores del formulario:", form.errors)  # 🔹 Imprimir errores en la terminal
     else:

@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['5782-190-130-105-253.ngrok-free.app']
+ALLOWED_HOSTS = ['5782-190-130-105-253.ngrok-free.app', '127.0.0.1']
 
 FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO0x7MslsBRPJvK3l9SeGmHiiMEHlSOJ49KwV6ZAZB6vyZCiElrw0ElxI6PO2SrTBojReIwYZBk3JvmD9smJJqAmUJiZAyc2aacFNHUmST9rRrzucC1jcTx9sbFIfVJlsDbCPJlIlvlB3qipGnSwwhcYYBqZCuORlPZBcGIe5KIPsDaf56um8xcaJRZC27onK7H5OsMXhmP57CxAG"
 FACEBOOK_PAGE_ID = "612248578630248"
@@ -102,9 +102,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': 'Axel2201',  # La contraseña del usuario
+        'PASSWORD': 'jayofelony12',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
-        'PORT': '5433',  # El puerto por defecto de PostgreSQL
+        'PORT': '5432',  # El puerto por defecto de PostgreSQL
     }
 }
 
