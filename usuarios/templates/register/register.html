@@ -6,50 +6,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro</title>
-    <link rel="stylesheet" href="{% static 'login/css/login.css' %}"> <!-- Reutiliza estilos del login -->
+    <link rel="stylesheet" href="{% static 'login/css/login.css' %}">
 </head>
 <body>
 
 <div class="container">
     <div class="container-form">
         <div class="comeback-button">
-            <a href="index.html">Volver atrás</a>
+            <a href="{% url 'index' %}">Volver atrás</a>
         </div>
 
-        <!-- 📌 Contenedor para mostrar errores -->
+        <!-- 📌 Contenedor de errores en la parte superior -->
         <div id="error-container" style="display: none; background-color: #ffdddd; color: red; padding: 10px; border: 1px solid red; border-radius: 5px; margin-bottom: 15px;"></div>
+
+        {% if errores %}
+        <div style="background-color: #ffdddd; color: red; padding: 10px; border: 1px solid red; border-radius: 5px; margin-bottom: 15px;">
+            <ul>
+                {% for campo, mensaje in errores.items %}
+                    <li><strong>{{ campo }}:</strong> {{ mensaje }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
 
         <!-- 📌 Formulario -->
         <form class="sign-up" action="{% url 'register' %}" method="post" onsubmit="return validarFormulario()">
             {% csrf_token %}
 
-            {% if mensaje %}
-            <p style="color: red;">{{ mensaje }}</p>
-            {% endif %}
-            
             <h2>Registrarse</h2>
             <span>Complete los campos para crear su cuenta</span>
-            
+
+            <!-- Usuario -->
             <div class="container-input">
                 <ion-icon name="person-outline"></ion-icon>
-                <input type="text" id="username" name="username" placeholder="Nombre de usuario">
+                <input type="text" id="username" name="username" placeholder="Nombre de usuario" onkeyup="verificarUsuario()">
             </div>
-            
+
+            <!-- Correo -->
             <div class="container-input">
                 <ion-icon name="mail-outline"></ion-icon>
                 <input type="email" id="email" name="email" placeholder="Correo electrónico">
             </div>
 
+            <!-- Contraseña -->
             <div class="container-input">
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <input type="password" id="password1" name="password1" placeholder="Contraseña" onkeyup="verificarPassword()">
             </div>
-            
+
+            <!-- Confirmar Contraseña -->
             <div class="container-input">
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <input type="password" id="password2" name="password2" placeholder="Confirmar contraseña" onkeyup="verificarPassword()">
             </div>
-            
+
             <div class="button-input"> 
                 <button type="submit">Registrarse</button>
             </div>
@@ -73,29 +83,23 @@
 
 <!-- 📌 Validaciones en JavaScript -->
 <script>
-function validarFormulario() {
+function verificarUsuario() {
     let username = document.getElementById("username").value.trim();
-    let email = document.getElementById("email").value.trim();
-    let password = document.getElementById("password1").value.trim();
-    let confirmPassword = document.getElementById("password2").value.trim();
     let errorContainer = document.getElementById("error-container");
-    let errores = [];
 
-    // 📌 Validar que todos los campos estén llenos antes de cualquier otra validación
-    if (username === "") errores.push("⚠️ El nombre de usuario es obligatorio.");
-    if (email === "") errores.push("⚠️ El correo electrónico es obligatorio.");
-    if (password === "") errores.push("⚠️ La contraseña es obligatoria.");
-    if (confirmPassword === "") errores.push("⚠️ Debes confirmar la contraseña.");
+    if (username === "") return;
 
-    // 📌 Mostrar errores si hay campos vacíos y detener el envío
-    if (errores.length > 0) {
-        errorContainer.style.display = "block";
-        errorContainer.innerHTML = errores.join("<br>");
-        return false;
-    }
-
-    // 📌 Verificar errores de contraseña después de verificar los campos vacíos
-    return verificarPassword();
+    fetch(`/verificar_usuario/?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.existe) {
+                errorContainer.style.display = "block";
+                errorContainer.innerHTML = "⚠️ Este usuario ya está registrado.";
+            } else {
+                errorContainer.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error en la verificación del usuario:", error));
 }
 
 function verificarPassword() {
@@ -104,13 +108,11 @@ function verificarPassword() {
     let errorContainer = document.getElementById("error-container");
     let errores = [];
 
-    // 📌 Expresiones regulares para validar la contraseña
     let regexMayuscula = /[A-Z]/;
     let regexMinuscula = /[a-z]/;
     let regexNumero = /\d/;
     let regexEspecial = /[!@#$%^&*(),.?":{}|<>]/;
 
-    // 📌 Validaciones de contraseña
     if (password.length < 8 || password.length > 20) {
         errores.push("⚠️ La contraseña debe tener entre 8 y 20 caracteres.");
     }
@@ -129,20 +131,49 @@ function verificarPassword() {
     if (/^\d+$/.test(password)) {
         errores.push("⚠️ La contraseña no puede ser solo números.");
     }
-
-    // 📌 Validar coincidencia de contraseñas
     if (confirmPassword.length > 0 && password !== confirmPassword) {
         errores.push("⚠️ Las contraseñas no coinciden.");
     }
 
-    // 📌 Mostrar errores en la parte superior
     if (errores.length > 0) {
         errorContainer.style.display = "block";
         errorContainer.innerHTML = errores.join("<br>");
-        return false; // 📌 Detiene el envío del formulario
+        return false;
     } else {
         errorContainer.style.display = "none";
     }
+
+    return true;
+}
+
+function validarFormulario() {
+    let username = document.getElementById("username").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password1").value.trim();
+    let confirmPassword = document.getElementById("password2").value.trim();
+    let errorContainer = document.getElementById("error-container");
+    let errores = [];
+
+    if (username === "") errores.push("⚠️ El nombre de usuario es obligatorio.");
+    if (email === "") errores.push("⚠️ El correo electrónico es obligatorio.");
+    if (password === "") errores.push("⚠️ La contraseña es obligatoria.");
+    if (confirmPassword === "") errores.push("⚠️ Debes confirmar la contraseña.");
+
+    verificarPassword();
+
+    if (errorContainer.style.display === "block") {
+        errores.push(errorContainer.innerHTML);
+    }
+
+    if (errores.length > 0) {
+        errorContainer.style.display = "block";
+        errorContainer.innerHTML = errores.join("<br>");
+        return false;
+    }
+
+    setTimeout(() => {
+        window.location.href = "/";  
+    }, 2000);
 
     return true;
 }

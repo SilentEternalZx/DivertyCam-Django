@@ -32,7 +32,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['5782-190-130-105-253.ngrok-free.app']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO0x7MslsBRPJvK3l9SeGmHiiMEHlSOJ49KwV6ZAZB6vyZCiElrw0ElxI6PO2SrTBojReIwYZBk3JvmD9smJJqAmUJiZAyc2aacFNHUmST9rRrzucC1jcTx9sbFIfVJlsDbCPJlIlvlB3qipGnSwwhcYYBqZCuORlPZBcGIe5KIPsDaf56um8xcaJRZC27onK7H5OsMXhmP57CxAG"
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO2CdZAWRlUoLQ2e1ugu7YMO8DlU68ibAEOFO7IrA7HbCZCho23ExiQDvfRfwBvMzGRR0S6LX6S7C5kqCZBZCHjux0DknxJPK8yZC5mHo2ZCdqucQCpPN2o6w55WvweC4MZBuDX4fK79sBkTziE6NMkaNFtAdzTwFQCCz5OpFs2G8370GibYQZC190A9TtIRY0Ts7P8DtygkMhbscZCDsZD"
 FACEBOOK_PAGE_ID = "612248578630248"
 
 
@@ -116,7 +116,7 @@ AUTH_USER_MODEL = 'usuarios.User'
 AUTH_PASSWORD_VALIDATORS = [
      {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 8},  # 📌 Mínimo 8 caracteres
+        "OPTIONS": {"min_length": 8}
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
