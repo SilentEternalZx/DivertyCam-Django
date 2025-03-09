@@ -1,6 +1,8 @@
 
 from django import forms
-from .models import Cliente, Fotografia, User
+from .models import *
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Row, Column, Submit, Div
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
 
@@ -8,7 +10,7 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento', 
-                  'direccion', 'correo', 'telefono']
+                  'direccion', 'correo', 'telefono', 'usuario']
         widgets = {
             'fechaNacimiento': forms.DateInput(attrs={'type': 'date'}),
             'direccion': forms.Textarea(attrs={'rows': 3}),
@@ -46,3 +48,59 @@ class RegistroForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+        
+class EventoForm(forms.ModelForm):
+    class Meta:
+        model = Evento
+        fields = ['nombre', 'fecha_hora', 'servicios', 'direccion', 'cliente']
+        widgets = {
+            'fecha_hora': forms.DateTimeInput(
+                attrs={
+                    'class': 'form-control', 
+                    'type': 'datetime-local'
+                }
+            ),
+            'servicios': forms.CheckboxSelectMultiple(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Asegurarse de que todos los campos sean requeridos
+        for field in self.fields.values():
+            field.required = True
+
+        # Configurar helper de crispy forms
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        
+        # Configurar diseño del formulario
+        self.helper.layout = Layout(
+            Row(
+                Column('nombre', css_class='form-group col-md-6'),
+                Column('fecha_hora', css_class='form-group col-md-6'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('cliente', css_class='form-group col-md-6'),
+                Column('direccion', css_class='form-group col-md-6'),
+                css_class='form-row'
+            ),
+            Div(
+                'servicios', 
+                css_class='form-group'
+            ),
+            Submit('submit', _('Guardar Evento'), css_class='btn btn-primary')
+        )
+        
+        # Personalizar consulta de clientes
+        self.fields['cliente'].queryset = Cliente.objects.all()
+        self.fields['cliente'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido}"
+        
+  
+  #Formulario Django para añadir fotografía      
+class AñadirFotoForm(forms.Form):
+    img=forms.ImageField(widget=forms.ClearableFileInput)
+    descripcion = forms.CharField(widget=forms.Textarea(attrs={'name':'descripcion', 'rows':3, 'cols':5}))
+    
+    

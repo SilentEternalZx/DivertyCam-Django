@@ -1,4 +1,5 @@
 {# templates/clientes/cliente_form.html #}
+
 {% extends 'clientes/base.html' %}
 {% load widget_tweaks %}
 
@@ -32,6 +33,7 @@
             
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">Guardar</button>
+                
                 <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
