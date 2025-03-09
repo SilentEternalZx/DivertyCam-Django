@@ -13,7 +13,7 @@
 <div class="container"> <!--División de contenido-->
  <div class="container-form">
     <div class="comeback-button">
-        <a href="index.html">Volver atrás</a>
+        <a href="{% url 'index' %}">Volver atrás</a>
     </div>
 
 
@@ -24,21 +24,35 @@
     <form class="sign-in" action="{% url 'login' %}" method="post">
         {% csrf_token %}
 
-        {% if mensaje %}
-        <p style="color: red;">{{ mensaje }}</p>
-        {% endif %}
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+                {% if message.tags == "error" %}
+                    <p style="color: red;">{{ message }}</p>
+                {% elif message.tags == "success" %}
+                    <p style="color: green;">{{ message }}</p>
+                {% else %}
+                    <p>{{ message }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
         
         <h2>Iniciar sesión</h2>
         <span>Use su nombre de usuario y contraseña</span>
         <div class="container-input">
            <ion-icon name="person-outline"></ion-icon>
-           <input type="text" id="nombre_usuario" placeholder="Nombre de usuario" name="nombre_usuario">
+           <input type="text" id="nombre_usuario" placeholder="Nombre de usuario" name="nombre_usuario" required autofocus>
+
         </div>
          <div class="container-input">
             <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña">
+            <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña" required autocomplete="current-password">
+
          </div>
         <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+        <a href="{% url 'register' %}">¿No tienes una cuenta?</a>
         <div class="button-input"> 
             <button type="submit">Iniciar sesión</button>
         </div>

@@ -2,16 +2,18 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from .models import*
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Cliente
-from .forms import ClienteForm, FotografiaForm, RegistroForm
+from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
+from django.contrib.messages.views import SuccessMessageMixin
+
 import requests
 
 
@@ -19,17 +21,18 @@ def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
 
 
-def login_view(request):
+def vista_login(request): #Función para iniciar sesión
     mensaje = ""  # Mensaje de error si las credenciales fallan
-    if request.method == "POST":
+    if request.method == "POST":  #Si la petición es un POST, capturar los datos
         nombre_usuario = request.POST.get("nombre_usuario")
         contraseña = request.POST.get("contraseña")
         usuario = authenticate(request, username=nombre_usuario, password=contraseña)
 
-        if usuario is not None:
-            login(request, usuario)
+
+        if usuario is not None:  #Si el usuario existe
+            login(request, usuario) #Logearse
             return redirect("index")  # Redirige a la página principal tras iniciar sesión
-        else:
+        else:  #De lo contrario mostrar mensaje de error
             mensaje = "Usuario o contraseña inválidos"
 
     return render(request, "login/login.html", {
@@ -38,36 +41,10 @@ def login_view(request):
 
 # Cerrar sesión
 @login_required
-def logout_view(request):
+def vista_logout(request): #Función para cerrar sesión
     logout(request)
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
-
-# Registro de usuarios
-# def register_view(request):
-    # mensaje = ""
-    # if request.method == "POST":
-    #     nombre_usuario = request.POST.get("nombre_usuario")
-    #     email = request.POST.get("email")
-    #     contraseña = request.POST.get("contraseña")
-    #     confirmacion = request.POST.get("confirmacion")
-
-    #     if contraseña != confirmacion:
-            
-    #         mensaje = "Las contraseñas no coinciden"
-    #     elif User.objects.filter(username=nombre_usuario).exists():
-    #         mensaje = "El nombre de usuario ya está en uso"
-    #     elif User.objects.filter(email=email).exists():
-    #         mensaje = "El correo electrónico ya está en uso"
-    #     else:
-    #         usuario = User.objects.create_user(username=nombre_usuario, email=email, password=contraseña)
-    #         usuario.save()
-    #         messages.success(request, "Usuario creado con éxito")
-    #         login(request, usuario)
-    #         return redirect("index")
-
-    # return render(request, "register/register.html", {"mensaje": mensaje})
-
 
 def register_view(request):
     errores = None  # 📌 Variable para almacenar errores del formulario
@@ -77,18 +54,50 @@ def register_view(request):
         if form.is_valid():
             usuario = form.save()
             login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
-            return redirect("index")  # 🔹 Redirigir a la página principal tras el registro
+            return redirect("index")
         else:
             errores = form.errors  # 📌 Guardar los errores en la variable
 
     else:
         form = RegistroForm()
 
-    return render(request, "register/register.html", {"form": form, "errores": errores})
-def descargar_foto(request):
-    return render(request,"fotografias/descargarFoto.html")
+    return render(request, "register/register.html", {"form": form})
+
+
+
+
+def descargar_foto(request, evento_id): #Función para retornar vista de fotografías de un evento
+    if not request.user.is_authenticated:  #Si el usuario no está autenticado....
+        return redirect("login") #Redirigir al login
+
+    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
+ 
+    imagenes=evento.fotografias.all()  #Obtener todas las fotografías de un evento
+    return render(request,"fotografias/descargarFoto.html",{
+        "evento":evento,
+        "imagenes":imagenes,
+        
+         
+    })
+
+def mis_eventos(request):  #Función para retornar vista de los eventos de un cliente
+    if not request.user.is_authenticated:  #Si el usuario no está autenticado...
+        return redirect("login") #Redirigir al login
+    
+    cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
+    evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
+    imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
+    return render(request,"fotografias/descargarFoto.html",{
+        "evento":evento,
+        "imagenes":imagenes
+       
+    })
+
+
+
 
 class ClienteListView( ListView):  #LoginRequiredMixin
+    
     model = Cliente
     context_object_name = 'clientes'
     template_name = 'clientes/cliente_list.html'
@@ -180,3 +189,98 @@ def publicar_foto_facebook(request, foto_id):
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
+    
+    
+
+class EventoListView(ListView):
+    model = Evento
+    context_object_name = 'eventos'
+    paginate_by = 10
+    template_name = 'eventos/evento_list.html'
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        q = self.request.GET.get('q')
+        orden = self.request.GET.get('orden', 'fecha_hora')  # Orden por defecto
+
+        # Búsqueda por vector de búsqueda
+        if q:
+            search_query = SearchQuery(q)
+            queryset = queryset.annotate(
+                rank=SearchRank('search_vector', search_query)
+            ).filter(search_vector=search_query).order_by('-rank')
+
+            # Si no hay resultados, usamos búsqueda con LIKE
+            if not queryset.exists():
+                queryset = Evento.objects.filter(
+                    Q(nombre__icontains=q) |
+                    Q(cliente__nombre__icontains=q) |
+                    Q(cliente__apellido__icontains=q) |
+                    Q(direccion__icontains=q)
+                )
+
+        # Ordenamiento dinámico
+        if orden.endswith("_desc"):
+            orden = "-" + orden.replace("_desc", "")  # Convierte 'nombre_desc' en '-nombre'
+
+        queryset = queryset.order_by(orden)
+        return queryset
+
+class EventoDetailView(DetailView):
+    model = Evento
+    context_object_name = 'evento'
+    template_name = 'eventos/evento_detail.html'
+
+class EventoCreateView( SuccessMessageMixin, CreateView):  
+    model = Evento
+    form_class = EventoForm
+    template_name = 'eventos/evento_form.html'
+    success_url = reverse_lazy('evento_list')
+    success_message = ("Evento creado exitosamente")
+
+class EventoUpdateView(SuccessMessageMixin, UpdateView):
+    model = Evento
+    form_class = EventoForm
+    template_name = 'eventos/evento_form.html'
+    success_message = ("Evento actualizado exitosamente")
+    
+    def get_success_url(self):
+        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
+
+class EventoDeleteView(SuccessMessageMixin, DeleteView):
+    model = Evento
+    context_object_name = 'evento'
+    template_name = 'eventos/evento_confirm_delete.html'
+    success_url = reverse_lazy('evento_list')
+    success_message = ("Evento eliminado exitosamente")
+    
+    
+    
+
+def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
+    if not request.user.is_authenticated: #Si el usuario no está autenticado...
+        return redirect("login") #Redirigir al login
+    
+    if  not request.user.is_superuser:  #Si no es un superusuario...
+     return HttpResponse("No estás autorizado para acceder a esta página") #Retornar mensaje de error
+    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
+    
+    if request.method=="POST": #Si la petición es POST
+        form=AñadirFotoForm(request.POST, request.FILES) #Llamar al formulario
+        if form.is_valid(): #Si el formulario es válido obtener los datos
+            descripcion=form.cleaned_data["descripcion"]
+            img=form.cleaned_data["img"]
+            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
+            fotografia.save() #Guardar objeto
+            return redirect("descargar_foto") #Redirigir al la vista "descargar_foto"
+            
+        else: #Retornar el formulario si no fue válido mostrando el error
+            return render(request,"añadir_fotos/formulario.html",{
+                "form":form
+            })
+        
+    
+    return render(request,"añadir_fotos/formulario.html",{
+        "evento":evento,
+        "form":AñadirFotoForm()
+    })
