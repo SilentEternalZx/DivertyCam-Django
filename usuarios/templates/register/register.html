@@ -2,182 +2,129 @@
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registro</title>
-    <link rel="stylesheet" href="{% static 'login/css/login.css' %}">
-</head>
-<body>
-
-<div class="container">
-    <div class="container-form">
+    <link rel="stylesheet" href="{% static 'login/css/login.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="container-form">
         <div class="comeback-button">
-            <a href="{% url 'index' %}">Volver atrás</a>
+          <a href="{% url 'index' %}">Volver atrás</a>
         </div>
 
         <!-- 📌 Contenedor de errores en la parte superior -->
-        <div id="error-container" style="display: none; background-color: #ffdddd; color: red; padding: 10px; border: 1px solid red; border-radius: 5px; margin-bottom: 15px;"></div>
+        <div
+          id="error-container"
+          style="
+            display: none;
+            background-color: #ffdddd;
+            color: red;
+            padding: 10px;
+            border: 1px solid red;
+            border-radius: 5px;
+            margin-bottom: 15px;
+          "></div>
 
         {% if errores %}
-        <div style="background-color: #ffdddd; color: red; padding: 10px; border: 1px solid red; border-radius: 5px; margin-bottom: 15px;">
-            <ul>
-                {% for campo, mensaje in errores.items %}
-                    <li><strong>{{ campo }}:</strong> {{ mensaje }}</li>
-                {% endfor %}
-            </ul>
+        <div
+          style="
+            background-color: #ffdddd;
+            color: red;
+            padding: 10px;
+            border: 1px solid red;
+            border-radius: 5px;
+            margin-bottom: 15px;
+          ">
+          <ul>
+            {% for campo, mensaje in errores.items %}
+            <li><strong>{{ campo }}:</strong> {{ mensaje }}</li>
+            {% endfor %}
+          </ul>
         </div>
         {% endif %}
 
         <!-- 📌 Formulario -->
-        <form class="sign-up" action="{% url 'register' %}" method="post" onsubmit="return validarFormulario()">
-            {% csrf_token %}
+        <form
+          class="sign-up"
+          action="{% url 'register' %}"
+          method="post"
+          onsubmit="return validar_formulario()">
+          {% csrf_token %}
 
-            <h2>Registrarse</h2>
-            <span>Complete los campos para crear su cuenta</span>
+          <h2>Registrarse</h2>
+          <span>Complete los campos para crear su cuenta</span>
 
-            <!-- Usuario -->
-            <div class="container-input">
-                <ion-icon name="person-outline"></ion-icon>
-                <input type="text" id="username" name="username" placeholder="Nombre de usuario" onkeyup="verificarUsuario()">
-            </div>
+          <!-- Usuario -->
+          <div class="container-input">
+            <ion-icon name="person-outline"></ion-icon>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Nombre de usuario"
+              onkeyup="verificar_usuario()" />
+          </div>
 
-            <!-- Correo -->
-            <div class="container-input">
-                <ion-icon name="mail-outline"></ion-icon>
-                <input type="email" id="email" name="email" placeholder="Correo electrónico">
-            </div>
+          <!-- Correo -->
+          <div class="container-input">
+            <ion-icon name="mail-outline"></ion-icon>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Correo electrónico"
+              onkeyup="verificar_email()" />
+          </div>
 
-            <!-- Contraseña -->
-            <div class="container-input">
-                <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" id="password1" name="password1" placeholder="Contraseña" onkeyup="verificarPassword()">
-            </div>
+          <!-- Contraseña -->
+          <div class="container-input">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input
+              type="password"
+              id="password1"
+              name="password1"
+              placeholder="Contraseña"
+              onkeyup="verificarPassword()" />
+          </div>
 
-            <!-- Confirmar Contraseña -->
-            <div class="container-input">
-                <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" id="password2" name="password2" placeholder="Confirmar contraseña" onkeyup="verificarPassword()">
-            </div>
+          <!-- Confirmar Contraseña -->
+          <div class="container-input">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input
+              type="password"
+              id="password2"
+              name="password2"
+              placeholder="Confirmar contraseña"
+              onkeyup="verificarPassword()" />
+          </div>
 
-            <div class="button-input"> 
-                <button type="submit">Registrarse</button>
-            </div>
+          <div class="button-input">
+            <button type="submit">Registrarse</button>
+          </div>
         </form>
-    </div>
+      </div>
 
-    <!-- 📌 Mensaje de bienvenida -->
-    <div class="container">
+      <!-- 📌 Mensaje de bienvenida -->
+      <div class="container">
         <div class="container-shape">
-            <div class="shape-content">
-                <h3>¡Bienvenido!</h3>
-                <p>Regístrate para acceder al sitio</p>
-            </div>
+          <div class="shape-content">
+            <h3>¡Bienvenido!</h3>
+            <p>Regístrate para acceder al sitio</p>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- 📌 Scripts -->
-<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-<!-- 📌 Validaciones en JavaScript -->
-<script>
-function verificarUsuario() {
-    let username = document.getElementById("username").value.trim();
-    let errorContainer = document.getElementById("error-container");
-
-    if (username === "") return;
-
-    fetch(`/verificar_usuario/?username=${username}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.existe) {
-                errorContainer.style.display = "block";
-                errorContainer.innerHTML = "⚠️ Este usuario ya está registrado.";
-            } else {
-                errorContainer.style.display = "none";
-            }
-        })
-        .catch(error => console.error("Error en la verificación del usuario:", error));
-}
-
-function verificarPassword() {
-    let password = document.getElementById("password1").value;
-    let confirmPassword = document.getElementById("password2").value;
-    let errorContainer = document.getElementById("error-container");
-    let errores = [];
-
-    let regexMayuscula = /[A-Z]/;
-    let regexMinuscula = /[a-z]/;
-    let regexNumero = /\d/;
-    let regexEspecial = /[!@#$%^&*(),.?":{}|<>]/;
-
-    if (password.length < 8 || password.length > 20) {
-        errores.push("⚠️ La contraseña debe tener entre 8 y 20 caracteres.");
-    }
-    if (!regexMayuscula.test(password)) {
-        errores.push("⚠️ Debe incluir al menos una mayúscula.");
-    }
-    if (!regexMinuscula.test(password)) {
-        errores.push("⚠️ Debe incluir al menos una minúscula.");
-    }
-    if (!regexNumero.test(password)) {
-        errores.push("⚠️ Debe incluir al menos un número.");
-    }
-    if (!regexEspecial.test(password)) {
-        errores.push("⚠️ Debe incluir al menos un carácter especial (!@#$%^&*()).");
-    }
-    if (/^\d+$/.test(password)) {
-        errores.push("⚠️ La contraseña no puede ser solo números.");
-    }
-    if (confirmPassword.length > 0 && password !== confirmPassword) {
-        errores.push("⚠️ Las contraseñas no coinciden.");
-    }
-
-    if (errores.length > 0) {
-        errorContainer.style.display = "block";
-        errorContainer.innerHTML = errores.join("<br>");
-        return false;
-    } else {
-        errorContainer.style.display = "none";
-    }
-
-    return true;
-}
-
-function validarFormulario() {
-    let username = document.getElementById("username").value.trim();
-    let email = document.getElementById("email").value.trim();
-    let password = document.getElementById("password1").value.trim();
-    let confirmPassword = document.getElementById("password2").value.trim();
-    let errorContainer = document.getElementById("error-container");
-    let errores = [];
-
-    if (username === "") errores.push("⚠️ El nombre de usuario es obligatorio.");
-    if (email === "") errores.push("⚠️ El correo electrónico es obligatorio.");
-    if (password === "") errores.push("⚠️ La contraseña es obligatoria.");
-    if (confirmPassword === "") errores.push("⚠️ Debes confirmar la contraseña.");
-
-    verificarPassword();
-
-    if (errorContainer.style.display === "block") {
-        errores.push(errorContainer.innerHTML);
-    }
-
-    if (errores.length > 0) {
-        errorContainer.style.display = "block";
-        errorContainer.innerHTML = errores.join("<br>");
-        return false;
-    }
-
-    setTimeout(() => {
-        window.location.href = "/";  
-    }, 2000);
-
-    return true;
-}
-</script>
-
-</body>
+    <!-- 📌 Scripts -->
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="{% static 'js/validaciones_register.js' %}"></script>
+  </body>
 </html>

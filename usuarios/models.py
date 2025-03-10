@@ -16,7 +16,7 @@ class User(AbstractUser):
 
 
 
-
+#Modelo de invitado
 class Invitado(models.Model):
     nombre=models.CharField(max_length=20)
     telefono=models.CharField(max_length=30, unique=True)
@@ -24,10 +24,7 @@ class Invitado(models.Model):
     def __str__(self):
         return f'{self.nombre} {self.telefono}'
     
-
-
-    
-
+#Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
         max_length=100,
@@ -122,6 +119,7 @@ def update_search_vector(sender, instance, **kwargs):
     )
 
 
+#Modelo de eventos
 class Evento(models.Model):
     SERVICIOS_CHOICES = [
         ('photobook', _('Photobook')),
@@ -221,7 +219,7 @@ def update_search_vector(sender, instance, **kwargs):
             ]
         )
 
-
+#Modelo de fotografia
 class Fotografia(models.Model):
     
     img=models.ImageField(null=True,blank=True, upload_to="imagenes/")

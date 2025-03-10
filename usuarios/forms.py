@@ -31,7 +31,7 @@ class ClienteForm(forms.ModelForm):
 class FotografiaForm(forms.ModelForm):
     class Meta:
         model = Fotografia
-        fields = ['img', 'descripcion', 'invitado']
+        fields = ['img', 'descripcion', 'invitado', 'evento']
         
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(

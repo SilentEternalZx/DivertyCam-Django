@@ -1,7 +1,6 @@
 from django.urls import path
-from . import views
 from django.contrib.auth import views as auth_views
-from . import admin
+from . import admin,views
 
 
 #Urls
@@ -29,7 +28,7 @@ urlpatterns = [
     path('evento_list/<int:pk>/editar/', views.EventoUpdateView.as_view(), name='evento_update'),
     path('evento_list/<int:pk>/eliminar/', views.EventoDeleteView.as_view(), name='evento_delete'),
     path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
-    path('mis_eventos', views.mis_eventos, name="mis_eventos")
-  
-   
+    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+    path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
+    path("verificar_email/", views.verificar_email, name="verificar_email")
 ]

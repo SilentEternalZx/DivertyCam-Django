@@ -47,8 +47,6 @@ def vista_logout(request): #Función para cerrar sesión
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
 def register_view(request):
-    errores = None  # 📌 Variable para almacenar errores del formulario
-
     if request.method == "POST":
         form = RegistroForm(request.POST)
         if form.is_valid():
@@ -56,14 +54,30 @@ def register_view(request):
             login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
             return redirect("index")
         else:
-            errores = form.errors  # 📌 Guardar los errores en la variable
-
+            print("❌ Errores del formulario:", form.errors)  # 🔹 Imprimir errores en la terminal
     else:
         form = RegistroForm()
 
     return render(request, "register/register.html", {"form": form})
 
+def verificar_usuario(request):
+    username = request.GET.get("username", "").strip()
 
+    if not username:  # 📌 Si no se envió un usuario, devolver error JSON
+        return JsonResponse({"error": "No se proporcionó un nombre de usuario"}, status=400)
+
+    existe = User.objects.filter(username=username).exists()
+    
+    return JsonResponse({"existe": existe})  # 📌 Devuelve JSON válido
+
+def verificar_email(request):
+    email = request.GET.get("email", "").strip()
+
+    if not email:  # 📌 Si no se proporciona un email, devolver un error
+        return JsonResponse({"error": "No se proporcionó un email"}, status=400)
+
+    existe = User.objects.filter(email=email).exists()
+    return JsonResponse({"existe": existe})  # 📌 Devuelve `true` si el email ya está registrado
 
 
 def descargar_foto(request, evento_id): #Función para retornar vista de fotografías de un evento
@@ -92,10 +106,6 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
         "imagenes":imagenes
        
     })
-
-
-
-
 class ClienteListView( ListView):  #LoginRequiredMixin
     
     model = Cliente
@@ -149,20 +159,35 @@ class ClienteDeleteView( DeleteView):   #LoginRequiredMixin,
     template_name = 'clientes/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente_list')
     
+
+#Mostrar las fotos guardadas
 def lista_fotos(request):
     fotos = Fotografia.objects.all()
     return render(request, "fotografias/foto_list.html", {"fotografias": fotos})
 
+# Subir fotos de los eventos
 def subir_foto(request):
     if request.method == "POST":
         form = FotografiaForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect("lista_fotos")  # Redirige a la lista de fotos
+            foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
+            foto.usuario = request.user  # 📌 Asigna el usuario autenticado
+
+            # 📌 Si el formulario no tiene evento, asignar un evento por defecto
+            if not foto.evento:
+                foto.evento = Evento.objects.first()  # O elegir un evento válido
+
+            foto.save()  # 📌 Ahora sí guarda la foto
+            return redirect("lista_fotos")
+        else:
+            print("Errores en el formulario:", form.errors)
+
     else:
         form = FotografiaForm()
+
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
+#Envío de las fotos a facebook
 def publicar_foto_facebook(request, foto_id):
     foto = get_object_or_404(Fotografia, id=foto_id)
     page_id = settings.FACEBOOK_PAGE_ID  # 📌 Obtiene el Page ID desde settings.py
@@ -170,7 +195,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://5782-190-130-105-253.ngrok-free.app"
+        "http://127.0.0.1:8000", "hhttps://22b3-179-15-25-167.ngrok-free.app "
     )
 
     url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
@@ -189,9 +214,6 @@ def publicar_foto_facebook(request, foto_id):
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
-    
-    
-
 class EventoListView(ListView):
     model = Evento
     context_object_name = 'eventos'
@@ -253,9 +275,6 @@ class EventoDeleteView(SuccessMessageMixin, DeleteView):
     template_name = 'eventos/evento_confirm_delete.html'
     success_url = reverse_lazy('evento_list')
     success_message = ("Evento eliminado exitosamente")
-    
-    
-    
 
 def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
     if not request.user.is_authenticated: #Si el usuario no está autenticado...

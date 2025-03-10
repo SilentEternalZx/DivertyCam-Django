@@ -30,9 +30,9 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['5782-190-130-105-253.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['22b3-179-15-25-167.ngrok-free.app', '127.0.0.1']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO2CdZAWRlUoLQ2e1ugu7YMO8DlU68ibAEOFO7IrA7HbCZCho23ExiQDvfRfwBvMzGRR0S6LX6S7C5kqCZBZCHjux0DknxJPK8yZC5mHo2ZCdqucQCpPN2o6w55WvweC4MZBuDX4fK79sBkTziE6NMkaNFtAdzTwFQCCz5OpFs2G8370GibYQZC190A9TtIRY0Ts7P8DtygkMhbscZCDsZD"
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOwOKJCoiKZAUZAsWvsMBX2o8ZBQmt0f3xg6FukACxrn4R9oLtDyhmTBIZB1SAOmnZCjwDzV7kNk5JRDqIYBsP7KVFh0rZBxC6XPzIMYhxn93VHbdqIQjW3xB31WC0WPLgZAAF88L9fHF43vBVsGY2EgxUA3PGzlz6VcfdGbyDwcznsjTXhI6QQaxNZAD9UOZBhK3jw1SyoALghpiz"
 FACEBOOK_PAGE_ID = "612248578630248"
 
 
@@ -72,7 +72,7 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://5782-190-130-105-253.ngrok-free.app"
+    "https://22b3-179-15-25-167.ngrok-free.app"
 ]
 
 ROOT_URLCONF = 'DivertyCam.urls'
@@ -104,9 +104,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': 'jayofelony12',  # La contraseña del usuario
+        'PASSWORD': 'Axel2201',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
-        'PORT': '5432',  # El puerto por defecto de PostgreSQL
+        'PORT': '5433',  # El puerto por defecto de PostgreSQL
     }
 }
 
