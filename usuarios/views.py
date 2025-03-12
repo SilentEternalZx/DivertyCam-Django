@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from .models import*
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Cliente
 from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm
@@ -87,7 +87,7 @@ def descargar_foto(request, evento_id): #Función para retornar vista de fotogra
     evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
  
     imagenes=evento.fotografias.all()  #Obtener todas las fotografías de un evento
-    return render(request,"fotografias/descargarFoto.html",{
+    return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
         "imagenes":imagenes,
         
@@ -101,7 +101,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
     evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
     imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
-    return render(request,"fotografias/descargarFoto.html",{
+    return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
         "imagenes":imagenes
        
@@ -291,7 +291,7 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
             img=form.cleaned_data["img"]
             fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
             fotografia.save() #Guardar objeto
-            return redirect("descargar_foto") #Redirigir al la vista "descargar_foto"
+            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error
             return render(request,"añadir_fotos/formulario.html",{
