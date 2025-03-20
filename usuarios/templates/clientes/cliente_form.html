@@ -6,18 +6,14 @@
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente{% endblock %}
 
 {% block content %}
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<div class="card">
-    <div class="card-header">
-        <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente</h2>
-    </div>
-    <div class="card-body">
-        <form method="post" novalidate>
+
+<div class="main-content">
+    <div class="card form-container">
+        <div class="card-header">
+            <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate>
             {% csrf_token %}
             
             {% for field in form %}
@@ -36,7 +32,8 @@
                 
                 <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Cancelar</a>
             </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

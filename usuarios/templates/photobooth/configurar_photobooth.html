@@ -1,0 +1,142 @@
+{# templates/photobooth/configurar_photobooth.html #}
+{% extends 'layout/layout.html' %}
+
+{% block title %}Configurar Photobooth - {{ evento.nombre }}{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<div class="card">
+    <div class="card-header">
+        <h2>Configurar Photobooth para "{{ evento.nombre }}"</h2>
+        <p class="text-muted">Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <h4>Configuración de Bienvenida</h4>
+                    <div class="mb-3">
+                        <label for="{{ form.mensaje_bienvenida.id_for_label }}" class="form-label">Mensaje de bienvenida:</label>
+                        {{ form.mensaje_bienvenida.errors }}
+                        {{ form.mensaje_bienvenida }}
+                        <div class="form-text">Este mensaje se mostrará en la pantalla de bienvenida del photobooth.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.imagen_fondo.id_for_label }}" class="form-label">Imagen de fondo:</label>
+                        {{ form.imagen_fondo.errors }}
+                        {{ form.imagen_fondo }}
+                        <div class="form-text">Imagen de fondo para la pantalla de bienvenida.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.color_texto.id_for_label }}" class="form-label">Color del texto:</label>
+                        {{ form.color_texto.errors }}
+                        {{ form.color_texto }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.tamano_texto.id_for_label }}" class="form-label">Tamaño del texto:</label>
+                        {{ form.tamano_texto.errors }}
+                        {{ form.tamano_texto }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.tipo_letra.id_for_label }}" class="form-label">Tipo de letra:</label>
+                        {{ form.tipo_letra.errors }}
+                        {{ form.tipo_letra }}
+                    </div>
+                    
+                    <h4 class="mt-4">Configuración del Collage</h4>
+                    <div class="mb-3">
+                        <label for="{{ form.max_fotos.id_for_label }}" class="form-label">Número máximo de fotos:</label>
+                        {{ form.max_fotos.errors }}
+                        {{ form.max_fotos }}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.permitir_personalizar }}
+                        <label class="form-check-label" for="{{ form.permitir_personalizar.id_for_label }}">
+                            Permitir personalizar (mover/redimensionar fotos)
+                        </label>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                        <a href="{% url 'photobooth_preview' evento.id %}" class="btn btn-success">Ver Vista Previa</a>
+                        <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">Volver al Evento</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Vista previa de bienvenida</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="preview" style="height: 300px; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: center;">
+                            <h1 id="previewMessage" style="padding: 20px; background-color: rgba(255, 255, 255, 0.7); border-radius: 10px;">
+                                {{ config.mensaje_bienvenida|default:"¡Bienvenidos al photobooth!" }}
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mensajeInput = document.getElementById('{{ form.mensaje_bienvenida.id_for_label }}');
+        const colorInput = document.getElementById('{{ form.color_texto.id_for_label }}');
+        const tamanoInput = document.getElementById('{{ form.tamano_texto.id_for_label }}');
+        const tipoLetraInput = document.getElementById('{{ form.tipo_letra.id_for_label }}');
+        const imagenInput = document.getElementById('{{ form.imagen_fondo.id_for_label }}');
+        
+        const previewMessage = document.getElementById('previewMessage');
+        const preview = document.getElementById('preview');
+        
+        // Inicializar con valores actuales
+        {% if config and config.imagen_fondo %}
+        preview.style.backgroundImage = "url('{{ config.imagen_fondo.url }}')";
+        {% endif %}
+        
+        previewMessage.style.color = "{{ config.color_texto|default:'#000000' }}";
+        previewMessage.style.fontSize = "{{ config.tamano_texto|default:'24' }}px";
+        previewMessage.style.fontFamily = "{{ config.tipo_letra|default:'Arial' }}, sans-serif";
+        
+        // Actualizar vista previa al cambiar valores
+        mensajeInput.addEventListener('input', function() {
+            previewMessage.textContent = this.value;
+        });
+        
+        colorInput.addEventListener('input', function() {
+            previewMessage.style.color = this.value;
+        });
+        
+        tamanoInput.addEventListener('input', function() {
+            previewMessage.style.fontSize = this.value + 'px';
+        });
+        
+        tipoLetraInput.addEventListener('change', function() {
+            previewMessage.style.fontFamily = this.value + ', sans-serif';
+        });
+        
+        imagenInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.style.backgroundImage = `url('${e.target.result}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
+{% endblock %}

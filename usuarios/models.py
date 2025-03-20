@@ -8,8 +8,6 @@ from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
-#from .models import Cliente
-#from .models import Evento
 
 
 # Modelo de Usuario personalizado
@@ -103,6 +101,7 @@ class Cliente(models.Model):
         auto_now=True,
         verbose_name=_("Fecha de Actualización")
     )
+    activo = models.BooleanField(default=True)  # Nuevo campo para indicar si está activo
     
     # Campo para búsquedas full-text en PostgreSQL
     search_vector = SearchVectorField(null=True, blank=True)
@@ -204,6 +203,23 @@ class Evento(models.Model):
     
     def __str__(self):
         return f"{self.nombre} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')} - {self.cliente}"
+    
+class ConfiguracionPhotobooth(models.Model):
+    evento = models.OneToOneField(Evento, on_delete=models.CASCADE, related_name='config_photobooth')
+    mensaje_bienvenida = models.CharField(max_length=255, default='¡Bienvenidos a nuestro photobooth!')
+    imagen_fondo = models.ImageField(upload_to='photobooth/fondos/', null=True, blank=True)
+    color_texto = models.CharField(max_length=7, default='#000000')
+    tamano_texto = models.IntegerField(default=24)
+    tipo_letra = models.CharField(max_length=50, default='Arial')
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    # Opciones para el collage de fotos
+    max_fotos = models.IntegerField(default=4, choices=[(1, '1 foto'), (2, '2 fotos'), (4, '4 fotos'), (5, '5 fotos')])
+    permitir_personalizar = models.BooleanField(default=True, help_text="Permitir a los usuarios mover y redimensionar fotos")
+    
+    def __str__(self):
+        return f"Photobooth para {self.evento.nombre}"
 
 @receiver(post_save, sender=Evento)
 def update_search_vector(sender, instance, **kwargs):
