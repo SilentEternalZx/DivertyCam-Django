@@ -13,8 +13,9 @@ from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,Añadir
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
-
 import requests
+
+
 
 
 def index(request):  #Función  para retornar vista principal
@@ -22,7 +23,7 @@ def index(request):  #Función  para retornar vista principal
 
 
 def vista_login(request): #Función para iniciar sesión
-    mensaje = ""  # Mensaje de error si las credenciales fallan
+   
     if request.method == "POST":  #Si la petición es un POST, capturar los datos
         nombre_usuario = request.POST.get("nombre_usuario")
         contraseña = request.POST.get("contraseña")
@@ -33,11 +34,9 @@ def vista_login(request): #Función para iniciar sesión
             login(request, usuario) #Logearse
             return redirect("index")  # Redirige a la página principal tras iniciar sesión
         else:  #De lo contrario mostrar mensaje de error
-            mensaje = "Usuario o contraseña inválidos"
+            messages.error(request,"El usuario o la contraseña son incorrectos")
 
-    return render(request, "login/login.html", {
-        "mensaje": mensaje
-        })
+    return render(request, "login/login.html")
 
 # Cerrar sesión
 @login_required

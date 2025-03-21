@@ -1,0 +1,48 @@
+/* Tarjeta con el nombre del evento */
+.card {
+   
+    background-color: rgb(62, 60, 63);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    
+}
+
+/* Estilo del nombre del evento */
+.nombre-evento {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: left;
+    color:white;
+}
+
+/* Estilos para el formulario */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Campos del formulario */
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Botón de envío */
+.boton {
+    background-color: #1e1f20;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
