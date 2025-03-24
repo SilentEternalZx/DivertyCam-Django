@@ -8,6 +8,8 @@ from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
+#from .models import Cliente
+#from .models import Evento
 
 
 # Modelo de Usuario personalizado
@@ -160,6 +162,53 @@ class Evento(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     search_vector = SearchVectorField(null=True, blank=True)
 
+    nombre = models.CharField(
+        max_length=100,
+        verbose_name=_("Nombre del evento"),
+        help_text=_("Nombre o título del evento")
+    )
+    
+    fecha_hora = models.DateTimeField(
+        verbose_name=_("Fecha y hora del evento"),
+        help_text=_("Fecha y hora programada para el evento")
+    )
+    
+    servicios = MultiSelectField(
+        choices=SERVICIOS_CHOICES,
+        max_choices=7,
+        max_length=100,
+        verbose_name=_("Servicios"),
+        help_text=_("Servicios contratados para el evento")
+    )
+    
+    direccion = models.CharField(
+        max_length=255,
+        verbose_name=_("Dirección del evento"),
+        help_text=_("Dirección completa donde se realizará el evento")
+    )
+    
+    # Usamos el string completo para el modelo Cliente en lugar de solo 'Cliente'
+    cliente = models.ForeignKey(
+        Cliente,
+        on_delete=models.CASCADE,
+        related_name='eventos',
+        verbose_name=_("Cliente"),
+        help_text=_("Cliente asociado al evento")
+    )
+    
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_("Fecha de Creación")
+    )
+    
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name=_("Fecha de Actualización")
+    )
+    
+    # Campo para búsquedas full-text en PostgreSQL
+    search_vector = SearchVectorField(null=True, blank=True)
+    
     class Meta:
         verbose_name = _("Evento")
         verbose_name_plural = _("Eventos")

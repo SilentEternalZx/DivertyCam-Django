@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render, redirect
+from urllib import request
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
@@ -153,7 +155,7 @@ class ClienteDetailView(DetailView):   #LoginRequiredMixin
     context_object_name = 'cliente'
     template_name = 'clientes/cliente_detail.html'
 
-class ClienteCreateView( CreateView):  #LoginRequiredMixin,
+class ClienteCreateView(CreateView):  #LoginRequiredMixin,
     model = Cliente
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
@@ -305,8 +307,8 @@ class EventoListView(ListView):
             queryset = queryset.annotate(
                 rank=SearchRank('search_vector', search_query)
             ).filter(search_vector=search_query).order_by('-rank')
-
-            # Si no hay resultados, usamos búsqueda con LIKE
+            
+            # Si no hay resultados con la búsqueda de texto completo, intentamos con LIKE
             if not queryset.exists():
                 queryset = Evento.objects.filter(
                     Q(nombre__icontains=q) |
