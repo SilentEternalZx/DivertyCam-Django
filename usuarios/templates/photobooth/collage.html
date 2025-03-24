@@ -1,0 +1,319 @@
+{# templates/photobooth/collage.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collage de Fotos - {{ evento.nombre }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            font-family: {{ config.tipo_letra }}, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        #container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: white;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .foto {
+            position: absolute;
+            width: 200px;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            cursor: move;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: 3px solid white;
+        }
+        
+        .resize-handle {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border: 1px solid black;
+            position: absolute;
+            right: -5px;
+            bottom: -5px;
+            cursor: se-resize;
+        }
+        
+        .delete-button {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        #controles {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .event-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            max-width: 200px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="controles">
+            <input type="file" id="fondoInput" accept="image/*">
+            <small class="d-block text-muted">Selecciona imagen de fondo</small>
+            
+            {% if config.permitir_personalizar %}
+            <hr>
+            <div class="mb-2">
+                <input type="file" id="nuevaFotoInput" accept="image/*">
+                <small class="d-block text-muted">Añadir nueva foto al collage</small>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="event-info">
+            {{ evento.nombre }}<br>
+            <small>{{ evento.fecha_hora|date:"d/m/Y" }}</small>
+        </div>
+    </div>
+    
+    <div class="button-bar">
+        <button class="btn btn-primary" onclick="guardarCollage()">Guardar Collage</button>
+        <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-success">Tomar Más Fotos</a>
+        <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">Volver al Evento</a>
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const fondoInput = document.getElementById('fondoInput');
+        const nuevaFotoInput = document.getElementById('nuevaFotoInput');
+        const permitirPersonalizar = {{ config.permitir_personalizar|yesno:"true,false" }};
+        const maxFotos = {{ config.max_fotos }};
+        let fotos = [];
+        
+        // Cargar fotos del localStorage si existen
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedPhotos = localStorage.getItem('photoboothPhotos');
+            if (savedPhotos) {
+                const photoArray = JSON.parse(savedPhotos);
+                photoArray.forEach(photoData => {
+                    crearFotoDesdeData(photoData);
+                });
+            }
+        });
+        
+        // Cambiar el fondo
+        fondoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                container.style.backgroundImage = `url('${event.target.result}')`;
+            }
+            reader.readAsDataURL(file);
+        });
+        
+        // Añadir nueva foto al collage
+        if (nuevaFotoInput) {
+            nuevaFotoInput.addEventListener('change', function(e) {
+                if (fotos.length >= maxFotos) {
+                    alert(`Solo se permiten ${maxFotos} fotos en este collage.`);
+                    return;
+                }
+                
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    crearFotoDesdeData(event.target.result);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Crear una foto desde datos
+        function crearFotoDesdeData(dataUrl) {
+            const foto = document.createElement('div');
+            foto.className = 'foto';
+            foto.style.backgroundImage = `url('${dataUrl}')`;
+            foto.style.left = `${50 + (fotos.length * 50)}px`;
+            foto.style.top = `${50 + (fotos.length * 30)}px`;
+            foto.dataset.url = dataUrl;
+            
+            if (permitirPersonalizar) {
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'resize-handle';
+                foto.appendChild(resizeHandle);
+                
+                const deleteButton = document.createElement('div');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = 'X';
+                deleteButton.addEventListener('click', () => eliminarFoto(foto));
+                foto.appendChild(deleteButton);
+                
+                hacerArrastrable(foto);
+                hacerRedimensionable(foto, resizeHandle);
+            }
+            
+            container.appendChild(foto);
+            fotos.push(foto);
+        }
+        
+        // Eliminar una foto
+        function eliminarFoto(foto) {
+            const index = fotos.indexOf(foto);
+            if (index !== -1) {
+                fotos.splice(index, 1);
+                container.removeChild(foto);
+                
+                // Actualizar localStorage
+                const photoData = fotos.map(foto => foto.dataset.url);
+                localStorage.setItem('photoboothPhotos', JSON.stringify(photoData));
+            }
+        }
+        
+        // Hacer arrastrable un elemento
+        function hacerArrastrable(elemento) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            elemento.onmousedown = iniciarArrastre;
+            
+            function iniciarArrastre(e) {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = terminarArrastre;
+                document.onmousemove = arrastrar;
+            }
+            
+            function arrastrar(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                // Límites para que no salga del contenedor
+                let newTop = elemento.offsetTop - pos2;
+                let newLeft = elemento.offsetLeft - pos1;
+                
+                if (newTop < 0) newTop = 0;
+                if (newLeft < 0) newLeft = 0;
+                if (newTop + elemento.offsetHeight > container.offsetHeight) 
+                    newTop = container.offsetHeight - elemento.offsetHeight;
+                if (newLeft + elemento.offsetWidth > container.offsetWidth) 
+                    newLeft = container.offsetWidth - elemento.offsetWidth;
+                
+                elemento.style.top = newTop + "px";
+                elemento.style.left = newLeft + "px";
+            }
+            
+            function terminarArrastre() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+        
+        // Hacer redimensionable un elemento
+        function hacerRedimensionable(elemento, handle) {
+            handle.addEventListener('mousedown', iniciarRedimension);
+            
+            function iniciarRedimension(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                document.addEventListener('mousemove', redimensionar);
+                document.addEventListener('mouseup', terminarRedimension);
+            }
+            
+            function redimensionar(e) {
+                const rect = container.getBoundingClientRect();
+                const containerX = rect.left;
+                const containerY = rect.top;
+                
+                const maxWidth = container.offsetWidth - elemento.offsetLeft;
+                const maxHeight = container.offsetHeight - elemento.offsetTop;
+                
+                let newWidth = e.clientX - containerX - elemento.offsetLeft;
+                let newHeight = e.clientY - containerY - elemento.offsetTop;
+                
+                // Limitar tamaño mínimo y máximo
+                newWidth = Math.max(50, Math.min(newWidth, maxWidth));
+                newHeight = Math.max(50, Math.min(newHeight, maxHeight));
+                
+                elemento.style.width = newWidth + 'px';
+                elemento.style.height = newHeight + 'px';
+            }
+            
+            function terminarRedimension() {
+                document.removeEventListener('mousemove', redimensionar);
+                document.removeEventListener('mouseup', terminarRedimension);
+            }
+        }
+        
+        // Guardar el collage como imagen
+        function guardarCollage() {
+            // Ocultar controles temporalmente
+            const controles = document.getElementById('controles');
+            const buttonBar = document.querySelector('.button-bar');
+            controles.style.display = 'none';
+            
+            // Crear captura con html2canvas
+            html2canvas(container).then(canvas => {
+                // Mostrar controles de nuevo
+                controles.style.display = 'block';
+                
+                // Crear enlace de descarga
+                const link = document.createElement('a');
+                link.download = 'collage-{{ evento.nombre|slugify }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+    
+    <!-- Script para exportar el collage -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</body>
+</html>

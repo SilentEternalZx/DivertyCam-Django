@@ -4,57 +4,96 @@
 {% block title %}{{ evento.nombre }}{% endblock %}
 
 {% block content %}
-<br>
-<br>
-<div class="card">
-    <div class="card-header">
-        <h2>Detalles del Evento</h2>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <h4>Información del Evento</h4>
-                <dl class="row">
-                    <dt class="col-sm-4">Nombre</dt>
-                    <dd class="col-sm-8">{{ evento.nombre }}</dd>
 
-                    <dt class="col-sm-4">Fecha y Hora</dt>
-                    <dd class="col-sm-8">{{ evento.fecha_hora|date:"d/m/Y H:i" }}</dd>
+<div class="main-content">
+        <div class="card-header">
+            <h2>Detalles del Evento</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Información del Evento</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">Nombre</dt>
+                        <dd class="col-sm-8">{{ evento.nombre }}</dd>
 
-                    <dt class="col-sm-4">Dirección</dt>
-                    <dd class="col-sm-8">{{ evento.direccion }}</dd>
-                </dl>
+                        <dt class="col-sm-4">Fecha y Hora</dt>
+                        <dd class="col-sm-8">{{ evento.fecha_hora|date:"d/m/Y H:i" }}</dd>
+
+                        <dt class="col-sm-4">Dirección</dt>
+                        <dd class="col-sm-8">{{ evento.direccion }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h4>Información del Cliente</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">Cliente</dt>
+                        <dd class="col-sm-8">
+                            <a href="{% url 'cliente_detail' evento.cliente.pk %}">
+                                {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
+                            </a>
+                        </dd>
+
+                        <dt class="col-sm-4">Teléfono</dt>
+                        <dd class="col-sm-8">{{ evento.cliente.telefono }}</dd>
+
+                        <dt class="col-sm-4">Correo</dt>
+                        <dd class="col-sm-8">{{ evento.cliente.correo }}</dd>
+                    </dl>
+                </div>
             </div>
-            <div class="col-md-6">
-                <h4>Información del Cliente</h4>
-                <dl class="row">
-                    <dt class="col-sm-4">Cliente</dt>
-                    <dd class="col-sm-8">
-                        <a href="{% url 'cliente_detail' evento.cliente.pk %}">
-                            {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
-                        </a>
-                    </dd>
-
-                    <dt class="col-sm-4">Teléfono</dt>
-                    <dd class="col-sm-8">{{ evento.cliente.telefono }}</dd>
-
-                    <dt class="col-sm-4">Correo</dt>
-                    <dd class="col-sm-8">{{ evento.cliente.correo }}</dd>
-                </dl>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Servicios Contratados</h4>
+                    <div class="mt-2">
+                        {% for servicio in evento.servicios %}
+                            <span class="badge bg-primary p-2 mb-2 me-2">{{ servicio }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="row mt-4">
-            <div class="col-12">
-                <h4>Servicios Contratados</h4>
-                <div class="mt-2">
-                    {% for servicio in evento.servicios %}
-                        <span class="badge bg-primary p-2 mb-2 me-2">{{ servicio }}</span>
-                    {% endfor %}
+            <!-- Nueva sección para el photobooth -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Photobooth</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            {% if evento.config_photobooth %}
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <p><strong>Estado:</strong> <span class="badge bg-success">Configurado</span></p>
+                                        <p><strong>Mensaje de bienvenida:</strong> {{ evento.config_photobooth.mensaje_bienvenida }}</p>
+                                        <p><strong>Configuración de collage:</strong> {{ evento.config_photobooth.max_fotos }} fotos {% if evento.config_photobooth.permitir_personalizar %}con posicionamiento libre{% else %}con posicionamiento fijo{% endif %}</p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="btn-group-vertical">
+                                            <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-warning mb-2">
+                                                <i class="fas fa-cog"></i> Configurar Photobooth
+                                            </a>
+                                            <a href="{% url 'photobooth_preview' evento.pk %}" class="btn btn-primary mb-2">
+                                                <i class="fas fa-eye"></i> Vista Previa
+                                            </a>
+                                            <a href="{% url 'launch_photobooth' evento.pk %}" class="btn btn-success" target="_blank">
+                                                <i class="fas fa-play"></i> Iniciar Photobooth
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p>El photobooth no está configurado para este evento.</p>
+                                <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle"></i> Configurar Photobooth
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    
     <div class="card-footer">
         <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-warning">Editar</a>
         <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger">Eliminar</a>

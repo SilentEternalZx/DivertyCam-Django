@@ -1,0 +1,86 @@
+{# templates/photobooth/preview_photobooth.html #}
+{% extends 'layout/layout.html' %}
+
+{% block title %}Vista Previa - Photobooth {{ evento.nombre }}{% endblock %}
+
+{% block content %}
+<br>
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>Vista Previa del Photobooth</h2>
+        <p class="text-muted">Evento: {{ evento.nombre }} | Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-10">
+                <div class="card mb-8">
+                    <div class="card-header">
+                        <h4>Pantalla de Bienvenida</h4>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 800px; display: flex; justify-content: center; align-items: center; background-image: url('{{ config.imagen_fondo.url }}'); background-size: cover; background-position: center;">
+                            <h1 style="padding: 20px; background-color: rgba(255, 255, 255, 0.7); border-radius: 10px; color: {{ config.color_texto }}; font-size: {{ config.tamano_texto }}px; font-family: {{ config.tipo_letra }}, sans-serif;">
+                                {{ config.mensaje_bienvenida }}
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% comment %} <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Vista Previa del Collage</h4>
+                    </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 300px; border: 1px dashed #ccc; background-color: #f8f9fa;">
+                            {% for i in "12345"|slice:":config.max_fotos" %}
+                            <div style="position: absolute; width: 120px; height: 90px; background-color: rgba(0, 123, 255, 0.2); border: 1px solid #0d6efd; left: {% widthratio forloop.counter0 5 100 %}px; top: {% widthratio forloop.counter0 5 50 %}px;">
+                                <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                    <span class="text-muted">Foto {{ forloop.counter }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-2 text-muted">
+                            <small>* Configurado para {{ config.max_fotos }} fotos{% if config.permitir_personalizar %} con posicionamiento personalizable{% else %} con posición fija{% endif %}</small>
+                        </div>
+                    </div>
+                </div>
+            </div> {% endcomment %}
+        </div>
+        
+        {% comment %} <div class="mt-4">
+            <h4>Modos de Operación</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Modo Invitados</h5>
+                            <p class="card-text">Interfaz completa para que los invitados utilicen el photobooth.</p>
+                             <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-primary" target="_blank">
+                                Iniciar Modo Invitados 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Modo Collage</h5>
+                            <p class="card-text">Solo collage para crear composiciones de fotos.</p>
+                             <a href="{% url 'photobooth_collage' evento.id %}" class="btn btn-primary" target="_blank">
+                                Iniciar Modo Collage 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> {% endcomment %}
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-warning">Editar Configuración</a>
+        <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">Volver al Evento</a>
+    </div>
+</div>
+{% endblock %}
