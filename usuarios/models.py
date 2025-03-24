@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Permission, Group
 from django.utils.timezone import now
@@ -204,7 +205,7 @@ class Evento(models.Model):
     def __str__(self):
         return f"{self.nombre} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')} - {self.cliente}"
     
-class ConfiguracionPhotobooth(models.Model):
+class Configurar_Photobooth(models.Model):
     evento = models.OneToOneField(Evento, on_delete=models.CASCADE, related_name='config_photobooth')
     mensaje_bienvenida = models.CharField(max_length=255, default='¡Bienvenidos a nuestro photobooth!')
     imagen_fondo = models.ImageField(upload_to='photobooth/fondos/', null=True, blank=True)
@@ -213,6 +214,8 @@ class ConfiguracionPhotobooth(models.Model):
     tipo_letra = models.CharField(max_length=50, default='Arial')
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    
     
     # Opciones para el collage de fotos
     max_fotos = models.IntegerField(default=4, choices=[(1, '1 foto'), (2, '2 fotos'), (4, '4 fotos'), (5, '5 fotos')])
@@ -249,5 +252,108 @@ def update_search_vector(sender, instance, **kwargs):
             ]
         )
 
+class PhotoboothConfig(models.Model):
+    # Este modelo ya existe en tu sistema, solo se añade el nuevo campo
+    evento = models.OneToOneField(Evento, on_delete=models.CASCADE, related_name='photobooth_config')
+    mensaje_bienvenida = models.CharField(max_length=200, default='¡Bienvenidos al photobooth!')
+    imagen_fondo = models.ImageField(upload_to='photobooth/fondos/', blank=True, null=True)
+    color_texto = models.CharField(max_length=20, default='#000000')
+    tamano_texto = models.IntegerField(default=24)
+    tipo_letra = models.CharField(max_length=50, default='Arial')
+    max_fotos = models.IntegerField(default=4)
+    permitir_personalizar = models.BooleanField(default=False)
+    
+    # Nuevo campo para integración de collages personalizables
+    plantilla_collage = models.ForeignKey(
+        'CollageTemplate', 
+        on_delete=models.SET_NULL,
+        null=True, 
+        blank=True,
+        related_name='photobooth_configs'
+    )
 
+class CollageTemplate(models.Model):
+    """Modelo para almacenar plantillas de collage personalizadas"""
+    template_id = models.CharField(max_length=36, primary_key=True)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    background_color = models.CharField(max_length=20, default='#FFFFFF')
+    background_image = models.ImageField(upload_to='collage/backgrounds/', blank=True, null=True)
+    template_data = models.TextField(help_text="Datos completos de la plantilla en formato JSON")
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='collage_templates')
+    es_predeterminada = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.nombre} ({self.template_id})"
+    
+    def get_frames(self):
+        """Obtiene los marcos de fotos de la plantilla"""
+        try:
+            data = json.loads(self.template_data)
+            return data.get('frames', [])
+        except:
+            return []
+    
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = "Plantilla de Collage"
+        verbose_name_plural = "Plantillas de Collage"
+
+class CollageSession(models.Model):
+    """Modelo para almacenar sesiones de fotos basadas en plantillas"""
+    STATUS_CHOICES = (
+        ('active', 'Activa'),
+        ('completed', 'Completada'),
+        ('canceled', 'Cancelada'),
+    )
+    
+    session_id = models.CharField(max_length=36, primary_key=True)
+    template = models.ForeignKey(CollageTemplate, on_delete=models.CASCADE, related_name='sessions')
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='collage_sessions')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"Sesión {self.session_id} - {self.get_status_display()}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Sesión de Collage"
+        verbose_name_plural = "Sesiones de Collage"
+
+class SessionPhoto(models.Model):
+    """Modelo para almacenar fotos tomadas durante una sesión"""
+    session = models.ForeignKey(CollageSession, on_delete=models.CASCADE, related_name='photos')
+    frame_index = models.IntegerField(help_text="Índice del marco en la plantilla")
+    image = models.ImageField(upload_to='collage/session_photos/')
+    taken_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Foto {self.frame_index} de sesión {self.session.session_id}"
+    
+    class Meta:
+        ordering = ['session', 'frame_index']
+        verbose_name = "Foto de Sesión"
+        verbose_name_plural = "Fotos de Sesión"
+        unique_together = ('session', 'frame_index')  # Una foto por marco en cada sesión
+
+class CollageResult(models.Model):
+    """Modelo para almacenar los collages finales generados"""
+    collage_id = models.CharField(max_length=36, primary_key=True)
+    session = models.OneToOneField(CollageSession, on_delete=models.CASCADE, related_name='result')
+    image = models.ImageField(upload_to='collage/results/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    print_count = models.IntegerField(default=0)
+    share_count = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f"Collage {self.collage_id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Resultado de Collage"
+        verbose_name_plural = "Resultados de Collage"
     

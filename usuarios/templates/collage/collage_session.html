@@ -1,0 +1,565 @@
+{# templates/collage/collage_session.html #}
+{% extends 'layout/layout.html' %}
+
+{% block title %}Sesión de Fotos - {{ evento.nombre }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .session-container {
+        padding: 1rem;
+    }
+    
+    .collage-container {
+        position: relative;
+        width: 15cm;
+        height: 10cm;
+        background-color: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    
+    .photo-frame {
+        position: absolute;
+        border: 2px dashed #FF6B6B;
+        background-color: rgba(255, 107, 107, 0.2);
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .frame-label {
+        color: #FF6B6B;
+        font-weight: bold;
+        font-size: 1rem;
+        text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+    }
+    
+    .camera-preview {
+        width: 100%;
+        height: 300px;
+        background-color: #000;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    #video-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .countdown-display {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 8rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 20px rgba(0,0,0,0.8);
+        z-index: 10;
+        display: none;
+    }
+    
+    .frame-ready {
+        border: 2px solid #2196F3;
+        background-color: rgba(33, 150, 243, 0.3);
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
+    }
+    
+    .photo-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .progress-bar {
+        height: 10px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background-color: #FF6B6B;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-step {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        color: #666;
+    }
+    
+    .progress-step.active {
+        background-color: #FF6B6B;
+        color: white;
+    }
+    
+    .progress-step.completed {
+        background-color: #28a745;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<div class="card">
+    <div class="card-header">
+        <h2>Sesión de Fotos para "{{ evento.nombre }}"</h2>
+        <p class="text-muted">Plantilla: {{ template.nombre }}</p>
+    </div>
+    
+    <div class="card-body session-container">
+        <div class="alert alert-info mb-4">
+            <h5><i class="fas fa-info-circle"></i> Instrucciones</h5>
+            <p>Sigue las indicaciones para tomar las fotos. Cada foto se colocará automáticamente en el collage según la plantilla seleccionada.</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Collage en progreso</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div id="collage-container" class="collage-container">
+                            <!-- Aquí se cargarán los marcos de fotos -->
+                        </div>
+                        
+                        <div class="mt-3">
+                            <span class="badge bg-primary" id="current-frame-label">Ninguno seleccionado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Cámara</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="camera-preview">
+                            <video id="video-preview" autoplay playsinline></video>
+                            <div id="countdown-display" class="countdown-display"></div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <span class="badge bg-secondary" id="camera-status">Cámara no inicializada</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Progreso</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Fotos tomadas:</span>
+                            <span id="photo-progress">0/0</span>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                        </div>
+                        
+                        <div id="progress-indicator" class="progress-indicator mt-3">
+                            <!-- Indicadores de progreso se añadirán dinámicamente -->
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label for="countdown-seconds">Tiempo entre fotos:</label>
+                            <select id="countdown-seconds" class="form-select">
+                                <option value="3">3 segundos</option>
+                                <option value="5" selected>5 segundos</option>
+                                <option value="10">10 segundos</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <button id="start-session-btn" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-play"></i> Iniciar Sesión
+                </button>
+                
+                <button id="take-photo-btn" class="btn btn-success btn-lg me-2" disabled>
+                    <i class="fas fa-camera"></i> Tomar Foto
+                </button>
+                
+                <button id="finish-session-btn" class="btn btn-info btn-lg" disabled>
+                    <i class="fas fa-check"></i> Finalizar Sesión
+                </button>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{% url 'template_list' evento.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver a lista de plantillas
+                </a>
+                
+                <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-cog"></i> Volver a configuración
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variables globales
+        const collageContainer = document.getElementById('collage-container');
+        const videoPreview = document.getElementById('video-preview');
+        const countdownDisplay = document.getElementById('countdown-display');
+        const cameraStatus = document.getElementById('camera-status');
+        const startSessionBtn = document.getElementById('start-session-btn');
+        const takePhotoBtn = document.getElementById('take-photo-btn');
+        const finishSessionBtn = document.getElementById('finish-session-btn');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const currentFrameLabel = document.getElementById('current-frame-label');
+        const photoProgress = document.getElementById('photo-progress');
+        
+        // Variables de estado
+        let sessionActive = false;
+        let currentFrameIndex = -1;
+        let frameElements = [];
+        let countdownSeconds = parseInt(document.getElementById('countdown-seconds').value);
+        let countdownTimer;
+        let isCountingDown = false;
+        let mediaStream = null;
+        let photosTaken = 0;
+        
+        // Cargar datos de la plantilla
+        const templateData = {{ template_json|safe }};
+        
+        // Configurar el fondo del collage
+        collageContainer.style.backgroundColor = templateData.backgroundColor || 'white';
+        if (templateData.backgroundImage && templateData.backgroundImage !== 'none') {
+            // Extraer URL de la imagen de la cadena CSS
+            let bgImage = templateData.backgroundImage;
+            if (bgImage.startsWith('url(') && bgImage.endsWith(')')) {
+                bgImage = bgImage.substring(4, bgImage.length - 1);
+                
+                // Eliminar comillas si existen
+                if ((bgImage.startsWith('"') && bgImage.endsWith('"')) || 
+                    (bgImage.startsWith("'") && bgImage.endsWith("'"))) {
+                    bgImage = bgImage.substring(1, bgImage.length - 1);
+                }
+            }
+            
+            // Para URLs de imágenes cargadas en el servidor
+            {% if template.background_image %}
+                collageContainer.style.backgroundImage = "url('{{ template.background_image.url }}')";
+            {% endif %}
+            
+            collageContainer.style.backgroundSize = 'cover';
+            collageContainer.style.backgroundPosition = 'center';
+        }
+        
+        // Crear marcos de fotos basados en la plantilla
+        setupPhotoFrames(templateData.frames);
+        
+        // Configurar indicadores de progreso
+        setupProgressIndicators(templateData.frames.length);
+        
+        // Inicializar la cámara cuando se inicie la sesión
+        startSessionBtn.addEventListener('click', function() {
+            initCamera().then(() => {
+                startSession();
+            }).catch(error => {
+                alert('Error al iniciar la cámara: ' + error.message);
+                console.error('Error al iniciar la cámara:', error);
+            });
+        });
+        
+        // Configurar evento para tomar foto
+        takePhotoBtn.addEventListener('click', function() {
+            startCountdown();
+        });
+        
+        // Configurar evento para finalizar sesión
+        finishSessionBtn.addEventListener('click', function() {
+            finishSession();
+        });
+        
+        // Cambiar tiempo de cuenta atrás
+        document.getElementById('countdown-seconds').addEventListener('change', function() {
+            countdownSeconds = parseInt(this.value);
+        });
+        
+        // Función para crear los marcos de fotos
+        function setupPhotoFrames(frames) {
+            frameElements = [];
+            
+            if (!frames || !Array.isArray(frames)) {
+                console.error('No se encontraron marcos válidos en la plantilla');
+                photoProgress.textContent = `0/0`;
+                return;
+            }
+            
+            frames.forEach((frameData, index) => {
+                const frame = document.createElement('div');
+                frame.className = 'photo-frame';
+                frame.id = `photo-frame-${index}`;
+                frame.style.width = frameData.width;
+                frame.style.height = frameData.height;
+                frame.style.left = frameData.left;
+                frame.style.top = frameData.top;
+                frame.style.borderStyle = frameData.borderStyle || 'dashed';
+                
+                // Label en el centro para indicar qué foto es
+                const label = document.createElement('div');
+                label.className = 'frame-label';
+                label.textContent = frameData.label || `Foto ${index + 1}`;
+                frame.appendChild(label);
+                
+                collageContainer.appendChild(frame);
+                frameElements.push(frame);
+            });
+            
+            // Actualizar contador de progreso
+            photoProgress.textContent = `${photosTaken}/${frameElements.length}`;
+        }
+        
+        // Configurar indicadores de progreso
+        function setupProgressIndicators(count) {
+            progressIndicator.innerHTML = '';
+            
+            for (let i = 1; i <= count; i++) {
+                const step = document.createElement('div');
+                step.className = 'progress-step';
+                step.textContent = i;
+                progressIndicator.appendChild(step);
+            }
+        }
+        
+        // Iniciar cámara
+        async function initCamera() {
+            try {
+                cameraStatus.textContent = 'Iniciando cámara...';
+                cameraStatus.className = 'badge bg-warning';
+                
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1280, height: 720 },
+                    audio: false
+                });
+                
+                videoPreview.srcObject = mediaStream;
+                cameraStatus.textContent = 'Cámara activa';
+                cameraStatus.className = 'badge bg-success';
+                return true;
+            } catch (error) {
+                cameraStatus.textContent = 'Error al iniciar la cámara';
+                cameraStatus.className = 'badge bg-danger';
+                throw error;
+            }
+        }
+        
+        // Iniciar sesión de fotos
+        function startSession() {
+            sessionActive = true;
+            startSessionBtn.disabled = true;
+            takePhotoBtn.disabled = false;
+            
+            // Seleccionar el primer marco
+            selectNextFrame();
+        }
+        
+        // Seleccionar siguiente marco
+        function selectNextFrame() {
+            // Quitar clase de listo del marco anterior
+            if (currentFrameIndex >= 0 && currentFrameIndex < frameElements.length) {
+                frameElements[currentFrameIndex].classList.remove('frame-ready');
+            }
+            
+            // Avanzar al siguiente marco
+            currentFrameIndex++;
+            
+            // Verificar si hay más marcos disponibles
+            if (currentFrameIndex >= frameElements.length) {
+                // Todos los marcos completados
+                takePhotoBtn.disabled = true;
+                finishSessionBtn.disabled = false;
+                currentFrameLabel.textContent = 'Todos los marcos completados';
+                currentFrameLabel.className = 'badge bg-success';
+                return;
+            }
+            
+            // Marcar el marco actual como listo
+            const currentFrame = frameElements[currentFrameIndex];
+            currentFrame.classList.add('frame-ready');
+            
+            // Actualizar label
+            currentFrameLabel.textContent = currentFrame.querySelector('.frame-label').textContent;
+            currentFrameLabel.className = 'badge bg-primary';
+        }
+        
+        // Iniciar cuenta atrás para tomar foto
+        function startCountdown() {
+            if (isCountingDown) return;
+            
+            isCountingDown = true;
+            takePhotoBtn.disabled = true;
+            let timeLeft = countdownSeconds;
+            
+            // Mostrar cuenta atrás
+            countdownDisplay.textContent = timeLeft;
+            countdownDisplay.style.display = 'block';
+            
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                countdownDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    countdownDisplay.style.display = 'none';
+                    
+                    // Tomar la foto
+                    takePhoto();
+                    
+                    isCountingDown = false;
+                }
+            }, 1000);
+        }
+        
+        // Tomar foto
+        function takePhoto() {
+            // Verificar que tenemos un marco seleccionado
+            if (currentFrameIndex < 0 || currentFrameIndex >= frameElements.length) {
+                return;
+            }
+            
+            const currentFrame = frameElements[currentFrameIndex];
+            
+            // Crear un canvas para capturar la foto
+            const canvas = document.createElement('canvas');
+            canvas.width = 1280;
+            canvas.height = 720;
+            
+            // Dibujar la imagen del video en el canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+            
+            // Obtener URL de la imagen
+            const imageUrl = canvas.toDataURL('image/jpeg');
+            
+            // Crear elemento de imagen y colocarlo en el marco
+            const img = document.createElement('img');
+            img.className = 'photo-preview';
+            img.src = imageUrl;
+            
+            // Limpiar el marco y añadir la imagen
+            currentFrame.innerHTML = '';
+            currentFrame.appendChild(img);
+            
+            // Guardar foto en el servidor
+            savePhotoToServer(imageUrl, currentFrameIndex);
+            
+            // Actualizar progreso
+            photosTaken++;
+            updatePhotoProgress();
+            
+            // Seleccionar siguiente marco
+            selectNextFrame();
+            
+            // Habilitar botón de tomar foto
+            takePhotoBtn.disabled = false;
+        }
+        
+        // Finalizar sesión
+        function finishSession() {
+            // Detener la cámara
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Redireccionar a la página de resultado
+            window.location.href = "{% url 'session_result' session_id %}";
+        }
+        
+        // Actualizar indicador de progreso
+        function updatePhotoProgress() {
+            photoProgress.textContent = `${photosTaken}/${frameElements.length}`;
+            
+            // Actualizar barra de progreso
+            const percent = (photosTaken / frameElements.length) * 100;
+            progressBarFill.style.width = `${percent}%`;
+            
+            // Actualizar indicadores de pasos
+            const steps = progressIndicator.querySelectorAll('.progress-step');
+            steps.forEach((step, index) => {
+                if (index < photosTaken) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (index === currentFrameIndex) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+        }
+        
+        // Función para guardar foto en el servidor
+        function savePhotoToServer(imageData, frameIndex) {
+            fetch("{% url 'save_session_photo' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    session_id: '{{ session_id }}',
+                    frame_index: frameIndex,
+                    image_data: imageData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error al guardar la foto:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar la foto:', error);
+            });
+        }
+    });
+</script>
+{% endblock %}

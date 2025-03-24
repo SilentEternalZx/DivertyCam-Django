@@ -12,13 +12,13 @@
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-4">
+            <div class="col-md-10">
+                <div class="card mb-8">
                     <div class="card-header">
                         <h4>Pantalla de Bienvenida</h4>
                     </div>
                     <div class="card-body">
-                        <div style="height: 300px; display: flex; justify-content: center; align-items: center; background-image: url('{{ config.imagen_fondo.url }}'); background-size: cover; background-position: center;">
+                        <div style="height: 800px; display: flex; justify-content: center; align-items: center; background-image: url('{{ config.imagen_fondo.url }}'); background-size: cover; background-position: center;">
                             <h1 style="padding: 20px; background-color: rgba(255, 255, 255, 0.7); border-radius: 10px; color: {{ config.color_texto }}; font-size: {{ config.tamano_texto }}px; font-family: {{ config.tipo_letra }}, sans-serif;">
                                 {{ config.mensaje_bienvenida }}
                             </h1>
@@ -27,7 +27,7 @@
                 </div>
             </div>
             
-            <div class="col-md-6">
+            {% comment %} <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
                         <h4>Vista Previa del Collage</h4>
@@ -47,10 +47,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
         </div>
         
-        <div class="mt-4">
+        {% comment %} <div class="mt-4">
             <h4>Modos de Operación</h4>
             <div class="row">
                 <div class="col-md-6">
@@ -58,8 +58,8 @@
                         <div class="card-body">
                             <h5 class="card-title">Modo Invitados</h5>
                             <p class="card-text">Interfaz completa para que los invitados utilicen el photobooth.</p>
-                            <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-primary" target="_blank">
-                                Iniciar Modo Invitados
+                             <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-primary" target="_blank">
+                                Iniciar Modo Invitados 
                             </a>
                         </div>
                     </div>
@@ -69,14 +69,14 @@
                         <div class="card-body">
                             <h5 class="card-title">Modo Collage</h5>
                             <p class="card-text">Solo collage para crear composiciones de fotos.</p>
-                            <a href="{% url 'photobooth_collage' evento.id %}" class="btn btn-primary" target="_blank">
-                                Iniciar Modo Collage
+                             <a href="{% url 'photobooth_collage' evento.id %}" class="btn btn-primary" target="_blank">
+                                Iniciar Modo Collage 
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div> {% endcomment %}
     </div>
     <div class="card-footer">
         <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-warning">Editar Configuración</a>

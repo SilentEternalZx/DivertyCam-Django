@@ -25,8 +25,24 @@ urlpatterns = [
     path('evento_list/<int:pk>/editar/', views.EventoUpdateView.as_view(), name='evento_update'),
     path('evento_list/<int:pk>/eliminar/', views.EventoDeleteView.as_view(), name='evento_delete'),
     path('evento/<int:evento_id>/photobooth/configurar/', views.configurar_photobooth, name='configurar_photobooth'),
-    path('evento/<int:evento_id>/photobooth/preview/', views.photobooth_preview, name='photobooth_preview'),
-    path('evento/<int:evento_id>/photobooth/launch/', views.launch_photobooth, name='launch_photobooth'),
-    path('evento/<int:evento_id>/photobooth/collage/', views.photobooth_collage, name='photobooth_collage'),
-   
+    path('evento/<int:evento_id>/photobooth/preview/', views.preview_photobooth, name='preview_photobooth'),
+    #path('evento/<int:evento_id>/photobooth/launch/', views.launch_photobooth, name='launch_photobooth'),
+    #path('evento/<int:evento_id>/photobooth/collage/', views.photobooth_collage, name='photobooth_collage'),
+    path('evento/<int:evento_id>/collage/plantillas/', views.template_list, name='template_list'),
+    path('evento/<int:evento_id>/collage/editor/', views.template_editor, name='template_editor'),
+    path('evento/<int:evento_id>/collage/editor/<str:template_id>/', views.template_editor, name='template_editor_edit'),
+    path('evento/<int:evento_id>/collage/template/<str:template_id>/delete/', views.template_delete, name='template_delete'),
+
+     # APIs para plantillas
+    path('api/collage/save-template/', views.save_template, name='save_template'),
+    path('api/collage/template/<str:template_id>/', views.get_template_data, name='get_template_data'),
+    
+    # Sesión de fotos
+    path('evento/<int:evento_id>/collage/sesion/<str:template_id>/', views.start_session, name='start_session'),
+    path('api/collage/save-photo/', views.save_session_photo, name='save_session_photo'),
+    path('collage/session/<str:session_id>/result/', views.session_result, name='session_result'),
+    
+    # APIs para collage final
+    path('api/collage/update-print-count/', views.update_print_count, name='update_print_count'),
+    path('api/collage/send-whatsapp/', views.send_whatsapp, name='send_whatsapp'),
 ]
