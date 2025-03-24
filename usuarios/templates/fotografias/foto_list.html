@@ -14,6 +14,8 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ foto.descripcion }}</h5>
                     <p class="card-text">Invitado: {{ foto.invitado.nombre }}</p>
+                    <p><strong>Evento:</strong> {{ foto.evento.nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ foto.evento.fecha_hora }}</p>
                     <a href="{% url 'publicar_foto' foto.id %}" class="btn btn-primary">Publicar en Facebook</a>
                 </div>
             </div>

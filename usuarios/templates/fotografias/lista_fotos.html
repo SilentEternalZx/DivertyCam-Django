@@ -1,0 +1,45 @@
+{% extends "layout/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Fotos del Evento: {{ evento.nombre }}</h2>
+    
+    <!-- 📌 Botón para enviar todas las fotos -->
+    <div class="mb-3">
+        <button class="btn btn-primary" onclick="publicarAlbum('{{ evento.id }}', '{{ id }}')">
+            📤 Enviar Todas a Facebook
+        </button>
+        <span id="mensaje-publicacion"></span>
+    </div>
+
+    <div class="row">
+        {% if fotos %}
+            {% for foto in fotos %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="{{ foto.img.url }}" class="card-img-top" alt="{{ foto.descripcion }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ foto.descripcion }}</h5>
+                        {% if foto.invitado %}
+                        <p class="card-text">Invitado: {{ foto.invitado.nombre }}</p>
+                        {% endif %}
+                        <p><strong>Evento:</strong> {{ evento.nombre }}</p>
+                        <p><strong>Fecha:</strong> {{ evento.fecha_hora }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-warning">⚠️ No hay fotos disponibles para este evento.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% csrf_token %}
+<script src="{% static 'js/publicar_album.js' %}"></script>
+
+{% endblock %}

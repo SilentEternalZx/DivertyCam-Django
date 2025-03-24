@@ -21,6 +21,10 @@ urlpatterns = [
     path('<int:pk>/eliminar/', views.ClienteDeleteView.as_view(), name='cliente_delete'),
     path("subir_foto/", views.subir_foto, name="subir_foto"),
     path("fotos/", views.lista_fotos, name="lista_fotos"),
+     path("categorias/", views.listar_categorias, name="listar_categorias"),
+    path("eventos/<int:categoria_id>/", views.listar_eventos, name="listar_eventos"),
+    path("fotos/<int:evento_id>/", views.listar_fotos_evento, name="listar_fotos_evento"),
+    path("publicar_album/<int:evento_id>/", views.publicar_album_facebook, name="publicar_album_facebook"),
     path("publicar_foto/<int:foto_id>/", views.publicar_foto_facebook, name="publicar_foto"),
     path('evento_list', views.EventoListView.as_view(), name='evento_list'),
     path('evento_list/nuevo/', views.EventoCreateView.as_view(), name='evento_create'),
@@ -31,4 +35,5 @@ urlpatterns = [
     path('mis_eventos', views.mis_eventos, name="mis_eventos"),
     path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
     path("verificar_email/", views.verificar_email, name="verificar_email")
+    
 ]

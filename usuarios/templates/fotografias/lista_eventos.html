@@ -1,0 +1,20 @@
+
+{% extends "layout/layout.html" %}
+<h2>Eventos en la Categoría: {{ categoria.nombre }}</h2>
+
+
+{% block content %}
+{% for evento in eventos %}
+    <div class="container mt-4">
+        <div class="card mb-4">
+            <div class="card-body"> 
+
+                <h5 class="card-title">{{ evento.nombre }}</h5>
+                <p class="card-text">📅 {{ evento.fecha_hora }} | 📍 {{ evento.direccion }}</p>
+                <a  href="{% url 'listar_fotos_evento' evento.id %}" class="btn btn-primary">🖼️ Ver Fotos</a>
+            </div>
+        </div>
+       
+    </div>
+{% endfor %}
+{% endblock %}

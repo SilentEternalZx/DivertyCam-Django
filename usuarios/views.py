@@ -13,6 +13,7 @@ from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,Añadir
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
+from django.views.decorators.csrf import csrf_exempt
 
 import requests
 
@@ -20,7 +21,7 @@ import requests
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
 
-
+@csrf_exempt
 def vista_login(request): #Función para iniciar sesión
     mensaje = ""  # Mensaje de error si las credenciales fallan
     if request.method == "POST":  #Si la petición es un POST, capturar los datos
@@ -46,6 +47,7 @@ def vista_logout(request): #Función para cerrar sesión
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
+@csrf_exempt
 def register_view(request):
     if request.method == "POST":
         form = RegistroForm(request.POST)
@@ -59,7 +61,7 @@ def register_view(request):
         form = RegistroForm()
 
     return render(request, "register/register.html", {"form": form})
-
+@csrf_exempt
 def verificar_usuario(request):
     username = request.GET.get("username", "").strip()
 
@@ -187,33 +189,94 @@ def subir_foto(request):
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
+def listar_categorias(request):
+    """Vista que muestra todas las categorías de eventos."""
+    categorias = CategoriaEvento.objects.all()
+    return render(request, "fotografias/lista_categorias.html", {"categorias": categorias})
+
+def listar_eventos(request, categoria_id):
+    """Vista que muestra los eventos de una categoría específica."""
+    categoria = get_object_or_404(CategoriaEvento, id=categoria_id)
+    eventos = Evento.objects.filter(categoria=categoria)
+    return render(request, "fotografias/lista_eventos.html", {"categoria": categoria, "eventos": eventos})
+
+def listar_fotos_evento(request, evento_id):
+    """Vista que muestra las fotos de un evento y permite enviarlas en bloque."""
+    evento = get_object_or_404(Evento, id=evento_id)
+    fotos = Fotografia.objects.filter(evento=evento)
+    return render(request, "fotografias/lista_fotos.html", {"evento": evento, "fotos": fotos})
+
+def publicar_album_facebook(request, evento_id):
+    """Envía todas las fotos de un evento en bloque a Facebook."""
+    evento = get_object_or_404(Evento, id=evento_id)
+    fotos = Fotografia.objects.filter(evento=evento)
+
+    if not evento.categoria or not evento.categoria.album_facebook_id:
+        return JsonResponse({"error": "Este evento no tiene un álbum de Facebook asignado."}, status=400)
+
+    album_id = evento.categoria.album_facebook_id
+    access_token = settings.FACEBOOK_ACCESS_TOKEN
+
+    errores = []
+    for foto in fotos:
+        imagen_url = request.build_absolute_uri(foto.img.url).replace(
+            "http://127.0.0.1:8000", "https://tu-ngrok-url.ngrok-free.app"
+        )
+
+        payload = {
+            "url": imagen_url,
+            "caption": f"📸 {foto.descripcion} | 📅 {evento.fecha_hora.strftime('%d/%m/%Y')} | 📍 {evento.direccion}",
+            "access_token": access_token
+        }
+
+        response = requests.post(f"https://graph.facebook.com/v22.0/{album_id}/photos", data=payload)
+        data = response.json()
+
+        if response.status_code != 200:
+            errores.append(data)
+
+    if errores:
+        return JsonResponse({"error": errores}, status=400)
+    return JsonResponse({"success": "Todas las fotos se publicaron correctamente en Facebook"})
+
 #Envío de las fotos a facebook
 def publicar_foto_facebook(request, foto_id):
+    """Sube manualmente una foto a Facebook cuando el usuario presiona un botón."""
     foto = get_object_or_404(Fotografia, id=foto_id)
-    page_id = settings.FACEBOOK_PAGE_ID  # 📌 Obtiene el Page ID desde settings.py
-    access_token = settings.FACEBOOK_ACCESS_TOKEN  # 📌 Obtiene el Token de Página
+    evento = foto.evento
 
-    # Reemplazar la URL local con la de ngrok
+    # 📌 Verificar que el evento tenga una categoría asignada
+    if not evento.categoria:
+        return JsonResponse({"error": "Este evento no tiene una categoría asignada."}, status=400)
+
+    # 📌 Verificar que la categoría tenga un `album_facebook_id`
+    album_id = evento.categoria.album_facebook_id
+    if not album_id:
+        return JsonResponse({"error": "Esta categoría no tiene un álbum en Facebook asignado."}, status=400)
+
+    # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "hhttps://22b3-179-15-25-167.ngrok-free.app "
+        "http://127.0.0.1:8000", "https://tu-ngrok-url.ngrok-free.app"
     )
 
-    url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
+    # 📌 Definir la descripción de la foto
+    caption = f"📸 {foto.descripcion} | 📅 {evento.fecha_hora.strftime('%d/%m/%Y %H:%M')} | 📍 {evento.direccion} | Categoría: {evento.categoria.nombre}"
+
+    # 📌 Hacer la solicitud a Facebook
+    url = f"https://graph.facebook.com/v18.0/{album_id}/photos"
     payload = {
-        "url": imagen_url,  # URL pública de la imagen
-        "caption": Fotografia.descripcion,
-        "access_token": access_token
+        "url": imagen_url,
+        "caption": caption,
+        "access_token": settings.FACEBOOK_ACCESS_TOKEN
     }
 
     response = requests.post(url, data=payload)
-    print(response.json())  # 📌 Ver la respuesta de Facebook en la terminal
+    data = response.json()
 
     if response.status_code == 200:
-        print("✅ Foto publicada en la página DivertyApp correctamente.")
-        return redirect("lista_fotos")
+        return JsonResponse({"success": "Foto publicada correctamente en Facebook"})
     else:
-        print("❌ Error al publicar en Facebook:", response.json())  
-        return render(request, "error.html", {"error": response.json()})
+        return JsonResponse({"error": data}, status=400)
 class EventoListView(ListView):
     model = Evento
     context_object_name = 'eventos'

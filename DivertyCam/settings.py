@@ -30,9 +30,9 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['22b3-179-15-25-167.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['b505-179-15-25-167.ngrok-free.app', '127.0.0.1']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOwOKJCoiKZAUZAsWvsMBX2o8ZBQmt0f3xg6FukACxrn4R9oLtDyhmTBIZB1SAOmnZCjwDzV7kNk5JRDqIYBsP7KVFh0rZBxC6XPzIMYhxn93VHbdqIQjW3xB31WC0WPLgZAAF88L9fHF43vBVsGY2EgxUA3PGzlz6VcfdGbyDwcznsjTXhI6QQaxNZAD9UOZBhK3jw1SyoALghpiz"
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOxngjus3Gbd34k7Ave4YoeXCDjDEjBjCNVdqH471osUyb4wAelNZC9tZB5wiIvsThNxiYCX2vCMLkjOcHFt73Aj14ZA0f74u65ZB9PHOFF8w6fJ9Rpc0BFtFLmXxBTo9ftpSoLQAjA8Wug11clpPOlnyhSd6ZAB4ZCgUWnAYR9ZCtZCbTOVeuznelqPIwweiGpHZCWXMxxs3VGt3O"
 FACEBOOK_PAGE_ID = "612248578630248"
 
 
@@ -72,7 +72,9 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://22b3-179-15-25-167.ngrok-free.app"
+    "https://b505-179-15-25-167.ngrok-free.app",
+    "http://127.0.0.1:8000",  # Para pruebas locales
+    "http://localhost:8000",
 ]
 
 ROOT_URLCONF = 'DivertyCam.urls'

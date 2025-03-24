@@ -119,6 +119,13 @@ def update_search_vector(sender, instance, **kwargs):
     )
 
 
+class CategoriaEvento(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    album_facebook_id = models.CharField(max_length=50, null=True, blank=True)  # ID del álbum en Facebook
+
+    def __str__(self):
+        return self.nombre
+
 #Modelo de eventos
 class Evento(models.Model):
     SERVICIOS_CHOICES = [
@@ -131,65 +138,41 @@ class Evento(models.Model):
         ('clip_inicio', _('Clip de inicio')),
     ]
     
-    nombre = models.CharField(
-        max_length=100,
-        verbose_name=_("Nombre del evento"),
-        help_text=_("Nombre o título del evento")
-    )
-    
-    fecha_hora = models.DateTimeField(
-        verbose_name=_("Fecha y hora del evento"),
-        help_text=_("Fecha y hora programada para el evento")
-    )
-    
-    servicios = MultiSelectField(
-        choices=SERVICIOS_CHOICES,
-        max_choices=7,
-        max_length=100,
-        verbose_name=_("Servicios"),
-        help_text=_("Servicios contratados para el evento")
-    )
-    
-    direccion = models.CharField(
-        max_length=255,
-        verbose_name=_("Dirección del evento"),
-        help_text=_("Dirección completa donde se realizará el evento")
-    )
-    
-    # Usamos el string completo para el modelo Cliente en lugar de solo 'Cliente'
+    nombre = models.CharField(max_length=100, verbose_name=_("Nombre del evento"))
+    fecha_hora = models.DateTimeField(verbose_name=_("Fecha y hora del evento"))
+    servicios = MultiSelectField(choices=SERVICIOS_CHOICES, max_length=100, verbose_name=_("Servicios"))
+    direccion = models.CharField(max_length=255, verbose_name=_("Dirección del evento"))
     cliente = models.ForeignKey(
-        Cliente,
+        "Cliente",
         on_delete=models.CASCADE,
-        related_name='eventos',
-        verbose_name=_("Cliente"),
-        help_text=_("Cliente asociado al evento")
+        related_name="eventos",
+        verbose_name=_("Cliente")
     )
-    
-    fecha_creacion = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name=_("Fecha de Creación")
+    categoria = models.ForeignKey(
+        CategoriaEvento,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("Categoría"),
+        help_text=_("Selecciona la categoría del evento")
     )
-    
-    fecha_actualizacion = models.DateTimeField(
-        auto_now=True,
-        verbose_name=_("Fecha de Actualización")
-    )
-    
-    # Campo para búsquedas full-text en PostgreSQL
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
     search_vector = SearchVectorField(null=True, blank=True)
-    
+
     class Meta:
         verbose_name = _("Evento")
         verbose_name_plural = _("Eventos")
         ordering = ["-fecha_hora"]
         indexes = [
-            models.Index(fields=['fecha_hora']),
-            models.Index(fields=['cliente']),
-            GinIndex(fields=['search_vector']),
+            models.Index(fields=["fecha_hora"]),
+            models.Index(fields=["cliente"]),
+            GinIndex(fields=["search_vector"]),
         ]
-    
+
     def __str__(self):
         return f"{self.nombre} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')} - {self.cliente}"
+
 
 @receiver(post_save, sender=Evento)
 def update_search_vector(sender, instance, **kwargs):
