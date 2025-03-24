@@ -1,17 +1,18 @@
 
 import json
 from django import forms
-from django.utils.translation import gettext_lazy as _
+import json
+from .models import *
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Div
-from .models import CollageTemplate, Evento, Cliente, Configurar_Photobooth, PhotoboothConfig
-
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.forms import UserCreationForm
 
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento', 
-                  'direccion', 'correo', 'telefono']
+                  'direccion', 'correo', 'telefono', 'usuario']
         widgets = {
             'fechaNacimiento': forms.DateInput(attrs={'type': 'date'}),
             'direccion': forms.Textarea(attrs={'rows': 3}),
@@ -33,6 +34,8 @@ class ClienteForm(forms.ModelForm):
         
         return fechaNacimiento
         
+        
+        
     def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
         # Aquí puedes agregar validaciones específicas para la cédula
@@ -43,10 +46,32 @@ class ClienteForm(forms.ModelForm):
         # Validaciones adicionales de correo si es necesario
         return correo
 
+
+class FotografiaForm(forms.ModelForm):
+    class Meta:
+        model = Fotografia
+        fields = ['img', 'descripcion', 'invitado', 'evento']
+        
+class RegistroForm(UserCreationForm):
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(),
+        max_length=20,  # 📌 Máximo 20 caracteres
+        help_text="La contraseña debe tener entre 8 y 20 caracteres.",
+    )
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(),
+        max_length=20,
+        help_text="Ingresa la misma contraseña para confirmar.",
+    )
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "password1", "password2"]
+        
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
-        fields = ['nombre', 'fecha_hora', 'servicios', 'direccion', 'cliente']
+        fields = ['nombre', 'fecha_hora', 'servicios', 'direccion', 'cliente', 'categoria']
         widgets = {
             'fecha_hora': forms.DateTimeInput(
                 attrs={
@@ -192,3 +217,10 @@ class CollageTemplateForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+        
+  
+  #Formulario Django para añadir fotografía      
+class AñadirFotoForm(forms.Form):
+    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
+    descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
+    

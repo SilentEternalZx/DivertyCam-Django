@@ -8,11 +8,14 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
-                {% if request.user.is_authenticated %}
-
+                {% if request.user.is_authenticated  and  request.user.is_superuser%}
+                    
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a></li>
                 <li class="nav-item"><a class="nav-link" href="/admin">Panel de administración</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Inicio</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'evento_list' %}">Eventos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'cliente_list' %}">Clientes</a></li>
+               
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Configuración de artefactos
@@ -32,9 +35,14 @@
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="../Lista eventos/listaEvento.html">Lista de eventos</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'descargar_foto' %}">Mis fotografías</a></li>
+                       
                     </ul>
                 </li>
+                {% elif request.user.is_authenticated and not request.user.is_superuser %}
+             
+                <li class="nav-item"><a class="nav-link" href="{%  url 'mis_eventos'  %}">Mis eventos</a></li>
+              
+                <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a></li>
                 {% else %}
                 
                 <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Registrarse</a></li>

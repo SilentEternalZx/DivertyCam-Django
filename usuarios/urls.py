@@ -1,13 +1,15 @@
 from django.urls import path
-from . import views
 from django.contrib.auth import views as auth_views
-from . import admin
+from . import admin,views
+
+
+#Urls
 urlpatterns = [
     path("", views.index, name="index"),
-    path("login/", views.login_view, name="login"),
+    path("login/", views.vista_login, name="login"),
     path("register", views.register_view, name="register"),
-    path("logout", views.logout_view, name="logout"),
-    path("descargar_foto", views.descargar_foto, name="descargar_foto"),
+    path("logout", views.vista_logout, name="logout"),
+    path("descargar_foto/<int:evento_id>", views.descargar_foto, name="descargar_foto"),
     path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
     path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
@@ -19,6 +21,13 @@ urlpatterns = [
     path('<int:pk>/eliminar/', views.ClienteDeleteView.as_view(), name='cliente_delete'),
     path('<int:pk>/activar/', views.ClienteActivarView.as_view(), name='cliente_activar'),
     path('<int:pk>/inactivar/', views.ClienteInactivarView.as_view(), name='cliente_inactivar'),
+    path("subir_foto/", views.subir_foto, name="subir_foto"),
+    path("fotos/", views.lista_fotos, name="lista_fotos"),
+    path("categorias/", views.listar_categorias, name="listar_categorias"),
+    path("eventos/<int:categoria_id>/", views.listar_eventos, name="listar_eventos"),
+    path("fotos/<int:evento_id>/", views.listar_fotos_evento, name="listar_fotos_evento"),
+    path("publicar_album/<int:evento_id>/", views.publicar_album_facebook, name="publicar_album_facebook"),
+    path("publicar_foto/<int:foto_id>/", views.publicar_foto_facebook, name="publicar_foto"),
     path('evento_list', views.EventoListView.as_view(), name='evento_list'),
     path('evento_list/nuevo/', views.EventoCreateView.as_view(), name='evento_create'),
     path('evento_list/<int:pk>/', views.EventoDetailView.as_view(), name='evento_detail'),
@@ -45,4 +54,9 @@ urlpatterns = [
     # APIs para collage final
     path('api/collage/update-print-count/', views.update_print_count, name='update_print_count'),
     path('api/collage/send-whatsapp/', views.send_whatsapp, name='send_whatsapp'),
+    path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
+    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+    path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
+    path("verificar_email/", views.verificar_email, name="verificar_email"),
+   
 ]

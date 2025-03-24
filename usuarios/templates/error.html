@@ -1,0 +1,12 @@
+{% extends "layout/layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Error</h2>
+    <p>Ocurrió un problema al procesar tu solicitud.</p>
+    {% if error %}
+        <p><strong>Detalles:</strong> {{ error }}</p>
+    {% endif %}
+    <a href="{% url 'lista_fotos' %}" class="btn btn-primary">Volver</a>
+</div>
+{% endblock %}

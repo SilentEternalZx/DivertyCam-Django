@@ -1,0 +1,34 @@
+{% extends "layout/layout.html" %}
+
+{% block content %}
+
+{% if request.user.is_authenticated  and  request.user.is_superuser%}
+<div class="container mt-4">
+    <h2 class="mb-4">Lista de Fotografías</h2>
+    
+    <div class="row">
+        {% for foto in fotografias %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="{{ foto.img.url }}" class="card-img-top" alt="Foto de {{ foto.invitado.nombre }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ foto.descripcion }}</h5>
+                    <p class="card-text">Invitado: {{ foto.invitado.nombre }}</p>
+                    <p><strong>Evento:</strong> {{ foto.evento.nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ foto.evento.fecha_hora }}</p>
+                    <a href="{% url 'publicar_foto' foto.id %}" class="btn btn-primary">Publicar en Facebook</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No hay fotos disponibles.</p>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+    <div class="container mt-5">
+        <h2>Acceso denegado</h2>
+        <p>No tienes permisos para acceder a esta página.</p>
+    </div>
+{% endif %}
+{% endblock %}

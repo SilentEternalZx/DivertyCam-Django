@@ -2,79 +2,129 @@
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registro</title>
-    <link rel="stylesheet" href="{% static 'login/css/login.css' %}"> <!-- Reutiliza estilos del login -->
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'login/css/login.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="container-form">
+        <div class="comeback-button">
+          <a href="{% url 'index' %}">Volver atrás</a>
+        </div>
 
-<div class="container"> <!-- Estructura igual que login -->
- <div class="container-form">
-    <div class="comeback-button">
-        <a href="index.html">Volver atrás</a>
-    </div>
+        <!-- 📌 Contenedor de errores en la parte superior -->
+        <div
+          id="error-container"
+          style="
+            display: none;
+            background-color: #ffdddd;
+            color: red;
+            padding: 10px;
+            border: 1px solid red;
+            border-radius: 5px;
+            margin-bottom: 15px;
+          "></div>
 
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    <!-- Formulario -->
-    <form class="sign-up" action="{% url 'register' %}" method="post">
-        {% csrf_token %}
-
-        {% if mensaje %}
-        <p style="color: red;">{{ mensaje }}</p>
+        {% if errores %}
+        <div
+          style="
+            background-color: #ffdddd;
+            color: red;
+            padding: 10px;
+            border: 1px solid red;
+            border-radius: 5px;
+            margin-bottom: 15px;
+          ">
+          <ul>
+            {% for campo, mensaje in errores.items %}
+            <li><strong>{{ campo }}:</strong> {{ mensaje }}</li>
+            {% endfor %}
+          </ul>
+        </div>
         {% endif %}
-        
-        <h2>Registrarse</h2>
-        <span>Complete los campos para crear su cuenta</span>
-        
-        <div class="container-input">
+
+        <!-- 📌 Formulario -->
+        <form
+          class="sign-up"
+          action="{% url 'register' %}"
+          method="post"
+          onsubmit="return validar_formulario()">
+          {% csrf_token %}
+
+          <h2>Registrarse</h2>
+          <span>Complete los campos para crear su cuenta</span>
+
+          <!-- Usuario -->
+          <div class="container-input">
             <ion-icon name="person-outline"></ion-icon>
-            <input type="text" id="nombre_usuario" placeholder="Nombre de usuario" name="nombre_usuario" required>
-        </div>
-        
-        <div class="container-input">
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Nombre de usuario"
+              onkeyup="verificar_usuario()" />
+          </div>
+
+          <!-- Correo -->
+          <div class="container-input">
             <ion-icon name="mail-outline"></ion-icon>
-            <input type="email" id="email" placeholder="Correo electrónico" name="email" required>
-        </div>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Correo electrónico"
+              onkeyup="verificar_email()" />
+          </div>
 
-        <div class="container-input">
+          <!-- Contraseña -->
+          <div class="container-input">
             <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña" required>
-        </div>
-        
-        <div class="container-input">
+            <input
+              type="password"
+              id="password1"
+              name="password1"
+              placeholder="Contraseña"
+              onkeyup="verificarPassword()" />
+          </div>
+
+          <!-- Confirmar Contraseña -->
+          <div class="container-input">
             <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" id="confirmacion" placeholder="Confirmar contraseña" name="confirmacion" required>
-        </div>
-        
-        <div class="button-input"> 
+            <input
+              type="password"
+              id="password2"
+              name="password2"
+              placeholder="Confirmar contraseña"
+              onkeyup="verificarPassword()" />
+          </div>
+
+          <div class="button-input">
             <button type="submit">Registrarse</button>
-        </div>
-    </form>
-</div>
+          </div>
+        </form>
+      </div>
 
-<!-- Forma similar a login -->
-<div class="container">
-    <div class="container-shape">
-        <div class="shape-content">
+      <!-- 📌 Mensaje de bienvenida -->
+      <div class="container">
+        <div class="container-shape">
+          <div class="shape-content">
             <h3>¡Bienvenido!</h3>
             <p>Regístrate para acceder al sitio</p>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-</div>
-
-<!-- Scripts -->
-<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-</body>
+    <!-- 📌 Scripts -->
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="{% static 'js/validaciones_register.js' %}"></script>
+  </body>
 </html>

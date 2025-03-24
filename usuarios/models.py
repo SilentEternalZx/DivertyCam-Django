@@ -16,38 +16,24 @@ class User(AbstractUser):
    pass
 
 
-class Permiso(Permission):
-    pass
 
-class Rol(Group):
-    pass
-
-
+#Modelo de invitado
 class Invitado(models.Model):
     nombre=models.CharField(max_length=20)
-    telefono=models.CharField(max_length=20)
+    telefono=models.CharField(max_length=30, unique=True)
     
     def __str__(self):
         return f'{self.nombre} {self.telefono}'
     
-
-
-class Fotografia(models.Model):
-    
-    img=models.ImageField(null=True,blank=True, upload_to="list_image/")
-    descripcion=models.TextField(max_length=100)
-    invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE)
-    
-    def __str__(self):
-        return f'{self.descripcion} {self.invitado}'
-    
-
+#Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
         max_length=100,
         verbose_name=_("Nombre"),
         help_text=_("Nombre del cliente")
     )
+    
+    usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)
     
     apellido = models.CharField(
         max_length=100,
@@ -134,6 +120,15 @@ def update_search_vector(sender, instance, **kwargs):
         SearchVector('direccion', weight='C')
     )
 
+
+class CategoriaEvento(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    album_facebook_id = models.CharField(max_length=50, null=True, blank=True)  # ID del álbum en Facebook
+
+    def __str__(self):
+        return self.nombre
+
+#Modelo de eventos
 class Evento(models.Model):
     SERVICIOS_CHOICES = [
         ('photobook', _('Photobook')),
@@ -145,6 +140,28 @@ class Evento(models.Model):
         ('clip_inicio', _('Clip de inicio')),
     ]
     
+    nombre = models.CharField(max_length=100, verbose_name=_("Nombre del evento"))
+    fecha_hora = models.DateTimeField(verbose_name=_("Fecha y hora del evento"))
+    servicios = MultiSelectField(choices=SERVICIOS_CHOICES, max_length=100, verbose_name=_("Servicios"))
+    direccion = models.CharField(max_length=255, verbose_name=_("Dirección del evento"))
+    cliente = models.ForeignKey(
+        "Cliente",
+        on_delete=models.CASCADE,
+        related_name="eventos",
+        verbose_name=_("Cliente")
+    )
+    categoria = models.ForeignKey(
+        CategoriaEvento,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("Categoría"),
+        help_text=_("Selecciona la categoría del evento")
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    search_vector = SearchVectorField(null=True, blank=True)
+
     nombre = models.CharField(
         max_length=100,
         verbose_name=_("Nombre del evento"),
@@ -197,11 +214,11 @@ class Evento(models.Model):
         verbose_name_plural = _("Eventos")
         ordering = ["-fecha_hora"]
         indexes = [
-            models.Index(fields=['fecha_hora']),
-            models.Index(fields=['cliente']),
-            GinIndex(fields=['search_vector']),
+            models.Index(fields=["fecha_hora"]),
+            models.Index(fields=["cliente"]),
+            GinIndex(fields=["search_vector"]),
         ]
-    
+
     def __str__(self):
         return f"{self.nombre} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')} - {self.cliente}"
     
@@ -223,6 +240,7 @@ class Configurar_Photobooth(models.Model):
     
     def __str__(self):
         return f"Photobooth para {self.evento.nombre}"
+
 
 @receiver(post_save, sender=Evento)
 def update_search_vector(sender, instance, **kwargs):
@@ -356,4 +374,13 @@ class CollageResult(models.Model):
         ordering = ['-created_at']
         verbose_name = "Resultado de Collage"
         verbose_name_plural = "Resultados de Collage"
+#Modelo de fotografia
+class Fotografia(models.Model):
     
+    img=models.ImageField(null=True,blank=True, upload_to="imagenes/")
+    descripcion=models.TextField()
+    invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE, null=True)
+    evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f'{self.descripcion} {self.invitado}'
