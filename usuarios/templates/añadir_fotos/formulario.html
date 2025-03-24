@@ -1,23 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+{% extends "layout/layout.html" %}
+
+{% load static %}
+{% block title %}
+Añadir foto
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'formulario/formulario.css' %}">
+
 <body>
-    
+    <div class="container">
+        <div class="form-control">
 
-<form action="{% url 'añadir_foto' evento.id %}" method="POST" enctype="multipart/form-data">
+            <form class="form" action="{% url 'añadir_foto' evento.id %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-    {% csrf_token %}
-    
-   
+                <!-- Tarjeta con el nombre del evento -->
+                <div class="card">
+                    <input type="text" readonly="true" value="{{evento.nombre}}" class="nombre-evento">
+                </div>
 
-   <input type="text" readonly="true" value="{{evento.nombre}}">
-   {{form}}
+                {{ form }}
 
-   <button type="submit">Guardar</button>
-</form>
+                <button type="submit" class="boton">Guardar</button>
+            </form>
+            
+        </div>
+    </div>
 </body>
-</html>
+
+{% endblock %}

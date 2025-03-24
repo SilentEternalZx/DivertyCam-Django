@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from .models import*
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Cliente
 from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm
@@ -18,12 +18,14 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 
 
+
+
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
 
 @csrf_exempt
 def vista_login(request): #Función para iniciar sesión
-    mensaje = ""  # Mensaje de error si las credenciales fallan
+   
     if request.method == "POST":  #Si la petición es un POST, capturar los datos
         nombre_usuario = request.POST.get("nombre_usuario")
         contraseña = request.POST.get("contraseña")
@@ -34,11 +36,9 @@ def vista_login(request): #Función para iniciar sesión
             login(request, usuario) #Logearse
             return redirect("index")  # Redirige a la página principal tras iniciar sesión
         else:  #De lo contrario mostrar mensaje de error
-            mensaje = "Usuario o contraseña inválidos"
+            messages.error(request,"El usuario o la contraseña son incorrectos")
 
-    return render(request, "login/login.html", {
-        "mensaje": mensaje
-        })
+    return render(request, "login/login.html")
 
 # Cerrar sesión
 @login_required
@@ -89,7 +89,7 @@ def descargar_foto(request, evento_id): #Función para retornar vista de fotogra
     evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
  
     imagenes=evento.fotografias.all()  #Obtener todas las fotografías de un evento
-    return render(request,"fotografias/descargarFoto.html",{
+    return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
         "imagenes":imagenes,
         
@@ -103,7 +103,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
     evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
     imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
-    return render(request,"fotografias/descargarFoto.html",{
+    return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
         "imagenes":imagenes
        
@@ -354,7 +354,7 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
             img=form.cleaned_data["img"]
             fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
             fotografia.save() #Guardar objeto
-            return redirect("descargar_foto") #Redirigir al la vista "descargar_foto"
+            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error
             return render(request,"añadir_fotos/formulario.html",{

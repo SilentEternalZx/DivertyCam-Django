@@ -34,6 +34,6 @@ urlpatterns = [
     path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
     path('mis_eventos', views.mis_eventos, name="mis_eventos"),
     path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
-    path("verificar_email/", views.verificar_email, name="verificar_email")
-    
+    path("verificar_email/", views.verificar_email, name="verificar_email"),
+   
 ]

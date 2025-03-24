@@ -1,110 +1,90 @@
 {% extends "layout/layout.html" %}
 
-{% load static  %}
 
 
-
-{%block content%}
+{% block content %}
 
 <body id="page-top">
-   
-    
-    <!-- Masthead-->
+    <!-- Encabezado -->
     <header class="masthead">
         <div class="container">
-            <div class="masthead-heading text-uppercase">Guardamos tus fotografías para ti, {{user.username}} de {{evento.nombre}}</div>
+            <div class="masthead-heading text-uppercase">Guardamos tus fotografías para ti, {{ user.username }} de {{ evento.nombre }}</div>
         </div>
     </header>
 
-
-  
-    
- <!-- Portfolio Grid-->
- <section class="page-section bg-light" id="portfolio">
-    <div class="container">
-        <div class="text-center">
-            <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
-            <h3 class="section-subheading text-muted">Puedes descargarlas y visualizarlas en vista previa.</h3>
-        </div>
-        {% if imagenes %}
-        {% for imagen in imagenes %}
-        <div class="row">
-            <div class="col-lg-4 col-sm-6 mb-4">
-                <!-- Portfolio item 1-->
-                
-                <div class="portfolio-item">
-                    <div class="portfolio-image-container">
-                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal1">
-                            <div class="portfolio-hover">
-                                <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="{{imagen.img.url}}" alt="Imagen" />
-                        </a>
-                      
-                    </div>
-                    <div class="portfolio-caption">
-                        <div class="portfolio-caption-heading">{{evento.nombre}}</div>
-                        <div class="portfolio-caption-subheading text-muted">{{evento.fecha_hora}}</div>
-                    </div>
-                </div>
+    <!-- Sección de fotos -->
+    <section class="page-section bg-light" id="portfolio">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
+                <h3 class="section-subheading text-muted">Puedes descargarlas y visualizarlas en vista previa.</h3>
             </div>
-            
-           
-                     
-        </div>
-        {%endfor%}
-        {%endif%}
-        
-        </div>
-    </div>
-</section>
 
-
- <!-- Portfolio Modals-->
-        <!-- Portfolio item 1 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                {% if imagenes %}
-                                  {% for imagen in imagenes %}
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                  
-                                    <img class="img-fluid d-block mx-auto" src="{{imagen.img.url}}" alt="..." />
-                                    <p>{{imagen.descripcion}}</p>
-                                    <ul class="list-inline">
-                                        <li>
-                                            <strong>Evento:</strong>
-                                            {{evento.nombre}}
-                                        </li>
-                                        <li>
-                                            <strong>Fecha:</strong>
-                                            {{evento.fecha_creacion}}
-                                        </li>
-                                    </ul>
-                                    <a href="{{imagen.img.url}}" download="file" class="download-button">
-                                        DESCARGAR FOTO
-                                      </a>
+            <div class="row">
+                {% if imagenes %}
+                    {% for imagen in imagenes %}
+                        <div class="col-lg-4 col-sm-6 mb-4">
+                            <div class="portfolio-item">
+                                <div class="portfolio-image-container">
+                                    <!-- Enlace para abrir el modal con la imagen seleccionada -->
+                                    <a class="portfolio-link" data-bs-toggle="modal" data-bs-target="#modal-{{ imagen.id }}">
+                                        <div class="portfolio-hover">
+                                            <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                        </div>
+                                        <img class="img-fluid" src="{{ imagen.img.url }}" alt="Imagen">
+                                    </a>
                                 </div>
-                                {%endfor%}
-                   
-                                {%endif%}
+                                <button onclick="imprimirImagen('{{ imagen.img.url }}')">Imprimir Imagen</button>
+
+                                <div class="portfolio-caption">
+                                    <div class="portfolio-caption-heading">{{ evento.nombre }}</div>
+                                    <div class="portfolio-caption-subheading text-muted">{{ evento.fecha_hora }}</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                  
-                  
-                </div>
+
+                        <!-- Modal único para cada imagen -->
+                        <div class="portfolio-modal modal fade" id="modal-{{ imagen.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    
+                                    <div class="container">
+                                        <div class="row justify-content-center">
+                                            <div class="col-lg-8">
+                                                <div class="modal-body">
+                                                    <img class="img-fluid d-block mx-auto" src="{{ imagen.img.url }}" alt="Imagen">
+                                                    <p>{{ imagen.descripcion }}</p>
+                                                    <ul class="list-inline">
+                                                        <li><strong>Evento:</strong> {{ evento.nombre }}</li>
+                                                        <li><strong>Fecha:</strong> {{ evento.fecha_creacion }}</li>
+                                                    </ul>
+                                                    <a href="{{ imagen.img.url }}" download="file" class="download-button">DESCARGAR FOTO</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
-      
+    </section>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function imprimirImagen(url) {
+            var ventana = window.open("", "_blank");
+            ventana.document.write("<html><head><title>Impresión</title></head><body>");
+            ventana.document.write("<img src='" + url + "' style='width:100%; max-width:600px;'>");
+            ventana.document.write("</body></html>");
+            ventana.document.close();
+            ventana.print();
+        }
+    </script>
 </body>
 
- {%endblock%}
+{% endblock %}

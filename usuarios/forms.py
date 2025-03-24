@@ -1,5 +1,6 @@
 
 from django import forms
+
 from .models import *
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Div
@@ -100,7 +101,6 @@ class EventoForm(forms.ModelForm):
   
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
-    img=forms.ImageField(widget=forms.ClearableFileInput)
-    descripcion = forms.CharField(widget=forms.Textarea(attrs={'name':'descripcion', 'rows':3, 'cols':5}))
-    
+    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}))
+    descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}))
     
