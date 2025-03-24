@@ -14,9 +14,8 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.exceptions import ObjectDoesNotExist
 import requests
-
 
 
 
@@ -61,6 +60,7 @@ def register_view(request):
         form = RegistroForm()
 
     return render(request, "register/register.html", {"form": form})
+
 @csrf_exempt
 def verificar_usuario(request):
     username = request.GET.get("username", "").strip()
@@ -100,8 +100,18 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
     if not request.user.is_authenticated:  #Si el usuario no está autenticado...
         return redirect("login") #Redirigir al login
     
-    cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
+    try:
+     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
+    except ObjectDoesNotExist:  #Si el usuario no tiene un cliente asignado
+        mensaje="El usuario no tiene un cliente asignado"
+        return render(request,"fotografias/descargar_foto.html",{
+            "mensaje":mensaje
+        })
     evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
+    if evento==None: #Si el cliente no tiene eventos se retorna un mensaje
+        return render(request,"fotografias/descargar_foto.html",{
+            "mensaje":"No tiene eventos actualmente"
+        })
     imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
     return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
@@ -148,7 +158,8 @@ class ClienteCreateView( CreateView):  #LoginRequiredMixin,
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
     success_url = reverse_lazy('cliente_list')
-
+    
+    
 class ClienteUpdateView( UpdateView):
     model = Cliente
     form_class = ClienteForm
@@ -338,6 +349,7 @@ class EventoDeleteView(SuccessMessageMixin, DeleteView):
     template_name = 'eventos/evento_confirm_delete.html'
     success_url = reverse_lazy('evento_list')
     success_message = ("Evento eliminado exitosamente")
+    
 
 def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
     if not request.user.is_authenticated: #Si el usuario no está autenticado...

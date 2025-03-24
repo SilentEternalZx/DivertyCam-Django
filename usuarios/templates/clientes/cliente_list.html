@@ -39,7 +39,7 @@
                         <th>Cédula</th>
                         <th>Correo</th>
                         <th>Teléfono</th>
-                        <th>Acciones</th>
+                        <th>Usuario</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,6 +50,7 @@
                         <td>{{ cliente.cedula }}</td>
                         <td>{{ cliente.correo }}</td>
                         <td>{{ cliente.telefono }}</td>
+                        <td>{{ cliente.usuario }}</td>
                         <td>
                             <a href="{% url 'cliente_detail' cliente.pk %}" class="btn btn-sm btn-info">
                                 Ver

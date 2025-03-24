@@ -17,6 +17,8 @@ class ClienteForm(forms.ModelForm):
             'direccion': forms.Textarea(attrs={'rows': 3}),
         }
         
+        
+        
     def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
         # Aquí puedes agregar validaciones específicas para la cédula
@@ -101,6 +103,6 @@ class EventoForm(forms.ModelForm):
   
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
-    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}))
-    descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}))
+    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
+    descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
     
