@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import admin,views
-
+from .views import CustomPasswordResetView
 
 #Urls
 urlpatterns = [
@@ -10,7 +10,7 @@ urlpatterns = [
     path("register", views.register_view, name="register"),
     path("logout", views.vista_logout, name="logout"),
     path("descargar_foto/<int:evento_id>", views.descargar_foto, name="descargar_foto"),
-    path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
+    path("password_reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"), 
@@ -55,8 +55,9 @@ urlpatterns = [
     path('api/collage/update-print-count/', views.update_print_count, name='update_print_count'),
     path('api/collage/send-whatsapp/', views.send_whatsapp, name='send_whatsapp'),
     path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
-    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+  
     path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
     path("verificar_email/", views.verificar_email, name="verificar_email"),
+    path("eventos_cliente/", views.eventos_cliente, name="eventos_cliente"),
    
 ]

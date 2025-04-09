@@ -29,16 +29,18 @@ from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 import io
 import logging
-
+from django.contrib.auth.views import PasswordResetView
 logger = logging.getLogger(__name__)
-
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 
 
+class CustomPasswordResetView(PasswordResetView):
+    form_class = CustomPasswordResetForm
 
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
+
 
 @csrf_exempt
 def vista_login(request): #Función para iniciar sesión
@@ -70,6 +72,7 @@ def register_view(request):
         form = RegistroForm(request.POST)
         if form.is_valid():
             usuario = form.save()
+            
             login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
             return redirect("index")
         else:
@@ -114,29 +117,63 @@ def descargar_foto(request, evento_id): #Función para retornar vista de fotogra
          
     })
 
-def mis_eventos(request):  #Función para retornar vista de los eventos de un cliente
-    if not request.user.is_authenticated:  #Si el usuario no está autenticado...
-        return redirect("login") #Redirigir al login
+
+
+def eventos_cliente(request): 
+    if not request.user.is_authenticated: #Verificar si el usuario está logeado, de lo contrario retornar al login
+        return redirect("login")
     
     try:
-     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
-    except ObjectDoesNotExist:  #Si el usuario no tiene un cliente asignado
-        mensaje="El usuario no tiene un cliente asignado"
-        return render(request,"fotografias/descargar_foto.html",{
-            "mensaje":mensaje
+        cliente = Cliente.objects.get(usuario=request.user)  #Intentar obtener un cliente relacionado al usuario
+    except ObjectDoesNotExist:  #De lo contrario 
+        mensaje = "El usuario no tiene un cliente asignado"  #Retornar mensaje
+        return render(request, "fotografias/eventos_cliente.html", {
+            "mensaje": mensaje
         })
-    evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
-    if evento==None: #Si el cliente no tiene eventos se retorna un mensaje
-        return render(request,"fotografias/descargar_foto.html",{
-            "mensaje":"No tiene eventos actualmente"
+    
+    lista_eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
+
+    if not lista_eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
+        return render(request, "fotografias/eventos_cliente.html", {
+            "mensaje": "No tiene eventos actualmente"
         })
-    imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
-    return render(request,"fotografias/descargar_foto.html",{
-        "evento":evento,
-        "imagenes":imagenes
-       
+    
+    # --- FILTRO POR BÚSQUEDA ---
+    query = request.GET.get('q')
+    if query:
+        lista_eventos = lista_eventos.filter(
+            Q(nombre__icontains=query)
+        )
+
+    # --- ORDENAMIENTO ---
+    orden = request.GET.get('orden')
+    if orden == 'nombre':
+        lista_eventos = lista_eventos.order_by('nombre')
+    elif orden == 'nombre_desc':
+        lista_eventos = lista_eventos.order_by('-nombre')
+    elif orden == 'cliente':
+        lista_eventos = lista_eventos.order_by('cliente__nombre')
+    elif orden == 'cliente_desc':
+        lista_eventos = lista_eventos.order_by('-cliente__nombre')
+    elif orden == 'fecha_hora':
+        lista_eventos = lista_eventos.order_by('fecha_hora')
+    elif orden == 'fecha_hora_desc':
+        lista_eventos = lista_eventos.order_by('-fecha_hora')
+
+    # Evento e imágenes para vista previa (por ejemplo, el primero)
+    evento = lista_eventos.first()
+    imagenes = evento.fotografias.all() if evento else []
+    
+    #Retornar vista con respectivos contextos
+
+    return render(request, "fotografias/eventos_cliente.html", {
+        "evento": evento,
+        "imagenes": imagenes,
+        "lista_eventos": lista_eventos
     })
+
 class ClienteListView( ListView):  #LoginRequiredMixin
+    
     
     model = Cliente
     context_object_name = 'clientes'
@@ -236,11 +273,15 @@ class ClienteInactivarView(ListView):
 
 #Mostrar las fotos guardadas
 def lista_fotos(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     fotos = Fotografia.objects.all()
     return render(request, "fotografias/foto_list.html", {"fotografias": fotos})
 
 # Subir fotos de los eventos
 def subir_foto(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     if request.method == "POST":
         form = FotografiaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -262,23 +303,31 @@ def subir_foto(request):
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
 def listar_categorias(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista que muestra todas las categorías de eventos."""
     categorias = CategoriaEvento.objects.all()
     return render(request, "fotografias/lista_categorias.html", {"categorias": categorias})
 
 def listar_eventos(request, categoria_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista que muestra los eventos de una categoría específica."""
     categoria = get_object_or_404(CategoriaEvento, id=categoria_id)
     eventos = Evento.objects.filter(categoria=categoria)
     return render(request, "fotografias/lista_eventos.html", {"categoria": categoria, "eventos": eventos})
 
 def listar_fotos_evento(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista que muestra las fotos de un evento y permite enviarlas en bloque."""
     evento = get_object_or_404(Evento, id=evento_id)
     fotos = Fotografia.objects.filter(evento=evento)
     return render(request, "fotografias/lista_fotos.html", {"evento": evento, "fotos": fotos})
 
 def publicar_album_facebook(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Envía todas las fotos de un evento en bloque a Facebook."""
     evento = get_object_or_404(Evento, id=evento_id)
     fotos = Fotografia.objects.filter(evento=evento)
@@ -313,6 +362,8 @@ def publicar_album_facebook(request, evento_id):
 
 #Envío de las fotos a facebook
 def publicar_foto_facebook(request, foto_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Sube manualmente una foto a Facebook cuando el usuario presiona un botón."""
     foto = get_object_or_404(Fotografia, id=foto_id)
     evento = foto.evento
@@ -349,6 +400,8 @@ def publicar_foto_facebook(request, foto_id):
         return JsonResponse({"success": "Foto publicada correctamente en Facebook"})
     else:
         return JsonResponse({"error": data}, status=400)
+    
+    
 class EventoListView(ListView):
     model = Evento
     context_object_name = 'eventos'
@@ -370,6 +423,7 @@ class EventoListView(ListView):
             # Si no hay resultados con la búsqueda de texto completo, intentamos con LIKE
             if not queryset.exists():
                 queryset = Evento.objects.filter(
+        
                     Q(nombre__icontains=q) |
                     Q(cliente__nombre__icontains=q) |
                     Q(cliente__apellido__icontains=q) |
@@ -392,7 +446,7 @@ class EventoDetailView(DetailView):
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
-        fields = ['nombre', 'fecha_hora', 'direccion', 'cliente', 'servicios']
+        fields = ['categoria','nombre', 'fecha_hora', 'direccion', 'cliente', 'servicios']
         widgets = {
             'fecha_hora': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'servicios': forms.CheckboxSelectMultiple(),
@@ -447,6 +501,8 @@ class EventoDeleteView(SuccessMessageMixin, DeleteView):
 
 #@login_required
 def configurar_photobooth(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista para configurar el photobooth de un evento"""
     evento = get_object_or_404(Evento, id=evento_id)
     config, created = PhotoboothConfig.objects.get_or_create(evento=evento)
@@ -499,6 +555,8 @@ def configurar_photobooth(request, evento_id):
     return render(request, 'photobooth/configurar_photobooth.html', context)
 
 def preview_photobooth(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista para mostrar la vista previa del photobooth"""
     evento = get_object_or_404(Evento, id=evento_id)
     config = PhotoboothConfig.objects.filter(evento=evento).first()
@@ -511,6 +569,8 @@ def preview_photobooth(request, evento_id):
     return render(request, 'photobooth/preview_photobooth.html', context)
 
 def template_list(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista para listar las plantillas de collage disponibles para un evento"""
     evento = get_object_or_404(Evento, id=evento_id)
     templates = CollageTemplate.objects.filter(evento=evento)
@@ -523,6 +583,8 @@ def template_list(request, evento_id):
     return render(request, 'collage/template_list.html', context)
 
 def template_editor(request, evento_id, template_id=None):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista para el editor de plantillas de collage"""
     evento = get_object_or_404(Evento, id=evento_id)
     template = None
@@ -556,6 +618,8 @@ def template_editor(request, evento_id, template_id=None):
 @csrf_exempt
 @require_POST
 def save_template(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """API para guardar una plantilla de collage vía AJAX"""
     try:
         data = json.loads(request.body)
@@ -606,6 +670,8 @@ def save_template(request):
         return JsonResponse({'success': False, 'error': str(e)})
     
 def template_delete(request, evento_id, template_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista para eliminar una plantilla de collage"""
     evento = get_object_or_404(Evento, id=evento_id)
     template = get_object_or_404(CollageTemplate, template_id=template_id, evento=evento)
@@ -622,6 +688,8 @@ def template_delete(request, evento_id, template_id):
     return redirect('template_list', evento_id=evento.id)
 
 def get_template_data(request, template_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """API para obtener datos de una plantilla específica"""
     template = get_object_or_404(CollageTemplate, template_id=template_id)
     
@@ -636,6 +704,8 @@ def get_template_data(request, template_id):
         return JsonResponse({'success': False, 'error': str(e)})
 
 def start_session(request, evento_id, template_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Iniciar una sesión de fotos con una plantilla específica"""
     evento = get_object_or_404(Evento, id=evento_id)
     template = get_object_or_404(CollageTemplate, template_id=template_id, evento=evento)
@@ -664,6 +734,8 @@ def start_session(request, evento_id, template_id):
 @csrf_exempt
 @require_POST
 def save_session_photo(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """API para guardar una foto tomada durante la sesión"""
     try:
         data = json.loads(request.body)
@@ -699,6 +771,8 @@ def save_session_photo(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 def session_result(request, session_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Vista para mostrar el resultado de una sesión de fotos"""
     session = get_object_or_404(CollageSession, session_id=session_id)
     template = session.template
@@ -743,6 +817,8 @@ def session_result(request, session_id):
     return render(request, 'collage/session_result.html', context)
 
 def generate_collage(session, template_data, photos, frames):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Genera una imagen de collage a partir de una sesión completada"""
     try:
         # Dimensiones del collage (10x15 cm a 300dpi)
@@ -817,6 +893,8 @@ def generate_collage(session, template_data, photos, frames):
 @csrf_exempt
 @require_POST
 def update_print_count(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Actualizar el contador de impresiones de un collage"""
     try:
         data = json.loads(request.body)
@@ -838,6 +916,8 @@ def update_print_count(request):
 @csrf_exempt
 @require_POST
 def send_whatsapp(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
     """Enviar collage por WhatsApp"""
     try:
         data = json.loads(request.body)
@@ -873,11 +953,12 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
     evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
     
     if request.method=="POST": #Si la petición es POST
-        form=AñadirFotoForm(request.POST, request.FILES) #Llamar al formulario
+        form=FotografiaForm(request.POST, request.FILES) #Llamar al formulario
         if form.is_valid(): #Si el formulario es válido obtener los datos
             descripcion=form.cleaned_data["descripcion"]
             img=form.cleaned_data["img"]
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
+            invitado=form.cleaned_data["invitado"]
+            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento, invitado=invitado)#Crear un objeto de Fotografia
             fotografia.save() #Guardar objeto
             return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
@@ -889,5 +970,5 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
     
     return render(request,"añadir_fotos/formulario.html",{
         "evento":evento,
-        "form":AñadirFotoForm()
+        "form":FotografiaForm()
     })

@@ -1,6 +1,6 @@
 import json
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Permission, Group
+from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
@@ -14,7 +14,6 @@ from multiselectfield import MultiSelectField
 # Modelo de Usuario personalizado
 class User(AbstractUser):
    pass
-
 
 
 #Modelo de invitado
