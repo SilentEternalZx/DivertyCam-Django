@@ -62,6 +62,8 @@ def vista_login(request): #Función para iniciar sesión
 # Cerrar sesión
 @login_required
 def vista_logout(request): #Función para cerrar sesión
+   
+    
     logout(request)
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
@@ -172,13 +174,15 @@ def eventos_cliente(request):
         "lista_eventos": lista_eventos
     })
 
-class ClienteListView( ListView):  #LoginRequiredMixin
+class ClienteListView( LoginRequiredMixin, ListView ):  #LoginRequiredMixin
     
+   
     
     model = Cliente
     context_object_name = 'clientes'
     template_name = 'clientes/cliente_list.html'
     paginate_by = 10
+    login_url = 'login'
     
     def get_queryset(self):
         queryset = super().get_queryset().filter(activo=True)  # Solo clientes activos
@@ -222,16 +226,19 @@ class ClienteListView( ListView):  #LoginRequiredMixin
         context['mostrar_inactivos'] = self.request.GET.get('mostrar_inactivos', False)
         return context
 
-class ClienteDetailView(DetailView):   #LoginRequiredMixin
+class ClienteDetailView(LoginRequiredMixin, DetailView):   #LoginRequiredMixin
     model = Cliente
     context_object_name = 'cliente'
     template_name = 'clientes/cliente_detail.html'
+    login_url = 'login'
 
-class ClienteCreateView(CreateView):  #LoginRequiredMixin,
+class ClienteCreateView(LoginRequiredMixin, CreateView):  #LoginRequiredMixin,
+    
     model = Cliente
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
     success_url = reverse_lazy('cliente_list')
+    login_url = 'login'
    
 
     def form_valid(self, form):
@@ -241,17 +248,19 @@ class ClienteCreateView(CreateView):  #LoginRequiredMixin,
     
      
     
-class ClienteUpdateView( UpdateView):
+class ClienteUpdateView(LoginRequiredMixin, UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
     success_url = reverse_lazy('cliente_list')
+    login_url = 'login'
 
-class ClienteDeleteView( DeleteView):   #LoginRequiredMixin,
+class ClienteDeleteView(LoginRequiredMixin, DeleteView):   #LoginRequiredMixin,
     model = Cliente
     context_object_name = 'cliente'
     template_name = 'clientes/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente_list')
+    login_url = 'login'
     
 
 
@@ -402,11 +411,12 @@ def publicar_foto_facebook(request, foto_id):
         return JsonResponse({"error": data}, status=400)
     
     
-class EventoListView(ListView):
+class EventoListView(LoginRequiredMixin,ListView):
     model = Evento
     context_object_name = 'eventos'
     paginate_by = 10
     template_name = 'eventos/evento_list.html'
+    login_url = 'login'
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -437,13 +447,14 @@ class EventoListView(ListView):
         queryset = queryset.order_by(orden)
         return queryset
 
-class EventoDetailView(DetailView):
+class EventoDetailView(LoginRequiredMixin,DetailView):
     model = Evento
     context_object_name = 'evento'
     template_name = 'eventos/evento_detail.html'
+    login_url = 'login'
     
     
-class EventoForm(forms.ModelForm):
+class EventoForm(LoginRequiredMixin,forms.ModelForm):
     class Meta:
         model = Evento
         fields = ['categoria','nombre', 'fecha_hora', 'direccion', 'cliente', 'servicios']
@@ -451,6 +462,7 @@ class EventoForm(forms.ModelForm):
             'fecha_hora': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'servicios': forms.CheckboxSelectMultiple(),
             }
+        login_url = 'login'
     def clean_fecha_hora(self):
         fecha_hora = self.cleaned_data.get('fecha_hora')
         
@@ -465,31 +477,34 @@ class EventoForm(forms.ModelForm):
         # Filtra solo clientes activos
         self.fields['cliente'].queryset = Cliente.objects.filter(activo=True)
 
-class EventoCreateView( SuccessMessageMixin, CreateView):  
+class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):  
     model = Evento
     form_class = EventoForm
     template_name = 'eventos/evento_form.html'
     success_url = reverse_lazy('evento_list')
+    login_url = 'login'
    
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, "Evento creado exitosamente")
         return response
 
-class EventoUpdateView(SuccessMessageMixin, UpdateView):
+class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = 'eventos/evento_form.html'
     success_message = ("Evento actualizado exitosamente")
+    login_url = 'login'
     
     def get_success_url(self):
         return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
 
-class EventoDeleteView(SuccessMessageMixin, DeleteView):
+class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
     model = Evento
     context_object_name = 'evento'
     template_name = 'eventos/evento_confirm_delete.html'
     success_url = reverse_lazy('evento_list')
+    login_url = 'login'
     
     def form_valid(self, form):
         response = super().form_valid(form)

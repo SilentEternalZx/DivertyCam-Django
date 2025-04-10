@@ -49,7 +49,9 @@
                                 <div class="portfolio-caption">
                                     <div class="portfolio-caption-heading">{{ evento.nombre }}</div>
                                     <div class="portfolio-caption-subheading text-muted">{{ evento.fecha_hora }}</div>
+                                    {% if  request.user.is_superuser %}
                                     <a href="{% url 'publicar_foto' imagen.id %}" class="btn btn-primary">Publicar en Facebook</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
