@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.urls import path
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import admin,views
 
@@ -35,7 +37,7 @@ urlpatterns = [
     path('evento_list/<int:pk>/eliminar/', views.EventoDeleteView.as_view(), name='evento_delete'),
     path('evento/<int:evento_id>/photobooth/configurar/', views.configurar_photobooth, name='configurar_photobooth'),
     path('evento/<int:evento_id>/photobooth/preview/', views.preview_photobooth, name='preview_photobooth'),
-    #path('evento/<int:evento_id>/photobooth/launch/', views.launch_photobooth, name='launch_photobooth'),
+    path('evento/<int:evento_id>/photobooth/launch/', views.launch_photobooth, name='launch_photobooth'),
     #path('evento/<int:evento_id>/photobooth/collage/', views.photobooth_collage, name='photobooth_collage'),
     path('evento/<int:evento_id>/collage/plantillas/', views.template_list, name='template_list'),
     path('evento/<int:evento_id>/collage/editor/', views.template_editor, name='template_editor'),
@@ -58,5 +60,14 @@ urlpatterns = [
     path('mis_eventos', views.mis_eventos, name="mis_eventos"),
     path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
     path("verificar_email/", views.verificar_email, name="verificar_email"),
+
+    
+    path('eventos/<int:evento_id>/photobooth/', views.launch_photobooth, name='launch_photobooth'),
+    path('eventos/<int:evento_id>/photobooth/template/<str:template_id>/session/', views.start_session, name='start_session'),
+    path('photobooth/save-photo/', views.save_session_photo, name='save_session_photo'),
+    path('photobooth/session/<str:session_id>/result/', views.session_result, name='session_result'),
+    path('photobooth/update-print-count/', views.update_print_count, name='update_print_count'),
    
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

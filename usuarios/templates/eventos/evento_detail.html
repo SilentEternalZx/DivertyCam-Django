@@ -5,10 +5,10 @@
 
 {% block content %}
 
-<div class="main-content">
-        <div class="card-header">
-            <h2>Detalles del Evento</h2>
-        </div>
+<div class="main-content">        
+     <h2>Detalles del Evento</h2>
+</div>
+    <div class="card mb-4">
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
@@ -54,29 +54,31 @@
                 </div>
             </div>
         </div>
+        
             <!-- Nueva sección para el photobooth -->
-            <div class="row mt-4">
-                <div class="col-12">
+            
+            <div class="card mb-2">
+                <div class="card-body">
+                <div class="col-12" style="padding: 0px 20px; border: 0;">
                     <h4>Photobooth</h4>
-                    <div class="card">
+                    
                         <div class="card-body">
-                            {% if evento.config_photobooth %}
+                            {% if evento.photobooth_config %}
                                 <div class="row">
                                     <div class="col-md-8">
                                         <p><strong>Estado:</strong> <span class="badge bg-success">Configurado</span></p>
-                                        <p><strong>Mensaje de bienvenida:</strong> {{ evento.config_photobooth.mensaje_bienvenida }}</p>
-                                        <p><strong>Configuración de collage:</strong> {{ evento.config_photobooth.max_fotos }} fotos {% if evento.config_photobooth.permitir_personalizar %}con posicionamiento libre{% else %}con posicionamiento fijo{% endif %}</p>
+                                        <p><strong>Mensaje de bienvenida:</strong> {{ evento.photobooth_config.mensaje_bienvenida }}</p>
+                                        {% if evento.photobooth_config.imagen_fondo %}
+                                            <p><strong>Imagen de fondo:</strong> <img src="{{ evento.photobooth_config.imagen_fondo.url }}" alt="Fondo" class="img-thumbnail" style="max-width: 200px;"></p>
+                                        {% endif %}
                                     </div>
-                                    <div class="col-md-4 text-end">
+                                    <div class="col-md-4">
                                         <div class="btn-group-vertical">
                                             <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-warning mb-2">
                                                 <i class="fas fa-cog"></i> Configurar Photobooth
                                             </a>
-                                            <a href="{% url 'photobooth_preview' evento.pk %}" class="btn btn-primary mb-2">
+                                            <a href="{% url 'preview_photobooth' evento.pk %}" class="btn btn-primary mb-2">
                                                 <i class="fas fa-eye"></i> Vista Previa
-                                            </a>
-                                            <a href="{% url 'launch_photobooth' evento.pk %}" class="btn btn-success" target="_blank">
-                                                <i class="fas fa-play"></i> Iniciar Photobooth
                                             </a>
                                         </div>
                                     </div>
@@ -88,16 +90,18 @@
                                 </a>
                             {% endif %}
                         </div>
-                    </div>
+                </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'evento_update' evento.pk %}" class="btn btn-warning">Editar Evento</a>
+                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger">Eliminar Evento</a>
+                    <a href="{% url 'evento_list' %}" class="btn btn-secondary">Volver al Listado</a>
                 </div>
             </div>
-        </div>
-    </div>
+    </div>    
     
-    <div class="card-footer">
-        <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-warning">Editar</a>
-        <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger">Eliminar</a>
-        <a href="{% url 'evento_list' %}" class="btn btn-secondary">Volver al Listado</a>
-    </div>
-</div>
+    
+    
+    
+
 {% endblock %}

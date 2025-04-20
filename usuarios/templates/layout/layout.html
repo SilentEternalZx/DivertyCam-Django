@@ -24,9 +24,9 @@
         padding-bottom: 30px;
     }
 
-    /* Ajuste de márgenes para los contenedores de tarjetas */
+    {% comment %} /* Ajuste de márgenes para los contenedores de tarjetas */
     .card {
-        margin-top: 150px;
+        margin-top: 50px;
         margin-bottom: 50px;
     }
 
@@ -40,7 +40,7 @@
 
     .card-footer {
         padding: 15px 20px;
-    }
+    } {% endcomment %}
 
     /* Estilos para formularios */
     .form-container {
@@ -73,7 +73,7 @@
 
     /* Contenedor principal con margen superior adecuado */
     .main-content {
-        margin-top: 150px; /* Ajusta este valor según la altura de tu barra de navegación */
+        margin-top: 50px; /* Ajusta este valor según la altura de tu barra de navegación */
         margin-left: 20px;
         margin-right: 20px;
     }
@@ -99,6 +99,22 @@
 
     </style>
 </head>
+<br
+<br
+<br
+<br
+<br
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 <body>
 {% include "partials/navbar.html" %}
 

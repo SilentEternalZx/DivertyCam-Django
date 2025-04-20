@@ -4,20 +4,21 @@
 {% block title %}Configurar Photobooth - {{ evento.nombre }}{% endblock %}
 
 {% block content %}
-<br>
-<br>
+
 <div class="card">
-    <div class="card-header">
+    
         <h2>Configurar Photobooth para "{{ evento.nombre }}"</h2>
         <p class="text-muted">Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
-    </div>
+    
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
-                    
+                    <div class="card-header">
                     <h4>Configuración de Bienvenida</h4>
+                    </div>
+
                     <div class="mb-3">
                         <label for="{{ form.mensaje_bienvenida.id_for_label }}" class="form-label">Mensaje de bienvenida:</label>
                         {{ form.mensaje_bienvenida.errors }}
@@ -65,7 +66,69 @@
                             <i class="fas fa-plus"></i> Crear nueva plantilla
                         </a>
                     </div>
-                                                            
+                        
+                    
+            
+                <div class="card-header">
+                    <h4>Configuración de Cámara</h4>
+                </div>
+                <div class="card-body">
+                    <dib class="mb-3">
+                        <label for="camera-select" class="form-label">Cámara predeterminada:</label>
+                        <select id="camera-select" name="camera_default" class="form-select">
+                            <option value="" disabled selected>Seleccionar cámara...</option>
+                            <!-- Las opciones se cargarán dinámicamente -->
+                        </select>
+                        <div class="form-text">Selecciona la cámara que deseas utilizar para el photobooth.</div>
+                    
+                    <!-- Nuevos campos para resolución y balance de blancos -->
+                    <div class="mb-3">
+                        <label for="camera-resolution" class="form-label">Resolución de la cámara:</label>
+                        <select id="camera-resolution" name="resolucion_camara" class="form-select">
+                            <option value="640x480" {% if config.resolucion_camara == '640x480' %}selected{% endif %}>640x480 (VGA)</option>
+                            <option value="1280x720" {% if not config.resolucion_camara or config.resolucion_camara == '1280x720' %}selected{% endif %}>1280x720 (HD)</option>
+                            <option value="1920x1080" {% if config.resolucion_camara == '1920x1080' %}selected{% endif %}>1920x1080 (Full HD)</option>
+                            <option value="3840x2160" {% if config.resolucion_camara == '3840x2160' %}selected{% endif %}>3840x2160 (4K)</option>
+                        </select>
+                        <div class="form-text">Selecciona la resolución de captura para las fotos del photobooth.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="white-balance" class="form-label">Balance de blancos:</label>
+                        <select id="white-balance" name="balance_blancos" class="form-select">
+                            <option value="auto" {% if not config.balance_blancos or config.balance_blancos == 'auto' %}selected{% endif %}>Automático</option>
+                            <option value="cloudy" {% if config.balance_blancos == 'cloudy' %}selected{% endif %}>Nublado</option>
+                            <option value="sunny" {% if config.balance_blancos == 'sunny' %}selected{% endif %}>Soleado</option>
+                            <option value="fluorescent" {% if config.balance_blancos == 'fluorescent' %}selected{% endif %}>Fluorescente</option>
+                            <option value="incandescent" {% if config.balance_blancos == 'incandescent' %}selected{% endif %}>Incandescente</option>
+                        </select>
+                        <div class="form-text">Configura el balance de blancos para diferentes condiciones de iluminación.</div>
+                    </div>
+                    
+                    <div id="camera-alert" class="mt-3" style="display: none;"></div>
+                    <div class="form-text">Si no ves tu cámara, asegúrate de que esté conectada y habilitada.</div>
+                    
+                    <br>
+                    <br>
+                    <dib class="mt-4">
+                        <label for="camera-preview" class="form-label">Vista previa de la camara:</label>
+                        <div class="camera-preview-container" style="width: 100%; height: 300px; background-color: #000; border-radius: 8px; overflow: hidden;">
+                            <video id="camera-preview" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <button type="button" id="start-preview-btn" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Iniciar vista previa
+                            </button>
+                            <button type="button" id="stop-preview-btn" class="btn btn-secondary" disabled>
+                                <i class="fas fa-stop"></i> Detener vista previa
+                            </button>
+                        </div>
+                    
+                    
+                    <input type="hidden" id="selected-camera-id" name="selected_camera_id" value="{{ config.camera_id|default:'' }}">
+                </div>
+            
+
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary">Guardar Configuración</button>
                         <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-success">Ver Vista Previa</a>
@@ -73,6 +136,9 @@
                     </div>
                 </form>
             </div>
+    
+
+
             
             <div class="col-md-6">
                 <div class="card mb-4">
@@ -80,9 +146,9 @@
                         <h4>Vista previa de bienvenida</h4>
                     </div>
                     <div class="card-body">
-                        <div id="preview" style="height: 600px; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: center;">
+                        <div id="preview" style="height: 500px; display: flex; justify-content: center; align-items: center; background-size: contain; background-position: center; background-repeat: no-repeat;">
                             <h1 id="previewMessage" style="padding: 20px; background-color: rgba(255, 255, 255, 0.7); border-radius: 10px;">
-                                {{ config.mensaje_bienvenida|default:"¡Bienvenidos al photobooth!" }}
+                                {{ config.mensaje_bienvenida|default:"¡Bienvenidos a photobooth!" }}
                             </h1>
                         </div>
                     </div>
@@ -95,9 +161,11 @@
                     </div>
                     <div class="card-body text-center">
                         {% if selected_template %}
-                            <div id="collage-preview" style="width: 600px; height: 400px; margin: 0 auto; position: relative; border: 1px solid #ddd; overflow: hidden; background-color: {{ selected_template.background_color|default:'white' }}">
+                        <div class="card-body text-center">
+                            <div class="d-flex justify-content-center">
+                            <div id="collage-preview" style="width: 600px; height: 500px; margin: 0 auto; position: relative; border: 1px solid #ddd; overflow: hidden; background-color: {{ selected_template.background_color|default:'white' }}; display: inline-block;">
                                 {% if selected_template.background_image %}
-                                    <img src="{{ selected_template.background_image.url }}" style="position: absolute; width: 100%; height: 100%; object-fit: cover;">
+                                    <img src="{{ selected_template.background_image.url }}" style="position: absolute; width: 100%; height: 100%; object-fit: contain;">
                                 {% endif %}
                                 
                                 <!-- Marcos de fotos -->
@@ -105,6 +173,8 @@
                                     <div class="photo-frame" style="position: absolute; width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2px {{ frame.borderStyle|default:'dashed' }} #FF6B6B; background-color: rgba(255,107,107,0.2);"></div>
                                 {% endfor %}
                             </div>
+                            </div>
+                        </div>
                             <p class="mt-2">{{ selected_template.nombre }}</p>
                             <p class="text-muted small">{{ selected_template.descripcion }}</p>
                         {% else %}
@@ -178,5 +248,316 @@
             });
         }
     });
+</script>
+
+{# Añade este script al final del archivo, justo antes de cerrar el bloque extra_scripts #}
+<script>
+    // Variables para cámara
+let mediaStream = null;
+let availableCameras = [];
+
+// Elementos DOM
+const cameraSelect = document.getElementById('camera-select');
+const cameraResolution = document.getElementById('camera-resolution');
+const whiteBalance = document.getElementById('white-balance');
+const refreshCamerasBtn = document.getElementById('refresh-cameras-btn');
+const cameraAlert = document.getElementById('camera-alert');
+const cameraPreview = document.getElementById('camera-preview');
+const startPreviewBtn = document.getElementById('start-preview-btn');
+const stopPreviewBtn = document.getElementById('stop-preview-btn');
+const selectedCameraIdInput = document.getElementById('selected-camera-id');
+
+// Función para mostrar alertas
+function showAlert(message, type = 'warning') {
+    cameraAlert.className = `alert alert-${type}`;
+    cameraAlert.innerHTML = message;
+    cameraAlert.style.display = 'block';
+}
+
+// Función para ocultar alertas
+function hideAlert() {
+    cameraAlert.style.display = 'none';
+}
+
+// Función para enumerar cámaras disponibles
+async function listAvailableCameras() {
+    try {
+        // Primero necesitamos acceder a los dispositivos para pedir permiso
+        try {
+            await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (err) {
+            // Si hay error al acceder a la cámara, mostrar mensaje pero continuar
+            console.warn('No se pudo acceder a la cámara:', err);
+        }
+        
+        // Luego obtenemos la lista de dispositivos
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        
+        // Filtrar solo las cámaras de video
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        availableCameras = videoDevices;
+        
+        // Limpiar el selector de cámaras
+        cameraSelect.innerHTML = '<option value="" disabled selected>Seleccionar cámara...</option>';
+        
+        if (videoDevices.length === 0) {
+            // No se detectaron cámaras, mostrar mensaje
+            const option = document.createElement('option');
+            option.value = "";
+            option.text = "No se detectaron cámaras";
+            option.disabled = true;
+            cameraSelect.appendChild(option);
+            
+            showAlert('<i class="fas fa-exclamation-triangle"></i> No se detectaron cámaras. Por favor, conecta una cámara y haz clic en "Refrescar lista de cámaras".', 'warning');
+        } else {
+            // Añadir cada cámara al selector
+            videoDevices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Cámara ${index + 1}`;
+                cameraSelect.appendChild(option);
+            });
+            
+            hideAlert();
+            
+            // Si solo hay una cámara, seleccionarla automáticamente
+            if (videoDevices.length === 1) {
+                cameraSelect.value = videoDevices[0].deviceId;
+                selectedCameraIdInput.value = videoDevices[0].deviceId;
+            }
+            
+            // Si ya hay una cámara guardada, seleccionarla
+            const savedCameraId = selectedCameraIdInput.value;
+            if (savedCameraId) {
+                // Verificar si la cámara guardada está disponible
+                const cameraExists = videoDevices.some(device => device.deviceId === savedCameraId);
+                if (cameraExists) {
+                    cameraSelect.value = savedCameraId;
+                }
+            }
+        }
+        
+        return videoDevices.length > 0;
+    } catch (error) {
+        console.error('Error al enumerar cámaras:', error);
+        showAlert('<i class="fas fa-exclamation-triangle"></i> Error al enumerar cámaras: ' + error.message, 'danger');
+        return false;
+    }
+}
+
+// Función para obtener configuración de resolución
+function getResolutionConstraints() {
+    // Obtener el valor de resolución seleccionado
+    const resolutionValue = cameraResolution.value;
+    
+    // Si no hay resolución seleccionada, devolver valores predeterminados
+    if (!resolutionValue) {
+        return {
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        };
+    }
+    
+    // Dividir la resolución en ancho y alto (formato: "WidthxHeight")
+    const [width, height] = resolutionValue.split('x').map(num => parseInt(num, 10));
+    
+    return {
+        width: { exact: width },
+        height: { exact: height }
+    };
+}
+
+// Función para obtener configuración de balance de blancos
+function getWhiteBalanceConstraint() {
+    const whiteBalanceValue = whiteBalance.value;
+    
+    // Si no es automático, intentar aplicar el balance de blancos
+    if (whiteBalanceValue && whiteBalanceValue !== 'auto') {
+        return {
+            whiteBalanceMode: whiteBalanceValue,
+            // Intentamos desactivar el balance de blancos automático si se seleccionó un modo específico
+            autoWhiteBalanceMode: false
+        };
+    }
+    
+    // Si es automático o no hay valor, no aplicar restricciones
+    return {};
+}
+
+// Función para iniciar la vista previa de la cámara
+async function startCameraPreview() {
+    try {
+        // Detener cualquier stream actual
+        stopCameraPreview();
+        
+        // Obtener el ID del dispositivo seleccionado
+        const deviceId = cameraSelect.value;
+        
+        if (!deviceId) {
+            showAlert('Por favor, selecciona una cámara antes de iniciar la vista previa.', 'warning');
+            return false;
+        }
+        
+        // Guardar el ID de la cámara seleccionada
+        selectedCameraIdInput.value = deviceId;
+        
+        // Obtener la resolución seleccionada
+        const resolutionSelect = document.getElementById('camera-resolution');
+        let width = 1280, height = 720; // Valores predeterminados
+        
+        if (resolutionSelect && resolutionSelect.value) {
+            const [w, h] = resolutionSelect.value.split('x').map(num => parseInt(num, 10));
+            width = w || width;
+            height = h || height;
+            console.log(`Aplicando resolución: ${width}x${height}`);
+        }
+        
+        // Obtener balance de blancos seleccionado
+        const whiteBalanceSelect = document.getElementById('white-balance');
+        let whiteBalanceMode = 'auto';
+        
+        if (whiteBalanceSelect && whiteBalanceSelect.value) {
+            whiteBalanceMode = whiteBalanceSelect.value;
+            console.log(`Aplicando balance de blancos: ${whiteBalanceMode}`);
+        }
+        
+        // Crear constraints básicos para el video
+        const videoConstraints = {
+            deviceId: { exact: deviceId },
+            width: { ideal: width },
+            height: { ideal: height }
+        };
+        
+        // Intentar aplicar balance de blancos si es compatible (experimental)
+        if (whiteBalanceMode !== 'auto') {
+            try {
+                videoConstraints.advanced = [
+                    { 
+                        whiteBalanceMode: whiteBalanceMode,
+                        autoWhiteBalanceMode: false 
+                    }
+                ];
+            } catch (e) {
+                console.warn("No se pudo aplicar el balance de blancos:", e);
+            }
+        }
+        
+        console.log("Intentando aplicar configuración:", videoConstraints);
+        
+        // Iniciar la cámara seleccionada con las restricciones configuradas
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: videoConstraints,
+            audio: false
+        });
+        
+        // Aplicar el stream a la vista previa
+        cameraPreview.srcObject = mediaStream;
+        
+        // Actualizar estado de los botones
+        startPreviewBtn.disabled = true;
+        stopPreviewBtn.disabled = false;
+        
+        // Mostrar información sobre las capacidades aplicadas (útil para depuración)
+        const videoTrack = mediaStream.getVideoTracks()[0];
+        if (videoTrack) {
+            console.log('Capacidades de la cámara:', videoTrack.getCapabilities ? videoTrack.getCapabilities() : 'No disponible');
+            console.log('Restricciones aplicadas:', videoTrack.getConstraints ? videoTrack.getConstraints() : 'No disponible');
+            console.log('Configuración activa:', videoTrack.getSettings ? videoTrack.getSettings() : 'No disponible');
+            
+            // Mostrar resolución actual en un mensaje
+            const settings = videoTrack.getSettings ? videoTrack.getSettings() : {};
+            if (settings.width && settings.height) {
+                const appliedResolution = `${settings.width}x${settings.height}`;
+                showAlert(`<i class="fas fa-info-circle"></i> Vista previa iniciada. Resolución aplicada: ${appliedResolution}`, 'info');
+            } else {
+                hideAlert();
+            }
+        } else {
+            hideAlert();
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error al iniciar la cámara:', error);
+        showAlert(`<i class="fas fa-exclamation-triangle"></i> Error al iniciar la cámara: ${error.message}. Es posible que la resolución seleccionada no sea compatible con tu cámara.`, 'danger');
+        return false;
+    }
+}
+
+// Inicializar eventos cuando se carga el documento
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener referencias a los elementos
+    const cameraSelect = document.getElementById('camera-select');
+    const cameraResolution = document.getElementById('camera-resolution');
+    const whiteBalance = document.getElementById('white-balance');
+    const refreshCamerasBtn = document.getElementById('refresh-cameras-btn');
+    const startPreviewBtn = document.getElementById('start-preview-btn');
+    const stopPreviewBtn = document.getElementById('stop-preview-btn');
+    
+    // Listar cámaras disponibles al cargar la página
+    listAvailableCameras();
+    
+    // Event listeners para los botones
+    if (refreshCamerasBtn) {
+        refreshCamerasBtn.addEventListener('click', listAvailableCameras);
+    }
+    
+    if (startPreviewBtn) {
+        startPreviewBtn.addEventListener('click', startCameraPreview);
+    }
+    
+    if (stopPreviewBtn) {
+        stopPreviewBtn.addEventListener('click', stopCameraPreview);
+    }
+    
+    // Event listener para el selector de cámara
+    if (cameraSelect) {
+        cameraSelect.addEventListener('change', function() {
+            const selectedCameraIdInput = document.getElementById('selected-camera-id');
+            if (selectedCameraIdInput) {
+                selectedCameraIdInput.value = this.value;
+            }
+        });
+    }
+    
+    // Event listeners para los nuevos selectores
+    if (cameraResolution) {
+        cameraResolution.addEventListener('change', function() {
+            console.log("Resolución cambiada a:", this.value);
+            // Si la vista previa está activa, reiniciarla con la nueva configuración
+            if (mediaStream) {
+                startCameraPreview();
+            }
+        });
+    }
+    
+    if (whiteBalance) {
+        whiteBalance.addEventListener('change', function() {
+            console.log("Balance de blancos cambiado a:", this.value);
+            // Si la vista previa está activa, reiniciarla con la nueva configuración
+            if (mediaStream) {
+                startCameraPreview();
+            }
+        });
+    }
+    
+    // Función para verificar si hay cambios en los dispositivos conectados
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+        navigator.mediaDevices.addEventListener('devicechange', function() {
+            console.log('Se detectó un cambio en los dispositivos conectados');
+            listAvailableCameras();
+        });
+    }
+    
+    // Detener la cámara cuando se envía el formulario o se cierra la página
+    window.addEventListener('beforeunload', stopCameraPreview);
+    
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            stopCameraPreview();
+        });
+    }
+});
 </script>
 {% endblock %}

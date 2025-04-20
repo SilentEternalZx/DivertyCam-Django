@@ -7,14 +7,12 @@
 {% block content %}
 
 <div class="main-content">
-    <div class="card">
-        <div class="card-header">
-            <h2>Detalles del Cliente</h2>
-        </div>
+     <h2>Detalles del Cliente</h2>
+</div>
+    <div class="card mb-4">
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                
                     <h4>Información Personal</h4>
                     <dl class="row">
                         <dt class="col-sm-4">Nombre</dt>
@@ -30,9 +28,9 @@
                         <dd class="col-sm-8">{{ cliente.fechaNacimiento }}</dd>
                         <dt class="col-sm-4">Estado</dt>
                         <dd class="col-sm-8">
-                        <span class="badge {% if cliente.activo %}bg-success{% else %}bg-secondary{% endif %}">
-                            {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}
-                        </span>
+                            <span class="badge {% if cliente.activo %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}
+                            </span>
                         </dd>
                     </dl>
                 </div>
@@ -50,8 +48,23 @@
                     </dl>
                 </div>
             </div>
-            
-            
+            <dib class="card">
+                <div class="col-12">
+                    <h4>Información de Eventos</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">Número de Eventos</dt>
+                        <dd class="col-sm-8">{{ cliente.eventos.count }}</dd>
+
+                        <dt class="col-sm-4">Último Evento</dt>
+                        <dd class="col-sm-8">
+                            {% if cliente.eventos.exists %}
+                                {{ cliente.eventos.last.fecha_hora|date:"d/m/Y H:i" }}
+                            {% else %}
+                                No hay eventos registrados
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
             <div class="row mt-4">
                 <div class="col-12">
                     <h4>Eventos del Cliente</h4>
@@ -91,13 +104,14 @@
                 </div>
             </div>
         </div>
-        
-    </div>
+        <div class="card-footer">
+            <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-warning">Editar Cliente</a>
+            <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-danger">Inactivar Cliente</a>
+            <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Volver al Listado</a>
+        </div>
+    </div>  
+
     
-    <div class="card-footer">
-        <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-sm btn-warning">Editar</a>
-        <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-danger">Eliminar</a>
-        <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Volver al Listado</a>
-    </div>
-</div>
+    
+
 {% endblock %}
