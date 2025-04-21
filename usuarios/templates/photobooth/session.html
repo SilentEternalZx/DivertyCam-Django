@@ -1,0 +1,786 @@
+{# templates/photobooth/session.html #}
+{% extends 'layout/layout.html' %}
+
+{% block title %}Photobooth - {{ evento.nombre }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        font-family: {{ config.tipo_letra }}, sans-serif;
+    }
+    
+    .photobooth-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    /* Pantalla de bienvenida */
+    .welcome-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-size: cover;
+        background-position: center;
+        z-index: 30;
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    .welcome-message {
+        padding: 20px 40px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Pantalla de cámara */
+    .camera-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #000;
+        z-index: 20;
+    }
+    
+    .camera-preview {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+    
+    #video-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .camera-controls {
+        position: absolute;
+        bottom: 40px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        z-index: 25;
+    }
+    
+    /* Pantalla de cuenta regresiva */
+    .countdown-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+    }
+    
+    .countdown-display {
+        font-size: 15rem;
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Pantalla de previsualización de foto */
+    .photo-preview-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 45;
+    }
+    
+    .photo-preview-container {
+        width: 80%;
+        height: 80%;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+    
+    .photo-preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    /* Pantalla de resultado final */
+    .result-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #f5f5f5;
+        z-index: 50;
+    }
+    
+    .collage-result {
+        width: 80%;
+        max-width: 800px;
+        max-height: 70vh;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        background-color: white;
+        margin-bottom: 30px;
+    }
+    
+    /* Indicador de progreso */
+    .session-progress {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        z-index: 35;
+    }
+    
+    .progress-indicator {
+        display: flex;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 10px 15px;
+        border-radius: 25px;
+    }
+    
+    .progress-step {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.3);
+        margin: 0 5px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .progress-step.active {
+        background-color: #FF6B6B;
+        box-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+    }
+    
+    .progress-step.completed {
+        background-color: #28a745;
+    }
+    
+    /* Botones grandes y amigables */
+    .btn-photobooth {
+        font-size: 1.5rem;
+        padding: 15px 40px;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .btn-photobooth:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-photobooth:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="photobooth-container">
+    <!-- Pantalla de bienvenida -->
+    <div id="welcome-screen" class="welcome-screen" style="background-image: url('{{ config.imagen_fondo.url }}');">
+        <div class="welcome-message">
+            <h1 style="color: {{ config.color_texto }}; font-size: {{ config.tamano_texto }}px;">
+                {{ config.mensaje_bienvenida }}
+            </h1>
+        </div>
+        
+        <button id="start-camera-btn" class="btn btn-primary btn-lg btn-photobooth">
+            <i class="fas fa-camera"></i> Iniciar Cámara
+        </button>
+    </div>
+    
+    <!-- Pantalla de cámara -->
+    <div id="camera-screen" class="camera-screen">
+        <div class="camera-preview">
+            <video id="video-preview" autoplay playsinline></video>
+        </div>
+        
+        <div class="session-progress">
+            <div id="progress-indicator" class="progress-indicator">
+                <!-- Indicadores de progreso se añadirán dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="camera-controls">
+            <button id="start-session-btn" class="btn btn-success btn-lg btn-photobooth">
+                <i class="fas fa-play"></i> Iniciar Sesión
+            </button>
+        </div>
+    </div>
+    
+    <!-- Overlay de cuenta regresiva -->
+    <div id="countdown-overlay" class="countdown-overlay">
+        <div id="countdown-display" class="countdown-display">4</div>
+    </div>
+    
+    <!-- Overlay de previsualización de foto -->
+    <div id="photo-preview-overlay" class="photo-preview-overlay">
+        <div class="photo-preview-container">
+            <img id="photo-preview-image" class="photo-preview-image" src="" alt="Vista previa de foto">
+        </div>
+    </div>
+    
+    <!-- Pantalla de resultado final -->
+    <div id="result-screen" class="result-screen">
+        <h2 class="mb-4">¡Tu collage está listo!</h2>
+        
+        <div id="collage-result" class="collage-result">
+            <!-- El resultado del collage se mostrará aquí -->
+        </div>
+        
+        <!-- Modal para compartir por WhatsApp -->
+         <br>
+         <br>
+         <br>
+         <br>
+            <br>
+        <div class="modal fade" id="whatsappModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Compartir por WhatsApp</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="whatsapp-form">
+                            <div class="mb-3">
+                                <label for="phone-number" class="form-label">Número de teléfono (con código de país):</label>
+                                <input type="tel" id="phone-number" class="form-control" placeholder="+34612345678" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message-text" class="form-label">Mensaje (opcional):</label>
+                                <textarea id="message-text" class="form-control" rows="3" placeholder="¡Aquí noooo está nuestro collage del evento!"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" id="send-whatsapp-btn" class="btn btn-success">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-3 flex-wrap justify-content-center">
+            <button id="restart-btn" class="btn btn-primary btn-lg btn-photobooth">
+                <i class="fas fa-redo"></i> Nueva Sesión
+            </button>
+            
+            <button id="share-whatsapp-btn" class="btn btn-success btn-lg btn-photobooth">
+                <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
+            </button>
+            
+            <button id="print-btn" class="btn btn-info btn-lg btn-photobooth">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            
+            {% if return_url %}
+            <a href="{{ return_url }}" class="btn btn-secondary btn-lg btn-photobooth">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos DOM
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const cameraScreen = document.getElementById('camera-screen');
+        const videoPreview = document.getElementById('video-preview');
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownDisplay = document.getElementById('countdown-display');
+        const photoPreviewOverlay = document.getElementById('photo-preview-overlay');
+        const photoPreviewImage = document.getElementById('photo-preview-image');
+        const resultScreen = document.getElementById('result-screen');
+        const collageResult = document.getElementById('collage-result');
+        const progressIndicator = document.getElementById('progress-indicator');
+        
+        // Botones
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const startSessionBtn = document.getElementById('start-session-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // Variables de estado
+        let mediaStream = null;
+        let templateData = {{ template_json|safe }};
+        let photosTaken = 0;
+        let isSessionActive = false;
+        let frameElements = [];
+        let framePhotos = [];
+        let currentPhotoIndex = 0;
+        let countdownSeconds = 3; // Tiempo de cuenta atrás en segundos
+        
+        // Inicializar indicadores de progreso
+        function setupProgressIndicators() {
+            progressIndicator.innerHTML = '';
+            
+            if (!templateData.frames || !Array.isArray(templateData.frames)) {
+                console.error('No se encontraron marcos válidos en la plantilla');
+                return;
+            }
+            
+            for (let i = 0; i < templateData.frames.length; i++) {
+                const step = document.createElement('div');
+                step.className = 'progress-step';
+                progressIndicator.appendChild(step);
+            }
+            
+            updateProgressIndicators();
+        }
+        
+        // Actualizar indicadores de progreso
+        function updateProgressIndicators() {
+            const steps = progressIndicator.querySelectorAll('.progress-step');
+            
+            steps.forEach((step, index) => {
+                if (index < photosTaken) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (index === currentPhotoIndex) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+        }
+        
+       // Inicializar cámara
+        async function initCamera() {
+            try {
+                // Configuraciones para la cámara
+                const videoConfig = {
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                // Si hay una cámara específica configurada, usarla
+                {% if config.camera_id %}
+                videoConfig.video.deviceId = { exact: "{{ config.camera_id }}" };
+                {% endif %}
+                
+                // Detener cualquier stream actual
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Intentar obtener acceso a la cámara especificada
+                try {
+                    mediaStream = await navigator.mediaDevices.getUserMedia(videoConfig);
+                    videoPreview.srcObject = mediaStream;
+                    return true;
+                } catch (specificError) {
+                    // Si falla con la cámara específica, intentar con cualquier cámara disponible
+                    console.warn('No se pudo acceder a la cámara especificada:', specificError);
+                    
+                    // Si falló con una cámara específica, intentar con cualquier cámara
+                    if (videoConfig.video.deviceId) {
+                        delete videoConfig.video.deviceId;
+                        mediaStream = await navigator.mediaDevices.getUserMedia(videoConfig);
+                        videoPreview.srcObject = mediaStream;
+                        return true;
+                    } else {
+                        throw specificError;
+                    }
+                }
+            } catch (error) {
+                console.error('Error al iniciar la cámara:', error);
+                alert('Error al iniciar la cámara: ' + error.message);
+                return false;
+            }
+        }
+        
+        // Mostrar pantalla de cámara
+        function showCameraScreen() {
+            welcomeScreen.style.opacity = 0;
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                cameraScreen.style.display = 'flex';
+            }, 500);
+        }
+        
+        // Iniciar sesión de fotos
+        function startSession() {
+            if (isSessionActive) return;
+            
+            isSessionActive = true;
+            photosTaken = 0;
+            currentPhotoIndex = 0;
+            framePhotos = [];
+            startSessionBtn.disabled = true;
+            
+            // Iniciar captura de la primera foto
+            startCountdown();
+        }
+        
+        // Iniciar cuenta atrás para tomar foto
+        function startCountdown() {
+            let timeLeft = countdownSeconds;
+            countdownDisplay.textContent = timeLeft;
+            countdownOverlay.style.display = 'flex';
+            
+            const countdownTimer = setInterval(() => {
+                timeLeft--;
+                countdownDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    countdownOverlay.style.display = 'none';
+                    
+                    // Tomar la foto
+                    takePhoto();
+                }
+            }, 1000);
+        }
+        
+        // Tomar foto
+        function takePhoto() {
+            // Crear un canvas para capturar la foto
+            const canvas = document.createElement('canvas');
+            canvas.width = 1280;
+            canvas.height = 720;
+            
+            // Dibujar la imagen del video en el canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+            
+            // Obtener URL de la imagen
+            const imageUrl = canvas.toDataURL('image/jpeg');
+            framePhotos.push(imageUrl);
+            
+            // Mostrar vista previa de la foto
+            photoPreviewImage.src = imageUrl;
+            photoPreviewOverlay.style.display = 'flex';
+            
+            // Guardar foto en el servidor
+            savePhotoToServer(imageUrl, currentPhotoIndex);
+            
+            // Actualizar progreso
+            photosTaken++;
+            updateProgressIndicators();
+            
+            // Esperar 3 segundos y pasar a la siguiente foto o finalizar sesión
+            setTimeout(() => {
+                photoPreviewOverlay.style.display = 'none';
+                
+                // Verificar si hay más fotos por tomar
+                currentPhotoIndex++;
+                if (currentPhotoIndex < templateData.frames.length) {
+                    // Tomar siguiente foto
+                    startCountdown();
+                } else {
+                    // Finalizar sesión
+                    finishSession();
+                }
+            }, 3000);
+        }
+        
+        // Guardar foto en el servidor
+        function savePhotoToServer(imageData, frameIndex) {
+            fetch("{% url 'save_session_photo' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    session_id: '{{ session_id }}',
+                    frame_index: frameIndex,
+                    image_data: imageData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error al guardar la foto:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar la foto:', error);
+            });
+        }
+        
+        // Finalizar sesión
+        function finishSession() {
+            // Mostrar pantalla de resultado
+            cameraScreen.style.display = 'none';
+            resultScreen.style.display = 'flex';
+            
+            // Crear el collage
+            createCollage();
+            
+            // Habilitar el botón de iniciar sesión para la próxima vez
+            startSessionBtn.disabled = false;
+            isSessionActive = false;
+        }
+        
+        // Crear el collage
+        function createCollage() {
+            if (!templateData.frames || !Array.isArray(templateData.frames)) {
+                console.error('No se encontraron marcos válidos en la plantilla');
+                return;
+            }
+            
+            // Configurar el fondo del collage
+            collageResult.style.width = "10cm";
+            collageResult.style.height = "15cm";
+            collageResult.style.backgroundColor = templateData.backgroundColor || 'white';
+            
+            if (templateData.backgroundImage && templateData.backgroundImage !== 'none') {
+                // Para URLs de imágenes cargadas en el servidor
+                {% if template.background_image %}
+                    collageResult.style.backgroundImage = "url('{{ template.background_image.url }}')";
+                {% endif %}
+                
+                collageResult.style.backgroundSize = 'cover';
+                collageResult.style.backgroundPosition = 'center';
+            }
+            
+            // Limpiar el contenedor del collage
+            collageResult.innerHTML = '';
+            
+            // Añadir las fotos al collage
+            framePhotos.forEach((photoUrl, index) => {
+                if (index < templateData.frames.length) {
+                    const frame = templateData.frames[index];
+                    
+                    const photoElement = document.createElement('div');
+                    photoElement.style.position = 'absolute';
+                    photoElement.style.width = frame.width;
+                    photoElement.style.height = frame.height;
+                    photoElement.style.left = frame.left;
+                    photoElement.style.top = frame.top;
+                    photoElement.style.overflow = 'hidden';
+                    
+                    const img = document.createElement('img');
+                    img.src = photoUrl;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    
+                    photoElement.appendChild(img);
+                    collageResult.appendChild(photoElement);
+                }
+            });
+        }
+        
+        // Reiniciar el proceso
+        function restart() {
+            resultScreen.style.display = 'none';
+            welcomeScreen.style.opacity = 1;
+            welcomeScreen.style.display = 'flex';
+            
+            // Resetear variables
+            photosTaken = 0;
+            currentPhotoIndex = 0;
+            framePhotos = [];
+            
+            // Actualizar indicadores de progreso
+            updateProgressIndicators();
+        }
+        
+        // Función para entrar y salir de pantalla completa
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                // Entrar en pantalla completa
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { // Safari
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) { // IE11
+                    document.documentElement.msRequestFullscreen();
+                }
+            } else {
+                // Salir de pantalla completa
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { // Safari
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { // IE11
+                    document.msExitFullscreen();
+                }
+            }
+        }
+        
+        // Event Listeners
+        startCameraBtn.addEventListener('click', async function() {
+            // Entrar en pantalla completa al iniciar la cámara
+            toggleFullScreen();
+            
+            const success = await initCamera();
+            if (success) {
+                showCameraScreen();
+                setupProgressIndicators();
+            }
+        });
+        
+        startSessionBtn.addEventListener('click', function() {
+            startSession();
+        });
+        
+        restartBtn.addEventListener('click', function() {
+            restart();
+        });
+        
+        // Configurar botón de WhatsApp
+        if (document.getElementById('share-whatsapp-btn')) {
+            const whatsappModal = new bootstrap.Modal(document.getElementById('whatsappModal'));
+            
+            document.getElementById('share-whatsapp-btn').addEventListener('click', function() {
+                whatsappModal.show();
+            });
+            
+            document.getElementById('send-whatsapp-btn').addEventListener('click', function() {
+                const phoneNumber = document.getElementById('phone-number').value.trim();
+                const messageText = document.getElementById('message-text').value.trim();
+                
+                if (!phoneNumber) {
+                    alert('Por favor, introduce un número de teléfono válido');
+                    return;
+                }
+                
+                try {
+                    // Limpiar número de teléfono (solo dígitos y signo +)
+                    const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
+                    
+                    // Verificar que el número tenga un formato válido
+                    if (!cleanPhone.startsWith('+') && !cleanPhone.startsWith('00')) {
+                        alert('Por favor, introduce un número con código de país (ej: +34612345678)');
+                        return;
+                    }
+                    
+                    // Usar el método de apertura directa de WhatsApp Web
+                    const encodedMessage = encodeURIComponent(messageText || '¡Mira mi collage del evento!');
+                    const whatsappUrl = `https://wa.me/${cleanPhone.startsWith('+') ? cleanPhone.substring(1) : cleanPhone}?text=${encodedMessage}`;
+                    
+                    window.open(whatsappUrl, '_blank');
+                    
+                    // Cerrar modal
+                    whatsappModal.hide();
+                } catch (error) {
+                    console.error('Error al abrir WhatsApp:', error);
+                    alert('Ocurrió un error al intentar abrir WhatsApp. Por favor intenta de nuevo.');
+                }
+            });
+        }
+        
+        // Configurar botón de impresión
+        if (document.getElementById('print-btn')) {
+            document.getElementById('print-btn').addEventListener('click', function() {
+                // Añadir estilos de impresión temporales
+                const styleSheet = document.createElement('style');
+                styleSheet.type = 'text/css';
+                styleSheet.id = 'print-styles';
+                styleSheet.innerHTML = `
+                    @media print {
+                        body * {
+                            visibility: hidden;
+                        }
+                        #collage-result, #collage-result * {
+                            visibility: visible;
+                        }
+                        #collage-result {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 10cm;
+                            height: 15cm;
+                            margin: 0;
+                            padding: 0;
+                            box-shadow: none;
+                        }
+                    }
+                `;
+                document.head.appendChild(styleSheet);
+                
+                // Imprimir y luego remover los estilos
+                window.print();
+                
+                // Remover estilos después de imprimir
+                setTimeout(() => {
+                    const printStyles = document.getElementById('print-styles');
+                    if (printStyles) {
+                        printStyles.parentNode.removeChild(printStyles);
+                    }
+                }, 1000);
+                
+                // Actualizar contador de impresiones si hay un collage guardado
+                if (window.collageId) {
+                    updatePrintCount(window.collageId);
+                }
+            });
+        }
+        
+        // Función para actualizar contador de impresiones
+        function updatePrintCount(collageId) {
+            fetch("{% url 'update_print_count' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    collage_id: collageId
+                })
+            }).catch(error => {
+                console.error('Error al actualizar contador:', error);
+            });
+        }
+        
+        // Limpiar recursos al salir
+        window.addEventListener('beforeunload', function() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    });
+</script>
+{% endblock %}

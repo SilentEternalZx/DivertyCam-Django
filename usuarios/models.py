@@ -231,7 +231,38 @@ class Configurar_Photobooth(models.Model):
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
+    # Configuración de cámara
+    camera_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID de cámara seleccionada")
     
+    # Nueva configuración para resolución y balance de blancos
+    RESOLUCION_CHOICES = [
+        ('640x480', '640x480 (VGA)'),
+        ('1280x720', '1280x720 (HD)'),
+        ('1920x1080', '1920x1080 (Full HD)'),
+        ('3840x2160', '3840x2160 (4K)'),
+    ]
+    
+    resolucion_camara = models.CharField(
+        max_length=20, 
+        choices=RESOLUCION_CHOICES, 
+        default='1280x720',
+        verbose_name="Resolución de cámara"
+    )
+    
+    BALANCE_BLANCOS_CHOICES = [
+        ('auto', 'Automático'),
+        ('cloudy', 'Nublado'),
+        ('sunny', 'Soleado'),
+        ('fluorescent', 'Fluorescente'),
+        ('incandescent', 'Incandescente'),
+    ]
+    
+    balance_blancos = models.CharField(
+        max_length=20, 
+        choices=BALANCE_BLANCOS_CHOICES, 
+        default='auto',
+        verbose_name="Balance de blancos"
+    )
     
     # Opciones para el collage de fotos
     max_fotos = models.IntegerField(default=4, choices=[(1, '1 foto'), (2, '2 fotos'), (4, '4 fotos'), (5, '5 fotos')])
@@ -270,14 +301,14 @@ def update_search_vector(sender, instance, **kwargs):
         )
 
 class PhotoboothConfig(models.Model):
-    # Este modelo ya existe en tu sistema, solo se añade el nuevo campo
+    """Modelo para almacenar la configuración del photobooth"""
     evento = models.OneToOneField(Evento, on_delete=models.CASCADE, related_name='photobooth_config')
     mensaje_bienvenida = models.CharField(max_length=200, default='¡Bienvenidos al photobooth!')
     imagen_fondo = models.ImageField(upload_to='photobooth/fondos/', blank=True, null=True)
     color_texto = models.CharField(max_length=20, default='#000000')
     tamano_texto = models.IntegerField(default=24)
     tipo_letra = models.CharField(max_length=50, default='Arial')
-    max_fotos = models.IntegerField(default=4)
+    
     permitir_personalizar = models.BooleanField(default=False)
     
     # Nuevo campo para integración de collages personalizables
@@ -296,6 +327,9 @@ class CollageTemplate(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     background_color = models.CharField(max_length=20, default='#FFFFFF')
     background_image = models.ImageField(upload_to='collage/backgrounds/', blank=True, null=True)
+    background_size = models.CharField(max_length=20, default='cover')
+    background_position = models.CharField(max_length=20, default='center')
+    background_repeat = models.CharField(max_length=20, default='no-repeat')
     template_data = models.TextField(help_text="Datos completos de la plantilla en formato JSON")
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='collage_templates')
     es_predeterminada = models.BooleanField(default=False)
@@ -340,6 +374,17 @@ class CollageSession(models.Model):
         ordering = ['-created_at']
         verbose_name = "Sesión de Collage"
         verbose_name_plural = "Sesiones de Collage"
+
+
+class PhotoboothSession(models.Model):
+    """Modelo para representar una sesión de photobooth"""
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='photobooth_sessions')
+    template = models.ForeignKey(CollageTemplate, on_delete=models.SET_NULL, null=True, blank=True)
+    session_id = models.CharField(max_length=50, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Sesión {self.session_id} - {self.evento.nombre}"
 
 class SessionPhoto(models.Model):
     """Modelo para almacenar fotos tomadas durante una sesión"""

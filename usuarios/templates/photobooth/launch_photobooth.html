@@ -1,4 +1,5 @@
 {# templates/photobooth/launch_photobooth.html #}
+<!--
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -112,14 +113,15 @@
     </style>
 </head>
 <body>
+-->
     <!-- Pantalla de Bienvenida -->
-    <div class="welcome-screen" id="welcomeScreen">
+    {% comment %} <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-message" onclick="startCamera()">
             {{ config.mensaje_bienvenida }}
             <div class="mt-3 fs-6">Toca para comenzar</div>
         </div>
-    </div>
-    
+    </div> {% endcomment %}
+{% comment %}     
     <!-- Pantalla de Cámara -->
     <div class="camera-screen" id="cameraScreen">
         <div class="camera-container">
@@ -245,4 +247,4 @@
         }
     </script>
 </body>
-</html>
+</html> {% endcomment %}

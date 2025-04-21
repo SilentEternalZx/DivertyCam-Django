@@ -19,7 +19,7 @@ from .forms import *
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
-from .models import Evento, Configurar_Photobooth, CollageTemplate
+from .models import Evento, Configurar_Photobooth, CollageTemplate, PhotoboothSession, CollageSession, SessionPhoto, CollageResult
 from .forms import Configurar_PhotoboothForm
 import json
 import uuid
@@ -174,9 +174,7 @@ def eventos_cliente(request):
         "lista_eventos": lista_eventos
     })
 
-class ClienteListView( LoginRequiredMixin, ListView ):  #LoginRequiredMixin
-    
-   
+class ClienteListView(LoginRequiredMixin, ListView):  
     
     model = Cliente
     context_object_name = 'clientes'
@@ -350,7 +348,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://tu-ngrok-url.ngrok-free.app"
+            "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
         )
 
         payload = {
@@ -388,7 +386,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://tu-ngrok-url.ngrok-free.app"
+        "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
     )
 
     # 📌 Definir la descripción de la foto
@@ -409,9 +407,8 @@ def publicar_foto_facebook(request, foto_id):
         return JsonResponse({"success": "Foto publicada correctamente en Facebook"})
     else:
         return JsonResponse({"error": data}, status=400)
-    
-    
-class EventoListView(LoginRequiredMixin,ListView):
+   
+class EventoListView(LoginRequiredMixin, ListView):
     model = Evento
     context_object_name = 'eventos'
     paginate_by = 10
@@ -511,10 +508,8 @@ class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
         messages.success(self.request, "Evento eliminado exitosamente")
         return response
 
-# Añade estas vistas a tu archivo views.py
 
-
-#@login_required
+@login_required
 def configurar_photobooth(request, evento_id):
     if not request.user.is_authenticated:
         return redirect("login")
@@ -522,22 +517,60 @@ def configurar_photobooth(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
     config, created = PhotoboothConfig.objects.get_or_create(evento=evento)
     
+    # Inicializar form como None para evitar el UnboundLocalError
+    form = None
+    
     template_id = request.GET.get('template')
     
     if request.method == 'POST':
+        # Imprimir valores del POST para depuración
+        print("POST data:", request.POST)
+        
         form = PhotoboothConfigForm(
             request.POST, 
             request.FILES, 
             instance=config, 
             evento=evento
         )
+        
         if form.is_valid():
             config = form.save(commit=False)
             config.evento = evento
+            
+            # Guardar el ID de la cámara seleccionada
+            camera_id = request.POST.get('selected_camera_id')
+            if camera_id:
+                config.camera_id = camera_id
+                
+            # Evitar error si los campos no existen aún en la BD
+            try:
+                # Guardar configuración de resolución y balance de blancos
+                resolucion = request.POST.get('resolucion_camara')
+                if resolucion:
+                    config.resolucion_camara = resolucion
+                    print(f"Guardando resolución: {resolucion}")
+                    
+                balance = request.POST.get('balance_blancos')
+                if balance:
+                    config.balance_blancos = balance
+                    print(f"Guardando balance de blancos: {balance}")
+            except AttributeError:
+                print("Advertencia: Los campos resolucion_camara o balance_blancos no existen aún en la base de datos")
+
+            # Verificación explícita del campo de imagen
+            if 'imagen_fondo' in request.FILES:
+                config.imagen_fondo = request.FILES['imagen_fondo']
+                print("Guardando imagen:", request.FILES['imagen_fondo'])
+            
             config.save()
+
+            form.save_m2m()  # Para relaciones ManyToMany
             messages.success(request, "Configuración guardada correctamente")
-            return redirect('configurar_photobooth', evento_id=evento.id)
+            return redirect('evento_detail', pk=evento.id)
+        else:
+            print("Errores del formulario:", form.errors)
     else:
+        # En caso de GET
         form = PhotoboothConfigForm(instance=config, evento=evento)
         
         # Si hay un template_id en la URL y no es un POST, actualizamos el valor inicial
@@ -559,6 +592,16 @@ def configurar_photobooth(request, evento_id):
     if selected_template:
         frames = selected_template.get_frames()
     
+    # Asegúrate de que form esté definido antes de pasarlo al contexto
+    if form is None:
+        form = PhotoboothConfigForm(instance=config, evento=evento)
+    
+    # Evitar error si los campos no existen aún
+    try:
+        print(f"Configuración actual: Resolución={config.resolucion_camara}, Balance={config.balance_blancos}")
+    except AttributeError:
+        print("Advertencia: Los campos resolucion_camara o balance_blancos no existen aún en la base de datos")
+    
     context = {
         'evento': evento,
         'form': form,
@@ -568,6 +611,8 @@ def configurar_photobooth(request, evento_id):
     }
     
     return render(request, 'photobooth/configurar_photobooth.html', context)
+
+
 
 def preview_photobooth(request, evento_id):
     if not request.user.is_authenticated:
@@ -583,12 +628,50 @@ def preview_photobooth(request, evento_id):
     
     return render(request, 'photobooth/preview_photobooth.html', context)
 
+def launch_photobooth(request, evento_id):
+    """Vista para iniciar el photobooth"""
+    evento = get_object_or_404(Evento, id=evento_id)
+    config = PhotoboothConfig.objects.filter(evento=evento).first()
+    
+    if not config:
+        messages.warning(request, "El photobooth no está configurado completamente")
+        return redirect('configurar_photobooth', evento_id=evento_id)
+    
+    context = {
+        'evento': evento,
+        'config': config
+    }
+    
+    return render(request, 'photobooth/launch_photobooth.html', context)
+
 def template_list(request, evento_id):
     if not request.user.is_authenticated:
         return redirect("login")
     """Vista para listar las plantillas de collage disponibles para un evento"""
     evento = get_object_or_404(Evento, id=evento_id)
     templates = CollageTemplate.objects.filter(evento=evento)
+
+    # Procesar cada plantilla para extraer sus propiedades de visualización
+    for template in templates:
+        if template.template_data:
+            try:
+                data = json.loads(template.template_data)
+                # Atributos para la visualización de la imagen de fondo
+                template.bg_size = data.get('backgroundSize', template.background_size if hasattr(template, 'background_size') else 'cover')
+                template.bg_position = data.get('backgroundPosition', template.background_position if hasattr(template, 'background_position') else 'center')
+                template.bg_repeat = data.get('backgroundRepeat', template.background_repeat if hasattr(template, 'background_repeat') else 'no-repeat')
+                
+                # Extraer datos de los marcos
+                frames = []
+                for frame in data.get('frames', []):
+                    frames.append(frame)
+                template.frames = frames
+            except (json.JSONDecodeError, Exception) as e:
+                logger.error(f"Error procesando datos de plantilla: {str(e)}")
+                template.bg_size = 'contain'  # Valor por defecto para mantener proporciones originales
+                template.bg_position = 'center'
+                template.bg_repeat = 'no-repeat'
+                template.frames = []
     
     context = {
         'evento': evento,
@@ -662,6 +745,11 @@ def save_template(request):
         template.nombre = template_name
         template.descripcion = description
         template.background_color = data.get('backgroundColor', '#FFFFFF')
+
+        # Guardar propiedades del fondo
+        template.background_size = data.get('backgroundSize', 'cover')
+        template.background_position = data.get('backgroundPosition', 'center')
+        template.background_repeat = data.get('backgroundRepeat', 'no-repeat')
         
         # Procesar imagen de fondo si se proporciona
         background_image = data.get('backgroundImage')
@@ -725,26 +813,38 @@ def start_session(request, evento_id, template_id):
     evento = get_object_or_404(Evento, id=evento_id)
     template = get_object_or_404(CollageTemplate, template_id=template_id, evento=evento)
     
-    # Crear una nueva sesión
-    session = CollageSession.objects.create(
-        session_id=str(uuid.uuid4()),
-        template=template,
+    
+    # Obtener la configuración del photobooth
+    try:
+        config = PhotoboothConfig.objects.get(evento=evento)
+    except PhotoboothConfig.DoesNotExist:
+        return render(request, 'photobooth/error.html', {
+            'mensaje': 'No hay configuración para el photobooth. Por favor configúrela primero.'
+        })
+    
+    # Convertir datos de la plantilla a JSON para JavaScript
+    template_json = '{}'
+    try:
+        template_data = json.loads(template.template_data)
+        template_json = json.dumps(template_data)
+    except:
+        template_json = '{}'
+    
+    # Crear una nueva sesión para esta sesión de photobooth
+    session = PhotoboothSession.objects.create(
         evento=evento,
-        status='active'
+        template=template,
+        session_id=str(uuid.uuid4())
     )
     
-    # Convertir datos de la plantilla para el frontend
-    template_data = json.loads(template.template_data)
-    template_json = json.dumps(template_data)
-    
-    context = {
+    return render(request, 'photobooth/session.html', {
         'evento': evento,
+        'config': config,
         'template': template,
         'template_json': template_json,
-        'session_id': session.session_id
-    }
-    
-    return render(request, 'collage/collage_session.html', context)
+        'session_id': session.session_id,
+        'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/photobooth/templates/')
+    })
 
 @csrf_exempt
 @require_POST
@@ -987,3 +1087,165 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
         "evento":evento,
         "form":FotografiaForm()
     })
+
+def launch_photobooth(request, evento_id):
+    """Vista principal que inicia el flujo del photobooth"""
+    evento = get_object_or_404(Evento, pk=evento_id)
+    
+    # Obtener la configuración del photobooth
+    try:
+        config = PhotoboothConfig.objects.get(evento=evento)
+    except PhotoboothConfig.DoesNotExist:
+        return render(request, 'photobooth/error.html', {
+            'mensaje': 'No hay configuración para el photobooth. Por favor configúrela primero.'
+        })
+    
+    # Obtener la plantilla seleccionada
+    template = None
+    template_json = '{}'
+    if config.plantilla_collage:
+        template = config.plantilla_collage
+        try:
+            template_data = json.loads(template.template_data)
+            template_json = json.dumps(template_data)
+        except:
+            template_json = '{}'
+    else:
+        return render(request, 'photobooth/error.html', {
+            'mensaje': 'No hay plantilla de collage seleccionada. Por favor seleccione una plantilla.'
+        })
+    
+    # Crear una nueva sesión para esta sesión de photobooth
+    session = PhotoboothSession.objects.create(
+        evento=evento,
+        template=template,
+        session_id=str(uuid.uuid4())
+    )
+    
+    return render(request, 'photobooth/session.html', {
+        'evento': evento,
+        'config': config,
+        'template': template,
+        'template_json': template_json,
+        'session_id': session.session_id,
+        'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/')
+    })
+
+@csrf_exempt
+def save_session_photo(request):
+    """Guarda una foto tomada durante la sesión"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'})
+    
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+        frame_index = data.get('frame_index')
+        image_data = data.get('image_data')
+        
+        if not session_id or frame_index is None or not image_data:
+            return JsonResponse({'success': False, 'error': 'Datos incompletos'})
+        
+        # Obtener la sesión
+        session = get_object_or_404(PhotoboothSession, session_id=session_id)
+        
+        # Procesar la imagen desde el data URL
+        format, imgstr = image_data.split(';base64,')
+        ext = format.split('/')[-1]
+        
+        # Crear un nombre de archivo único
+        filename = f"session_{session_id}_frame_{frame_index}.{ext}"
+        filepath = os.path.join(settings.MEDIA_ROOT, 'session_photos', filename)
+        
+        # Asegurar que el directorio existe
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        
+        # Guardar la imagen
+        with open(filepath, "wb") as f:
+            f.write(base64.b64decode(imgstr))
+        
+        # Crear o actualizar el registro en la base de datos
+        photo, created = SessionPhoto.objects.update_or_create(
+            session=session,
+            frame_index=frame_index,
+            defaults={
+                'image': f'session_photos/{filename}'
+            }
+        )
+        
+        return JsonResponse({'success': True, 'photo_id': photo.id})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+def session_result(request, session_id):
+    """Muestra el resultado de una sesión de photobooth"""
+    session = get_object_or_404(PhotoboothSession, session_id=session_id)
+    evento = session.evento
+    template = session.template
+    
+    # Obtener todas las fotos de la sesión
+    photos = SessionPhoto.objects.filter(session=session).order_by('frame_index')
+    
+    # Determinar si la sesión está completa
+    template_data = json.loads(template.template_data) if template.template_data else {'frames': []}
+    total_frames = len(template_data.get('frames', []))
+    is_complete = photos.count() == total_frames
+    
+    # Obtener o crear el resultado del collage si está completo
+    collage_result = None
+    remaining_frames = []
+    
+    if is_complete:
+        # Buscar un resultado existente o crear uno nuevo
+        collage_result, created = CollageResult.objects.get_or_create(
+            session=session,
+            defaults={
+                'collage_id': str(uuid.uuid4()),
+                'print_count': 0
+            }
+        )
+        
+        # Si es creado, generar la imagen del collage
+        if created:
+            # Aquí iría el código para generar la imagen del collage
+            # Este paso depende de cómo esté implementada la generación del collage
+            pass
+    else:
+        # Calcular marcos restantes
+        remaining_frames = range(total_frames - photos.count())
+    
+    return render(request, 'collage/session_result.html', {
+        'evento': evento,
+        'template': template,
+        'photos': photos,
+        'is_complete': is_complete,
+        'collage_result': collage_result,
+        'remaining_frames': remaining_frames,
+        'session_id': session_id
+    })
+
+@csrf_exempt
+def update_print_count(request):
+    """Actualiza el contador de impresiones de un collage"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'})
+    
+    try:
+        data = json.loads(request.body)
+        collage_id = data.get('collage_id')
+        
+        if not collage_id:
+            return JsonResponse({'success': False, 'error': 'Datos incompletos'})
+        
+        # Obtener el collage
+        collage = get_object_or_404(CollageResult, collage_id=collage_id)
+        
+        # Incrementar contador
+        collage.print_count += 1
+        collage.save()
+        
+        return JsonResponse({'success': True, 'print_count': collage.print_count})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

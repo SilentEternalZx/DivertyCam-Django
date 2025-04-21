@@ -1,6 +1,8 @@
 {% extends "layout/layout.html" %}
 
 {% block content %}
+{% if request.user.is_authenticated and request.user.is_superuser %}
+
 
 {% if request.user.is_authenticated and request.user.is_superuser %}
 <div class="container mt-4">
@@ -21,6 +23,12 @@
         {% endfor %}
     </div>
 </div>
+{% else %}
+    <div class="container mt-5">
+        <h2>Acceso denegado</h2>
+        <p>No tienes permisos para acceder a esta página.</p>
+    </div>
+{% endif %}
 {% else %}
     <div class="container mt-5">
         <h2>Acceso denegado</h2>

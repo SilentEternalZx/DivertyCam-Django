@@ -131,7 +131,7 @@ class Configurar_PhotoboothForm(forms.ModelForm):
     class Meta:
         model = Configurar_Photobooth
         fields = ['mensaje_bienvenida', 'imagen_fondo', 'color_texto', 'tamano_texto', 
-                  'tipo_letra', 'max_fotos', 'permitir_personalizar']
+                  'tipo_letra', 'resolucion_camara', 'balance_blancos']
         widgets = {
             'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
             'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
@@ -145,7 +145,8 @@ class Configurar_PhotoboothForm(forms.ModelForm):
                 ('Verdana', 'Verdana'),
                 ('Open Sans', 'Open Sans')
             )),
-            'max_fotos': forms.Select(attrs={'class': 'form-select'}),
+            'resolucion_camara': forms.Select(attrs={'class': 'form-select', 'id': 'camera-resolution'}),
+            'balance_blancos': forms.Select(attrs={'class': 'form-select', 'id': 'white-balance'}),
             'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
@@ -155,11 +156,12 @@ class PhotoboothConfigForm(forms.ModelForm):
         model = PhotoboothConfig
         fields = [
             'mensaje_bienvenida', 'imagen_fondo', 'color_texto', 
-            'tamano_texto', 'tipo_letra', 'max_fotos', 
-            'permitir_personalizar', 'plantilla_collage'
+            'tamano_texto', 'tipo_letra', 
+             'plantilla_collage' #'permitir_personalizar'
         ]
         widgets = {
             'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
+            'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
             'color_texto': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'tamano_texto': forms.NumberInput(attrs={'class': 'form-control', 'min': '12', 'max': '72'}),
             'tipo_letra': forms.Select(attrs={'class': 'form-select'}, choices=[
@@ -169,8 +171,7 @@ class PhotoboothConfigForm(forms.ModelForm):
                 ('Courier New', 'Courier New'),
                 ('Verdana', 'Verdana')
             ]),
-            'max_fotos': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '10'}),
-            'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            #'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'plantilla_collage': forms.Select(attrs={'class': 'form-select'})
         }
     

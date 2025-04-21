@@ -156,9 +156,9 @@
                                     <i class="fas fa-print"></i> Imprimir Collage
                                 </button>
                                 
-                                <button id="whatsapp-button" class="btn btn-success">
+                                {% comment %} <button id="whatsapp-button" class="btn btn-success">
                                     <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
-                                </button>
+                                </button> {% endcomment %}
                                 
                                 <hr>
                             </div>
@@ -185,7 +185,7 @@
 </div>
 
 <!-- Modal para compartir por WhatsApp -->
-<div class="modal fade" id="whatsappModal" tabindex="-1" aria-hidden="true">
+{% comment %} <div class="modal fade" id="whatsappModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -211,7 +211,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 {% endblock %}
 
 {% block extra_scripts %}
@@ -245,6 +245,7 @@
             });
             
             // Enviar por WhatsApp
+            /*
             document.getElementById('send-whatsapp-btn').addEventListener('click', function() {
                 const phoneNumber = document.getElementById('phone-number').value.trim();
                 const messageText = document.getElementById('message-text').value.trim();
@@ -260,7 +261,7 @@
                 // Cerrar modal
                 whatsappModal.hide();
             });
-            
+            */
             // Función para actualizar contador de impresiones
             function updatePrintCount() {
                 printCount++;
@@ -282,43 +283,44 @@
             }
             
             // Función para enviar por WhatsApp
-            function sendViaWhatsApp(phone, message) {
-                // Limpiar número de teléfono (solo dígitos y signo +)
-                const cleanPhone = phone.replace(/[^\d+]/g, '');
+            document.getElementById('send-whatsapp-btn').addEventListener('click', function() {
+                const phoneNumber = document.getElementById('phone-number').value.trim();
+                const messageText = document.getElementById('message-text').value.trim();
                 
-                // Llamar a la API o abrir enlace de WhatsApp
-                fetch("{% url 'divertycam:send_whatsapp' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        collage_id: collageId,
-                        phone: cleanPhone,
-                        message: message
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Collage enviado por WhatsApp correctamente');
-                    } else {
-                        // Fallback: abrir WhatsApp Web
-                        const encodedMessage = encodeURIComponent(message || '¡Mira mi collage del evento!');
-                        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-                        window.open(whatsappUrl, '_blank');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al enviar por WhatsApp:', error);
+                if (!phoneNumber) {
+                    alert('Por favor, introduce un número de teléfono válido');
+                    return;
+                }
+                
+                try {
+                    // Limpiar número de teléfono (solo dígitos y signo +)
+                    const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
                     
-                    // Fallback: abrir WhatsApp Web
-                    const encodedMessage = encodeURIComponent(message || '¡Mira mi collage del evento!');
-                    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+                    // Verificar que el número tenga un formato válido
+                    if (!cleanPhone.startsWith('+') && !cleanPhone.startsWith('00')) {
+                        alert('Por favor, introduce un número con código de país (ej: +34612345678)');
+                        return;
+                    }
+                    
+                    // Usar el método de apertura directa de WhatsApp Web
+                    // Este método es más confiable que usar la API
+                    const encodedMessage = encodeURIComponent(messageText || '¡Mira mi collage del evento!');
+                    const whatsappUrl = `https://wa.me/${cleanPhone.startsWith('+') ? cleanPhone.substring(1) : cleanPhone}?text=${encodedMessage}`;
+                    
+                    // Abrir en una nueva ventana
                     window.open(whatsappUrl, '_blank');
-                });
-            }
+                    
+                    // Cerrar el modal
+                    const whatsappModal = bootstrap.Modal.getInstance(document.getElementById('whatsappModal'));
+                    if (whatsappModal) {
+                        whatsappModal.hide();
+                    }
+                } catch (error) {
+                    console.error('Error al abrir WhatsApp:', error);
+                    alert('Ocurrió un error al intentar abrir WhatsApp. Por favor intenta de nuevo.');
+                }
+            });
+        }
         {% endif %}
         
         // Estilo de impresión personalizado
@@ -336,8 +338,8 @@
                     position: absolute;
                     left: 0;
                     top: 0;
-                    width: 10cm;
-                    height: 15cm;
+                    width: 15cm;
+                    height: 10cm;
                     margin: 0;
                     padding: 0;
                     box-shadow: none;

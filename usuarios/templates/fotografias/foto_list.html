@@ -1,34 +1,72 @@
 {% extends "layout/layout.html" %}
+{% load static %}
 
 {% block content %}
 
-{% if request.user.is_authenticated  and  request.user.is_superuser%}
+{% if request.user.is_authenticated and request.user.is_superuser %}
 <div class="container mt-4">
-    <h2 class="mb-4">Lista de Fotografías</h2>
+    <h2 class="mb-4 text-center">Lista de Fotografías</h2>
     
-    <div class="row">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for foto in fotografias %}
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <img src="{{ foto.img.url }}" class="card-img-top" alt="Foto de {{ foto.invitado.nombre }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ foto.descripcion }}</h5>
-                    <p class="card-text">Invitado: {{ foto.invitado.nombre }}</p>
-                    <p><strong>Evento:</strong> {{ foto.evento.nombre }}</p>
-                    <p><strong>Fecha:</strong> {{ foto.evento.fecha_hora }}</p>
-                    <a href="{% url 'publicar_foto' foto.id %}" class="btn btn-primary">Publicar en Facebook</a>
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <img src="{{ foto.img.url }}" class="card-img-top fixed-image rounded-top" alt="Foto de {{ foto.invitado.nombre }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-center">{{ foto.descripcion }}</h5>
+                    <p class="card-text text-muted text-center">Invitado: <strong>{{ foto.invitado.nombre }}</strong></p>
+                    <p class="text-muted text-center"><strong>Evento:</strong> {{ foto.evento.nombre }}</p>
+                    <p class="text-muted text-center"><strong>Fecha:</strong> {{ foto.evento.fecha_hora }}</p>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'publicar_foto' foto.id %}" class="btn btn-primary">Publicar en Facebook</a>
+                    </div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <p>No hay fotos disponibles.</p>
+        <div class="col-12">
+            <p class="alert alert-warning text-center">⚠️ No hay fotos disponibles.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 {% else %}
     <div class="container mt-5">
-        <h2>Acceso denegado</h2>
-        <p>No tienes permisos para acceder a esta página.</p>
+        <h2 class="text-center">Acceso denegado</h2>
+        <p class="text-center">No tienes permisos para acceder a esta página.</p>
     </div>
 {% endif %}
 {% endblock %}
+
+<style>
+    .fixed-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+    .card {
+        display: flex;
+        flex-direction: column;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 15px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    .shadow-sm {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
