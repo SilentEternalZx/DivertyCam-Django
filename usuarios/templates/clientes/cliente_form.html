@@ -6,6 +6,7 @@
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 
 <div class="main-content">
     <div class="card form-container">
@@ -14,6 +15,20 @@
         </div>
         <div class="card-body">
             <form method="post" novalidate>
+=======
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="card">
+    <div class="card-header">
+        <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente</h2>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+>>>>>>> origin/blas
             {% csrf_token %}
             
             {% for field in form %}
@@ -32,8 +47,12 @@
                 
                 <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Cancelar</a>
             </div>
+<<<<<<< HEAD
             </form>
         </div>
+=======
+        </form>
+>>>>>>> origin/blas
     </div>
 </div>
 {% endblock %}

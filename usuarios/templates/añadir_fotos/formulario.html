@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "layout/layout.html" %}
 
 {% load static %}
@@ -31,3 +32,28 @@ Añadir foto
 </body>
 
 {% endblock %}
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+
+<form action="{% url 'añadir_foto' evento.id %}" method="POST" enctype="multipart/form-data">
+
+    {% csrf_token %}
+    
+   
+
+   <input type="text" readonly="true" value="{{evento.nombre}}">
+   {{form}}
+
+   <button type="submit">Guardar</button>
+</form>
+</body>
+</html>
+>>>>>>> origin/blas
