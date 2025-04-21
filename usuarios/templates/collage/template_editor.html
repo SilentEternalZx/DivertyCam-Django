@@ -93,7 +93,7 @@
 <br>
 <br>
 <div class="card">
-    <div class="card-header">
+    <div class="card-header ">
         <h2>Editor de Plantillas para "{{ evento.nombre }}"</h2>
         <p class="text-muted">Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
     </div>
@@ -550,9 +550,12 @@
             
             const reader = new FileReader();
             reader.onload = function(e) {
+                // Añadir opciones para el usuario
+        const bgFitOption = confirm('¿Deseas mantener las proporciones originales de la imagen?\n\nPresiona OK para mantener proporciones\nPresiona Cancelar para que la imagen cubra todo el espacio');
                 canvas.style.backgroundImage = `url('${e.target.result}')`;
-                canvas.style.backgroundSize = 'cover';
+                canvas.style.backgroundSize = bgFitOption ? 'contain' :'cover';
                 canvas.style.backgroundPosition = 'center';
+                canvas.style.backgroundRepeat = 'no-repeat';
                 
                 // Mostrar vista previa
                 const preview = document.getElementById('bg-preview');
@@ -614,6 +617,8 @@
                 description: document.getElementById('save-template-description').value,
                 backgroundColor: canvas.style.backgroundColor,
                 backgroundImage: canvas.style.backgroundImage,
+                backgroundSize: canvas.style.backgroundSize,  // Añadir esta línea
+                backgroundPosition: canvas.style.backgroundPosition,  // Añadir esta línea
                 isDefault: document.getElementById('save-template-default').checked,
                 frames: []
             };
