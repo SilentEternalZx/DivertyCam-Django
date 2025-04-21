@@ -1,0 +1,138 @@
+{# templates/eventos/evento_list.html #}
+{% extends 'eventos/base.html' %}
+
+{% block title %}Listado de Eventos{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Listado de Eventos</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'evento_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Evento
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar eventos..." value="{{ request.GET.q }}">
+                <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            <a href="?orden=nombre{% if request.GET.orden == 'nombre' %}_desc{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                                Nombre
+                                {% if request.GET.orden == 'nombre' %}
+                                🔼
+                                {% elif request.GET.orden == 'nombre_desc' %}
+                                🔽
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="?orden=cliente{% if request.GET.orden == 'cliente' %}_desc{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                                Cliente
+                                {% if request.GET.orden == 'cliente' %}
+                                🔼
+                                {% elif request.GET.orden == 'cliente_desc' %}
+                                🔽
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="?orden=fecha_hora{% if request.GET.orden == 'fecha_hora' %}_desc{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                                Fecha y Hora
+                                {% if request.GET.orden == 'fecha_hora' %}
+                                🔼
+                                {% elif request.GET.orden == 'fecha_hora_desc' %}
+                                🔽
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th>Servicios</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                
+                
+                <tbody>
+                    {% for evento in eventos %}
+                    <tr>
+                        <td>{{ evento.nombre }}</td>
+                        <td>{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</td>
+                        <td>{{ evento.fecha_hora|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% for servicio in evento.servicios %}
+                                <span class="badge bg-primary">{{ servicio }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <a href="{% url 'evento_detail' evento.pk %}" class="btn btn-sm btn-info">
+                                Ver
+                            </a>
+                            <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-warning">
+                                Editar
+                            </a>
+                            <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-danger">
+                                Eliminar
+                            </a>
+                            <a href="{% url 'añadir_foto' evento.pk %}" class="btn btn-sm btn-info">
+                                Añadir fotografía
+                            </a>
+
+                            <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-info">
+                               Ver fotografías
+                            </a>
+                            
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay eventos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Siguiente</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

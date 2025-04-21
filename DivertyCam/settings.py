@@ -30,7 +30,16 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['22b3-179-15-25-167.ngrok-free.app', '127.0.0.1']
+
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOwOKJCoiKZAUZAsWvsMBX2o8ZBQmt0f3xg6FukACxrn4R9oLtDyhmTBIZB1SAOmnZCjwDzV7kNk5JRDqIYBsP7KVFh0rZBxC6XPzIMYhxn93VHbdqIQjW3xB31WC0WPLgZAAF88L9fHF43vBVsGY2EgxUA3PGzlz6VcfdGbyDwcznsjTXhI6QQaxNZAD9UOZBhK3jw1SyoALghpiz"
+FACEBOOK_PAGE_ID = "612248578630248"
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+
 
 
 # Application definition
@@ -38,13 +47,17 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'usuarios',
     'jazzmin',
+    'multiselectfield',
+    'widget_tweaks',
+    'requests',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'camaras_impresoras',
+    'crispy_forms',
+    'crispy_bootstrap5',
     
 ]
 
@@ -56,6 +69,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://22b3-179-15-25-167.ngrok-free.app"
 ]
 
 ROOT_URLCONF = 'DivertyCam.urls'
@@ -87,9 +104,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': 'Axel2201',  # La contraseña del usuario
+        'PASSWORD': 'posgres',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
         'PORT': '5433',  # El puerto por defecto de PostgreSQL
+       
     }
 }
 
@@ -99,8 +117,9 @@ AUTH_USER_MODEL = 'usuarios.User'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+     {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8}
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -129,14 +148,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 #SMTP configuration
