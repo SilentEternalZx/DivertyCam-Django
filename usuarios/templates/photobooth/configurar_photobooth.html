@@ -203,7 +203,7 @@
         const preview = document.getElementById('preview');
         
         // Inicializar con valores actuales
-        {% if config and config.imagen_fondo %}
+        {% if config.imagen_fondo %}
         preview.style.backgroundImage = "url('{{ config.imagen_fondo.url }}')";
         {% endif %}
         
