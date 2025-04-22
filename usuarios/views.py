@@ -37,6 +37,28 @@ import requests
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
+from .models import Cliente
+from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.db.models import Q
+from django.contrib.messages.views import SuccessMessageMixin
+from django.http import StreamingHttpResponse
+from django.http import JsonResponse, StreamingHttpResponse
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+import json
+import cv2
+import os
+import time
+import datetime
+import win32print
+import win32ui
+import requests
+import uuid
+
 
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")

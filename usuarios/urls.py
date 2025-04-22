@@ -4,6 +4,10 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import admin,views
 from .views import CustomPasswordResetView
+from .views import video_feed, index
+from .views import list_printers, print_document
+
+
 
 #Urls
 urlpatterns = [
@@ -72,3 +76,17 @@ urlpatterns = [
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
+    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+    path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
+    path("verificar_email/", views.verificar_email, name="verificar_email"),
+    path('camaras', views.camaras, name='camaras'),
+    path('camara/video_feed/', views.video_feed, name='video_feed'),
+    path('capture', views.capture, name='capture'),
+    path('set_iso', views.set_iso, name='set_iso'),
+    path('set_white_balance/', views.set_white_balance, name='set_white_balance'),
+    path('switch_camera', views.switch_camera, name='switch_camera'),
+    path('impresoras/', views.impresoras, name='impresoras'),
+    path('list_printers/', views.list_printers, name='list_printers'),
+    path('print_document/', views.print_document, name='print_document'),
+
