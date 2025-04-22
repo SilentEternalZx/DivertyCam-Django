@@ -43,6 +43,7 @@ urlpatterns = [
     path('evento/<int:evento_id>/collage/editor/', views.template_editor, name='template_editor'),
     path('evento/<int:evento_id>/collage/editor/<str:template_id>/', views.template_editor, name='template_editor_edit'),
     path('evento/<int:evento_id>/collage/template/<str:template_id>/delete/', views.template_delete, name='template_delete'),
+    path("eventos_cliente/", views.eventos_cliente, name="eventos_cliente"),
 
      # APIs para plantillas
     path('api/collage/save-template/', views.save_template, name='save_template'),
