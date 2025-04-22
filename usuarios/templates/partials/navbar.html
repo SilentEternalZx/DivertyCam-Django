@@ -13,50 +13,18 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a></li>
                 <li class="nav-item"><a class="nav-link" href="/admin">Panel de administración</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Inicio</a></li>
-<<<<<<< HEAD
                 <li class="nav-item"><a class="nav-link" href="{% url 'listar_categorias' %}">Categorías</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'cliente_list' %}">Clientes</a></li>
                
-=======
                 <li class="nav-item"><a class="nav-link" href="{% url 'evento_list' %}">Eventos</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'cliente_list' %}">Clientes</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'camaras' %}">Cámaras</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'impresoras' %}">Impresoras</a></li>
-
-
->>>>>>> origin/blas
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Configuración de artefactos
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown2">
-                        <li><a class="dropdown-item" href="../Vista selección de camara/camara.html">Configuración de cámara</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="../Vista configuración de impresoras/impresoras.html">Configuración de impresora</a></li>
-                    </ul>
-                </li>
-<<<<<<< HEAD
                 
+                {% comment %} <li class="nav-item"><a class="nav-link" href="{% url 'camaras' %}">Cámaras</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'impresoras' %}">Impresoras</a></li> {% endcomment %}
+
+                                
                 {% elif request.user.is_authenticated and not request.user.is_superuser %}
              
                 <li class="nav-item"><a class="nav-link" href="{%  url 'eventos_cliente'  %}">Mis eventos</a></li>
-=======
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Eventos
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
-                        <li><a class="dropdown-item" href="../Eventos/eventos.html">Crear evento</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="../Lista eventos/listaEvento.html">Lista de eventos</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                       
-                    </ul>
-                </li>
-                {% elif request.user.is_authenticated and not request.user.is_superuser %}
-             
-                <li class="nav-item"><a class="nav-link" href="{%  url 'mis_eventos'  %}">Mis eventos</a></li>
->>>>>>> origin/blas
               
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a></li>
                 {% else %}
