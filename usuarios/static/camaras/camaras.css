@@ -1,0 +1,102 @@
+/* Centrado general */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.camera-container-custom {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+}
+
+
+
+
+/* Títulos */
+h1 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    color: #333;
+}
+
+/* Controles de cámara */
+.camera-controls,
+.camera-settings,
+.setting-control,
+.camera-container {
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 20px;
+}
+
+.camara-page .navbar {
+    min-height: 50px !important;
+    padding: 0.25rem 1rem !important;
+    font-size: 0.9rem;
+}
+/* Select y sliders */
+select,
+input[type="range"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* ISO específico */
+#iso-range {
+    width: 100%;
+    height: 8px;
+}
+
+/* Botones */
+button,
+a.btn {
+    margin-top: 15px;
+    padding: 10px 25px;
+    font-size: 0.8rem;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Botón azul */
+#capture-btn.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+#capture-btn.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Botón amarillo */
+a.btn-warning {
+    background-color: #ffc107;
+    color: black;
+    border: none;
+}
+
+a.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+/* Imagen de cámara */
+#camera-feed {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    margin-top: 20px;
+}

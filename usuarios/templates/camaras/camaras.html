@@ -1,20 +1,25 @@
 {% extends "layout/layout.html" %}
+
 {% load static %}
+
 
 {% block content %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Cámara</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+    
+    <link rel="stylesheet" href="{% static 'camaras/camaras.css' %}">
 
 </head>
-<body>
-    <div class="container">
-        <h1>Control de Cámara</h1>
+<body class="camara-page">
+    >
+    <div class="camera-container-custom">
+
+        <h1>CONFIGURACIÓN DE CÁMARA</h1>
         
         <div class="camera-controls">
-            <label for="camera-select">Seleccionar cámara:</label>
+            <label for="camera-select">Seleccionar Cámara:</label>
             <select id="camera-select" onchange="switchCamera(this.value)">
                 {% for camera in cameras %}
                 <option value="{{ camera.index }}" {% if camera.index == current_camera %}selected{% endif %}>
@@ -55,28 +60,29 @@
             </div>
             
             <div class="buttons">
-                <button id="capture-btn" onclick="captureImage()">Tomar Foto</button>
-                <button id="download-btn" onclick="downloadImage()" disabled>Descargar Última Foto</button>
+                <button id="capture-btn" onclick="captureImage()" class="btn btn-primary">Tomar Foto</button>
+                <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-warning">
+                    Regresar
+                </a>
+               
+                
+                
             </div>
         </div>
+
         
-        <div id="captured-images">
-            <h2>Imágenes Capturadas</h2>
-            <div id="gallery">
-                {% for image in images %}
-                <div class="thumbnail">
-                    <img src="{% static 'images/' %}{{ image }}" alt="Imagen capturada">
-                    <p>{{ image }}</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+       
     </div>
+
     <script>
         const setIsoUrl = "{% url 'set_iso' %}";
         const captureUrl = "{% url 'capture' %}";
     </script>
     <script src="{% static 'js/video.js' %}"></script>
+    
+
+   
+    
 </body>
 </html>
 {% endblock %}

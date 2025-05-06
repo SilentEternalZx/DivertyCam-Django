@@ -1587,7 +1587,9 @@ def generate_frames():
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
         time.sleep(0.03)
 
-def camaras(request):
+def camaras(request, evento_id):
+    evento=Evento.objects.get(id=evento_id)
+    
     images = []
     if os.path.exists(output_folder):
         images = [f for f in os.listdir(output_folder) if f.endswith(('.jpg', '.jpeg', '.png'))]
@@ -1599,7 +1601,9 @@ def camaras(request):
         'images': images,
         'cameras': available_cameras,
         'current_camera': current_camera_index,
-        'camera_settings': camera_settings
+        'camera_settings': camera_settings,
+        "evento":evento
+        
     })
 
 @csrf_exempt
@@ -1701,16 +1705,21 @@ def print_document(request):
     if request.method != 'POST':
         return HttpResponseBadRequest("Método no permitido.")
 
-    # Leer datos JSON del body
     try:
         data = json.loads(request.body)
         printer_name = data.get('printer_name')
         document_content = data.get('document_content')
-        paper_size = data.get('paper_size', 'A4')
+        paper_size = data.get('paper_size')
+        orientation = data.get('orientation')
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Error al leer los datos JSON.'}, status=400)
 
-    # Verificar que los datos esenciales estén presentes
+    # Si no vienen desde el frontend, usar configuración guardada en sesión
+    config = request.session.get('printer_config', {})
+    printer_name = printer_name or config.get('printer_name')
+    paper_size = paper_size or config.get('paper_size', 'A4')
+    orientation = orientation or config.get('orientation', 'portrait')
+
     if not printer_name or not document_content:
         return JsonResponse({'error': 'Nombre de impresora y contenido del documento son obligatorios.'}, status=400)
 
@@ -1726,7 +1735,7 @@ def print_document(request):
         hprinter.StartPage()
 
         # Ajustar fuente y formato para imprimir
-        hprinter.TextOut(100, 100, document_content)  # Ajusta las coordenadas y el contenido del texto
+        hprinter.TextOut(100, 100, document_content)  # Ajusta las coordenadas según necesidad
         hprinter.EndPage()
         hprinter.EndDoc()
 
@@ -1741,6 +1750,7 @@ def print_document(request):
     except Exception as e:
         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
+
 @csrf_exempt
 def list_printers(request):
     try:
@@ -1749,9 +1759,68 @@ def list_printers(request):
         return JsonResponse({'printers': printers})
     except Exception as e:
         return JsonResponse({'error': f'Error al obtener las impresoras: {str(e)}'}, status=500)
+    
+@csrf_exempt
+def save_printer_settings(request):
+    try:
+        data = json.loads(request.body)
+        printer_name = data.get('printer_name')
+        paper_size = data.get('paper_size')
+        orientation = data.get('orientation')
+
+        request.session['printer_config'] = {
+            'printer_name': printer_name,
+            'paper_size': paper_size,
+            'orientation': orientation
+        }
+
+        return JsonResponse({'message': 'Configuración guardada en sesión correctamente.'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+def get_paper_sizes(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        printer_name = data.get('printer_name')
+
+        if not printer_name:
+            return JsonResponse({'error': 'Nombre de impresora requerido'}, status=400)
+
+        printer_handle = win32print.OpenPrinter(printer_name)
+        devmode = win32print.GetPrinter(printer_handle, 2)["pDevMode"]
+        win32print.ClosePrinter(printer_handle)
+
+        # Lista común de tamaños estándar
+        paper_sizes = {
+            1: "Letter", 2: "LetterSmall", 3: "Tabloid", 4: "Ledger", 5: "Legal", 6: "Statement",
+            7: "Executive", 8: "A3", 9: "A4", 10: "A4Small", 11: "A5", 12: "B4", 13: "B5", 14: "Folio",
+            15: "Quarto", 16: "10x14", 17: "11x17", 18: "Note", 19: "Envelope9", 20: "Envelope10"
+        }
+
+        # Obtener el ID de tamaño de papel predeterminado
+        default_size_id = devmode.PaperSize
+        available_sizes = []
+
+        # Para simplificar, podríamos devolver todas las conocidas
+        for pid, name in paper_sizes.items():
+            available_sizes.append({'id': pid, 'name': name})
+
+        return JsonResponse({'paper_sizes': available_sizes, 'default': default_size_id})
+
+    except Exception as e:
+        return JsonResponse({'error': f'Error al obtener tamaños de papel: {str(e)}'}, status=500)
 
 
+def galeria_bodas(request):
+    return render(request, 'index/bodas.html')
 
+def galeria_graduaciones(request):
+    return render(request, 'index/graduaciones.html')
 
+def galeria_comunion(request):
+    return render(request, 'index/primera_comunión.html')

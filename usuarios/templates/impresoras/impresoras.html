@@ -6,7 +6,7 @@
 
 <main class="print-main">
     <div class="print-container">
-        <h1>Configuración de Impresión</h1>
+        <h1>CONFIGURACIÓN</h1>
 
         <div class="form-group">
             <label for="printerSelect">Selecciona una impresora:</label>
@@ -14,11 +14,11 @@
         </div>
 
         <div class="form-group">
-            <label for="paperSize">Tamaño de papel:</label>
+            <label for="paperSize">Tamaño de Papel:</label>
             <select id="paperSize">
-                <option value="A4">A4</option>
-                <option value="Letter">Carta</option>
+                <option value=""></option>
             </select>
+            
         </div>
 
         <div class="form-group">
@@ -35,15 +35,10 @@
         </div>
 
         <div class="form-group center-button">
-            <button onclick="printDocument()">Imprimir</button>
-            
+            <button onclick="printDocument()" class="btn btn-primary">Imprimir</button>
+            <a href="{% url 'configurar_photobooth' eventos.id %}" class="btn btn-warning">Regresar</a>
         </div>
      
-
-    
-     <a href="{% url 'configurar_photobooth' eventos.id %}">Regresar</a>
-  
-  
     
         
     </div>

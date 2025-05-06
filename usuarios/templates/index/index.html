@@ -2,6 +2,8 @@
 {% load static  %}
 {%block content%}
 <link rel="stylesheet" href="{% static  'about/css/about.css' %}">
+<link rel="stylesheet" href="{% static 'boda/boda.css' %}">
+
 <body id="page-top">
    
     
@@ -18,51 +20,71 @@
     </header>
     
     <div class="about-section">
-        <h1>About Us Page</h1>
-        <p>Some text about who we are and what we do.</p>
-        <p>Resize the browser window to see that this page is responsive by the way.</p>
+        <h1>Isabel Alvarez Fotografía Profesional</h1>
+        <p>Fotografía y Videografía</p>
+        <p>El corazón y la mente son el verdadero lente de la Cámara</p>
       </div>
       
-      <h2 style="text-align:center">Our Team</h2>
-      <div class="row">
-        <div class="column">
-          <div class="card">
-            <img src="/w3images/team1.jpg" alt="Jane" style="width:100%">
-            <div class="container">
-              <h2>Jane Doe</h2>
-              <p class="title">CEO & Founder</p>
-              <p>Some text that describes me lorem ipsum ipsum lorem.</p>
-              <p>jane@example.com</p>
-              <p><button class="button">Contact</button></p>
+      <div class="column">
+        <div class="card hover-gallery">
+          <div class="main-image-container">
+            <img src="{% static 'img/bodas/b1.jpg' %}" alt="Bodas" width="100%" class="main-image">
+            <div class="extra-images">
+              <img src="{% static 'img/bodas/b2.jpg' %}" alt="Boda extra 1">
+              <img src="{% static 'img/bodas/b3.jpg' %}" alt="Boda extra 2">
+              <img src="{% static 'img/bodas/b4.jpg' %}" alt="Boda extra 3">
             </div>
           </div>
+          <div class="container">
+            <h2>Bodas</h2>
+            <p class="title">Primavera</p>
+            <p>Capturamos cada emoción de tu día especial</p>
+            <p>Diverticam</p>
+            <p><a href="{% url 'galeria_bodas' %}" class="button">Abrir</a></p>
+
+          </div>
         </div>
+      </div>
       
-        <div class="column">
-          <div class="card">
-            <img src="/w3images/team2.jpg" alt="Mike" style="width:100%">
-            <div class="container">
-              <h2>Mike Ross</h2>
-              <p class="title">Art Director</p>
-              <p>Some text that describes me lorem ipsum ipsum lorem.</p>
-              <p>mike@example.com</p>
-              <p><button class="button">Contact</button></p>
+      <div class="column">
+        <div class="card hover-gallery">
+          <div class="main-image-container">
+            <img src="{% static 'img/graduación/g2.jpg' %}" alt="Bodas" width="99%" class="main-image">
+            <div class="extra-images">
+              <img src="{% static 'img/graduación/g1.jpg' %}" alt="graduación extra 1">
+              <img src="{% static 'img/graduación/g4.jpg' %}" alt="graduación extra 2">
+              <img src="{% static 'img/graduación/g5.jpg' %}" alt="graduación extra 3">
             </div>
           </div>
+          <div class="container">
+            <h2>Graduaciones</h2>
+            <p class="title">Primavera</p>
+            <p>Un recuerdo profesional de tu gran logro</p>
+            <p>Diverticam</p>
+            <p><a href="{% url 'galeria_graduaciones' %}" class="button">Abrir</a></p>
+          </div>
         </div>
+      </div>
       
-        <div class="column">
-          <div class="card">
-            <img src="/w3images/team3.jpg" alt="John" style="width:100%">
-            <div class="container">
-              <h2>John Doe</h2>
-              <p class="title">Designer</p>
-              <p>Some text that describes me lorem ipsum ipsum lorem.</p>
-              <p>john@example.com</p>
-              <p><button class="button">Contact</button></p>
+      <div class="column">
+        <div class="card hover-gallery">
+          <div class="main-image-container">
+            <img src="{% static 'img/primera_comunión/p1.jpg' %}" alt="Bodas" width="100%" class="main-image">
+            <div class="extra-images">
+              <img src="{% static 'img/primera_comunión/p2.jpg' %}" alt="primera_comunión extra 1">
+              <img src="{% static 'img/primera_comunión/p3.jpg' %}" alt="primera_comunión extra 2">
+              <img src="{% static 'img/primera_comunión/p4.jpg' %}" alt="primera_comunión extra 3">
             </div>
           </div>
+          <div class="container">
+            <h2>Primera Comunión</h2>
+            <p class="title">Primavera</p>
+            <p>Sesiones delicadas y memorables para los niños</p>
+            <p>Diverticam</p>
+            <p><a href="{% url 'galeria_comunion' %}" class="button">Abrir</a></p>
+          </div>
         </div>
+      </div>
       </div>
     
 </body>

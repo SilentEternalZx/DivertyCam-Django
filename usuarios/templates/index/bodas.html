@@ -1,0 +1,32 @@
+{% extends "layout/layout.html" %}
+{% load static %}
+{% block content %}
+<h1>Bodas</h1>
+<div class="galeria">
+    <img src="{% static 'img/bodas/b1.jpg' %}" class="fullscreen-image" alt="Boda 1">
+    <img src="{% static 'img/bodas/b2.jpg' %}" class="fullscreen-image" alt="Boda 2">
+    <img src="{% static 'img/bodas/b3.jpg' %}" class="fullscreen-image" alt="Boda 3">
+    <img src="{% static 'img/bodas/b4.jpg' %}" class="fullscreen-image" alt="Boda 4">
+</div>
+<style>
+    .fullscreen-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.fullscreen-image {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.fullscreen-image:hover {
+  transform: scale(1.02);
+}
+
+</style>
+{% endblock %}

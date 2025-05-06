@@ -1,0 +1,32 @@
+{% extends "layout/layout.html" %}
+{% load static %}
+{% block content %}
+<h1>Primera comunión</h1>
+<div class="galeria">
+    <img src="{% static 'img/primera_comunión/p1.jpg' %}" class="fullscreen-image" alt="comunión 1">
+    <img src="{% static 'img/primera_comunión/p2.jpg' %}" class="fullscreen-image" alt="comunión 2">
+    <img src="{% static 'img/primera_comunión/p3.jpg' %}" class="fullscreen-image" alt="comunión 3">
+    <img src="{% static 'img/primera_comunión/p4.jpg' %}" class="fullscreen-image" alt="comunión 4">
+</div>
+<style>
+    .fullscreen-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.fullscreen-image {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.fullscreen-image:hover {
+  transform: scale(1.02);
+}
+
+</style>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "layout/layout.html" %}
+{% load static %}
+{% block content %}
+<h1>Graduaciones</h1>
+<div class="galeria">
+    <img src="{% static 'img/graduación/g1.jpg' %}" class="fullscreen-image" alt="graduación 1">
+    <img src="{% static 'img/graduación/g2.jpg' %}" class="fullscreen-image" alt="graduación 2">
+    <img src="{% static 'img/graduación/g4.jpg' %}" class="fullscreen-image" alt="graduación 3">
+    <img src="{% static 'img/graduación/g5.jpg' %}" class="fullscreen-image" alt="graduación 4">
+    <img src="{% static 'img/graduación/g6.jpg' %}" class="fullscreen-image" alt="graduación 5">
+</div>
+<style>
+    .fullscreen-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.fullscreen-image {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.fullscreen-image:hover {
+  transform: scale(1.02);
+}
+
+</style>
+{% endblock %}

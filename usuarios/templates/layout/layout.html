@@ -110,7 +110,8 @@
     {% endfor %}
 </div>
 {% endif %}
-<body>
+<body class="{% block body_class %}{% endblock %}">
+    >
 {% include "partials/navbar.html" %}
 
 {%block content %}
