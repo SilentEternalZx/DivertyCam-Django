@@ -72,21 +72,18 @@ urlpatterns = [
     path('photobooth/save-photo/', views.save_session_photo, name='save_session_photo'),
     path('photobooth/session/<str:session_id>/result/', views.session_result, name='session_result'),
     path('photobooth/update-print-count/', views.update_print_count, name='update_print_count'),
-   
-]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
-    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
-    path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
-    path("verificar_email/", views.verificar_email, name="verificar_email"),
     path('camaras', views.camaras, name='camaras'),
     path('camara/video_feed/', views.video_feed, name='video_feed'),
+    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+    
+   
     path('capture', views.capture, name='capture'),
     path('set_iso', views.set_iso, name='set_iso'),
     path('set_white_balance/', views.set_white_balance, name='set_white_balance'),
     path('switch_camera', views.switch_camera, name='switch_camera'),
-    path('impresoras/', views.impresoras, name='impresoras'),
+    path('impresoras/<int:evento_id>', views.impresoras, name='impresoras'),
     path('list_printers/', views.list_printers, name='list_printers'),
     path('print_document/', views.print_document, name='print_document'),
+]
+
 

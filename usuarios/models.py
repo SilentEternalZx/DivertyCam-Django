@@ -1,6 +1,6 @@
 import json
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
@@ -9,11 +9,15 @@ from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
-
+from django.forms.widgets import ClearableFileInput
 
 # Modelo de Usuario personalizado
 class User(AbstractUser):
    pass
+
+
+class CustomGroup(Group):
+    pass
 
 
 #Modelo de invitado
@@ -27,7 +31,7 @@ class Invitado(models.Model):
 #Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
-        max_length=100,
+        max_length=100,        
         verbose_name=_("Nombre"),
         help_text=_("Nombre del cliente")
     )
@@ -422,9 +426,14 @@ class CollageResult(models.Model):
 class Fotografia(models.Model):
     
     img=models.ImageField(null=True,blank=True, upload_to="imagenes/")
-    descripcion=models.TextField()
+    descripcion=models.TextField(max_length=34)
     invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE, null=True)
     evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
     
     def __str__(self):
         return f'{self.descripcion} {self.invitado}'
+
+
+
+
+

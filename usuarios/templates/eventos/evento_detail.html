@@ -4,7 +4,6 @@
 {% block title %}{{ evento.nombre }}{% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
 
 <div class="main-content">        
      <h2>Detalles del Evento</h2>
@@ -105,64 +104,4 @@
     
     
 
-=======
-<br>
-<br>
-<div class="card">
-    <div class="card-header">
-        <h2>Detalles del Evento</h2>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <h4>Información del Evento</h4>
-                <dl class="row">
-                    <dt class="col-sm-4">Nombre</dt>
-                    <dd class="col-sm-8">{{ evento.nombre }}</dd>
-
-                    <dt class="col-sm-4">Fecha y Hora</dt>
-                    <dd class="col-sm-8">{{ evento.fecha_hora|date:"d/m/Y H:i" }}</dd>
-
-                    <dt class="col-sm-4">Dirección</dt>
-                    <dd class="col-sm-8">{{ evento.direccion }}</dd>
-                </dl>
-            </div>
-            <div class="col-md-6">
-                <h4>Información del Cliente</h4>
-                <dl class="row">
-                    <dt class="col-sm-4">Cliente</dt>
-                    <dd class="col-sm-8">
-                        <a href="{% url 'cliente_detail' evento.cliente.pk %}">
-                            {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
-                        </a>
-                    </dd>
-
-                    <dt class="col-sm-4">Teléfono</dt>
-                    <dd class="col-sm-8">{{ evento.cliente.telefono }}</dd>
-
-                    <dt class="col-sm-4">Correo</dt>
-                    <dd class="col-sm-8">{{ evento.cliente.correo }}</dd>
-                </dl>
-            </div>
-        </div>
-        
-        <div class="row mt-4">
-            <div class="col-12">
-                <h4>Servicios Contratados</h4>
-                <div class="mt-2">
-                    {% for servicio in evento.servicios %}
-                        <span class="badge bg-primary p-2 mb-2 me-2">{{ servicio }}</span>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card-footer">
-        <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-warning">Editar</a>
-        <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger">Eliminar</a>
-        <a href="{% url 'evento_list' %}" class="btn btn-secondary">Volver al Listado</a>
-        <a href="{% url 'añadir_foto' evento.id %}" class="btn btn-secondary">Agregar fotografía</a>
-    </div>
-</div>
->>>>>>> origin/blas
 {% endblock %}

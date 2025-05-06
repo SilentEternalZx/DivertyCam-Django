@@ -1,5 +1,8 @@
 body {
     font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .navbar {
@@ -56,19 +59,42 @@ body {
     margin-right: 10%;
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    margin-top: 50px;
+    margin-bottom: 50px;
 }
 
 .card-header {
     background-color: rgb(62, 60, 63);
     color: white;
     border-radius: 15px 15px 0 0 !important;
-    padding: 20px;
+    padding: 10px 50px;
     
 }
 
 .card-body {
-    padding: 30px;
+    padding: 10px;
     
+}
+
+.card-footer {
+    padding: 15px 20px;
+} 
+
+.form-container {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.section-title {
+    margin-bottom: 20px;
+}
+
+.action-buttons {
+    margin-bottom: 20px;
+}
+
+.action-buttons .btn {
+    margin-left: 5px;
 }
 
 .portfolio-item {
@@ -164,3 +190,36 @@ z-index: 1000;
     font-size: 80px;
 }
 
+
+
+.table-responsive {
+    margin-bottom: 20px;
+}
+
+
+dl.row {
+    margin-bottom: 20px;
+}
+
+.main-content {
+    margin-top: 50px; /* Ajusta este valor según la altura de tu barra de navegación */
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+
+.pagination {
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+
+
+.alert {
+    margin-bottom: 20px;
+}
+
+
+td .btn {
+    margin-right: 3px;
+}

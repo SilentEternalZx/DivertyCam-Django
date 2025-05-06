@@ -1,8 +1,8 @@
 @import url('https://fonss.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 /*Tipografía*/
 *{
-    margin: 0px;    
-    padding:0px ;
+    margin: 0;    
+    padding:0 ;
     box-sizing: border-box;
     font-family: "Open Sans", sans-serif;
 }/* Selector universal */
@@ -13,12 +13,20 @@ body{
     display: flex;
     justify-content: center;  /*Centrar recuadro*/
     align-items: center;
+    
+   
 
 }
+
 .container{ /*Acceder a la clase container*/
-    width: 800px;
+    width: 50rem;
+    max-width: 800px;
     height:500px;
     display:flex;
+    padding: 2rem;
+    
+ 
+   
    
 }
 .container-form{ /*Acceder a la clase container-form*/
@@ -122,3 +130,40 @@ width:100%
     text-decoration: none;
 }
 
+@media screen and (max-width:700px){
+.container{
+    width: 100%;
+    flex-direction: column;
+}
+
+.container-shape{
+    display:none
+}
+
+}
+
+
+#error-container{
+
+    display: none;
+    background-color: #ffdddd;
+    color: red;
+    padding: 10px;
+    border: 1px solid red;
+    border-radius: 5px;
+    margin-bottom: 15px;
+
+}
+
+
+    
+#error{
+    
+    
+        background-color: #ffdddd;
+        color: red;
+        padding: 10px;
+        border: 1px solid red;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }

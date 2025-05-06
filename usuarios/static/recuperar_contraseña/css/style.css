@@ -1,0 +1,176 @@
+@import url('https://fonss.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+*
+{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+}
+
+body 
+{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #000;
+
+}
+
+section 
+{
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  overflow: hidden;
+  background-image: url('../../assets/img/matthew-henry-VviFtDJakYk-unsplash.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+
+section .container
+{
+  position: absolute;
+  width: 400px;
+  background: #222;  
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  border-radius: 4px;
+  box-shadow: 0 15px 35px rgba(0,0,0,9);
+  height: 65vh;
+}
+
+section .container .content 
+{
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 40px;
+}
+
+section .container .content h2 
+{
+  font-size: 1.2em;
+  color: rgb(230, 225, 225);
+  text-transform: uppercase;
+}
+section .container .content .reset-password 
+{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+section .container .content .reset-password .inputBox
+{
+  position: relative;
+  width: 100%;
+  margin-top: 30px;
+}
+section .container .content .reset-password .inputBox input 
+{
+  position: relative;
+  width: 100%;
+  background: #333;
+  border: none;
+  outline: none;
+  padding: 25px 10px 7.5px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1em;
+  
+}
+section .container .content .reset-password .inputBox i 
+{
+  position: absolute;
+  left: 0;
+  padding: 15px 10px;
+  font-style: normal;
+  color: #aaa;
+  transition: 0.5s;
+  pointer-events: none;
+}
+.container .content .reset-password .inputBox input:focus ~ i,
+.container .content .reset-password .inputBox input:valid ~ i
+{
+  transform: translateY(-7.5px);
+  font-size: 0.8em;
+  color: #fff;
+}
+.container .content .reset-password 
+{
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.container .content .reset-password  a 
+{
+  color: #fff;
+  text-decoration: none;
+}
+
+.container .content .reset-password .inputBox input[type="submit"]
+{
+  padding: 10px;
+  background-color: #a3a8a6;
+  color:white;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border-radius: 5px;
+}
+input[type="submit"]:active
+{
+  opacity: 0.6;
+}
+
+
+.icon img{
+  width: 120px;
+}
+
+@media (max-width: 900px)
+{
+  section span 
+  {
+    width: calc(10vw - 2px);
+    height: calc(10vw - 2px);
+  }
+}
+@media (max-width: 600px)
+{
+  section span 
+  {
+    width: calc(20vw - 2px);
+    height: calc(20vw - 2px);
+  }
+}
+
+
+.inputBox input{
+  border:2px solid blue;
+}
+
+
+.error-text {
+  color: red;
+  font-size: 14px;
+  margin: 0;
+  text-align: left;
+}

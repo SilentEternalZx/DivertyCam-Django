@@ -10,6 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
 class CustomPasswordResetForm(PasswordResetForm):
@@ -231,6 +232,11 @@ class CollageTemplateForm(forms.ModelForm):
         return instance
         
   
+  
+  
+
+    
+    
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
     img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
