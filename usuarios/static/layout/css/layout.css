@@ -1,8 +1,10 @@
+
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
 }
 
 .navbar {
@@ -50,6 +52,7 @@ body {
 .container {
     margin-top: 2rem;
     margin-bottom: 2rem;
+   
     
 }
 
@@ -223,3 +226,4 @@ dl.row {
 td .btn {
     margin-right: 3px;
 }
+

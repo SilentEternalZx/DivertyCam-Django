@@ -23,11 +23,13 @@ class CustomPasswordResetForm(PasswordResetForm):
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento', 
+        fields = ['nombre','apellido', 'cedula', 'fechaNacimiento', 
                   'direccion', 'correo', 'telefono', 'usuario']
         widgets = {
-            'fechaNacimiento': forms.DateInput(attrs={'type': 'date'}),
-            'direccion': forms.Textarea(attrs={'rows': 3}),
+            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'apellido'}),
+            
+            
+            
         }
     def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
@@ -242,4 +244,5 @@ class AñadirFotoForm(forms.Form):
     img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
     
-    
+
+
