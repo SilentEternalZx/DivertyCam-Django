@@ -293,7 +293,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+            "http://127.0.0.1:8000", "https://68e1-191-156-39-254.ngrok-free.app"  # URL de ngrok
         )
 
         payload = {
@@ -329,7 +329,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+        "http://127.0.0.1:8000", "https://68e1-191-156-39-254.ngrok-free.app"  # URL de ngrok
     )
 
     # 📌 Definir la descripción de la foto
