@@ -49,6 +49,8 @@ class CustomPasswordResetView(PasswordResetView):
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
 
+def about(request):  #Función  para retornar vista principal
+    return render(request, "index/about.html")
 
 @csrf_exempt
 def vista_login(request): #Función para iniciar sesión

@@ -31,8 +31,7 @@ class Invitado(models.Model):
 #Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
-        max_length=100, 
-               
+        max_length=50, 
         verbose_name=_("Nombre"),
         
        
@@ -41,7 +40,7 @@ class Cliente(models.Model):
     usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)
     
     apellido = models.CharField(
-        max_length=100,
+        max_length=50,
         verbose_name=_("Apellido"),
        
      

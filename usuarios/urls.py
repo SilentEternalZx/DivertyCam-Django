@@ -12,6 +12,7 @@ from .views import list_printers, print_document
 #Urls
 urlpatterns = [
     path("", views.index, name="index"),
+    path("about/", views.about, name="about"),
     path("login/", views.vista_login, name="login"),
     path("register", views.register_view, name="register"),
     path("logout", views.vista_logout, name="logout"),
