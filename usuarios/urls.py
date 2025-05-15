@@ -86,6 +86,8 @@ urlpatterns = [
     path('impresoras/<int:evento_id>', views.impresoras, name='impresoras'),
     path('list_printers/', views.list_printers, name='list_printers'),
     path('print_document/', views.print_document, name='print_document'),
+    path('photobooth/save_collage/', views.save_collage, name='save_collage'),
+    
 ]
 
 

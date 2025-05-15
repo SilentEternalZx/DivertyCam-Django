@@ -1,3 +1,4 @@
+# Importaciones necesarias para views.py
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.core.files.base import ContentFile
@@ -9,56 +10,44 @@ from django import forms
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse
 from django.contrib import messages
-from .models import*
+from .models import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import *
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
-from .models import Evento, Configurar_Photobooth, CollageTemplate, PhotoboothSession, CollageSession, SessionPhoto, CollageResult
-from .forms import Configurar_PhotoboothForm
+from .models import Evento, PhotoboothConfig, CollageTemplate, CollageSession, SessionPhoto, CollageResult, Cliente
+from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
 import json
 import uuid
 import base64
 import os
-from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
+import tempfile
 import io
+import datetime
 import logging
 from django.contrib.auth.views import PasswordResetView
-logger = logging.getLogger(__name__)
 from django.core.exceptions import ObjectDoesNotExist
 import requests
+import win32print
+import win32ui
+import win32con
+import cv2
+import time
+from PIL import Image, ImageDraw, ImageFont, ImageWin
+
+# Configuración de logging
+logger = logging.getLogger(__name__)
+
 
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
-from .models import Cliente
-from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm
-from django.contrib.postgres.search import SearchQuery, SearchRank
-from django.db.models import Q
-from django.contrib.messages.views import SuccessMessageMixin
-from django.http import StreamingHttpResponse
-from django.http import JsonResponse, StreamingHttpResponse
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-import json
-import cv2
-import os
-import time
-import datetime
-import win32print
-import win32ui
-import requests
-import uuid
-
 
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
@@ -533,19 +522,14 @@ class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
 
 @login_required
 def configurar_photobooth(request, evento_id):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Vista para configurar el photobooth de un evento"""
+    """Vista mejorada para configurar el photobooth de un evento"""
     evento = get_object_or_404(Evento, id=evento_id)
     config, created = PhotoboothConfig.objects.get_or_create(evento=evento)
-    
-    # Inicializar form como None para evitar el UnboundLocalError
-    form = None
     
     template_id = request.GET.get('template')
     
     if request.method == 'POST':
-        # Imprimir valores del POST para depuración
+        # Depuración: imprime valores del POST
         print("POST data:", request.POST)
         
         form = PhotoboothConfigForm(
@@ -563,50 +547,65 @@ def configurar_photobooth(request, evento_id):
             camera_id = request.POST.get('selected_camera_id')
             if camera_id:
                 config.camera_id = camera_id
-                
-            # Evitar error si los campos no existen aún en la BD
-            try:
-                # Guardar configuración de resolución y balance de blancos
-                resolucion = request.POST.get('resolucion_camara')
-                if resolucion:
-                    config.resolucion_camara = resolucion
-                    print(f"Guardando resolución: {resolucion}")
-                    
-                balance = request.POST.get('balance_blancos')
-                if balance:
-                    config.balance_blancos = balance
-                    print(f"Guardando balance de blancos: {balance}")
-            except AttributeError:
-                print("Advertencia: Los campos resolucion_camara o balance_blancos no existen aún en la base de datos")
-
+            
+            # Guardar configuración de ISO, si existe en el POST
+            iso_valor = request.POST.get('iso_valor')
+            if iso_valor and iso_valor.isdigit():
+                config.iso_valor = int(iso_valor)
+            
+            # Guardar la impresora seleccionada
+            printer_name = request.POST.get('printer_name')
+            if printer_name:
+                config.printer_name = printer_name
+            
             # Verificación explícita del campo de imagen
             if 'imagen_fondo' in request.FILES:
                 config.imagen_fondo = request.FILES['imagen_fondo']
-                print("Guardando imagen:", request.FILES['imagen_fondo'])
+            
+            # Guardar configuración de tiempos
+            try:
+                config.tiempo_entre_fotos = int(request.POST.get('tiempo_entre_fotos', 3))
+                config.tiempo_cuenta_regresiva = int(request.POST.get('tiempo_cuenta_regresiva', 3))
+                config.tiempo_visualizacion_foto = int(request.POST.get('tiempo_visualizacion_foto', 2))
+            except (ValueError, TypeError):
+                # Si hay error en la conversión, usar valores predeterminados
+                config.tiempo_entre_fotos = 3
+                config.tiempo_cuenta_regresiva = 3
+                config.tiempo_visualizacion_foto = 2
             
             config.save()
-
             form.save_m2m()  # Para relaciones ManyToMany
+            
             messages.success(request, "Configuración guardada correctamente")
-            return redirect('evento_detail', pk=evento.id)
+            
+            # Redirigir a la vista previa
+            return redirect('preview_photobooth', evento_id=evento.id)
         else:
             print("Errores del formulario:", form.errors)
+            messages.error(request, "Hay errores en el formulario. Por favor revise los campos.")
     else:
         # En caso de GET
         form = PhotoboothConfigForm(instance=config, evento=evento)
         
-        # Si hay un template_id en la URL y no es un POST, actualizamos el valor inicial
+        # Si hay un template_id en la URL y no es un POST, actualizar valor inicial
         if template_id and not form.is_bound:
             try:
                 template = CollageTemplate.objects.get(template_id=template_id, evento=evento)
                 form.initial['plantilla_collage'] = template.template_id
                 
-                # También actualizamos el objeto config temporalmente para la vista previa
+                # Actualizar objeto config temporalmente para la vista previa
                 if config is None:
                     config = PhotoboothConfig(evento=evento)
                 config.plantilla_collage = template
             except CollageTemplate.DoesNotExist:
                 pass
+    
+    # Obtener lista de impresoras para el selector
+    try:
+        printers = [printer[2] for printer in win32print.EnumPrinters(
+            win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)]
+    except:
+        printers = []
     
     # Para la vista previa del collage
     selected_template = config.plantilla_collage
@@ -614,22 +613,21 @@ def configurar_photobooth(request, evento_id):
     if selected_template:
         frames = selected_template.get_frames()
     
-    # Asegúrate de que form esté definido antes de pasarlo al contexto
-    if form is None:
-        form = PhotoboothConfigForm(instance=config, evento=evento)
-    
     # Evitar error si los campos no existen aún
     try:
-        print(f"Configuración actual: Resolución={config.resolucion_camara}, Balance={config.balance_blancos}")
+        print(f"Configuración actual: Resolución={config.resolucion_camara}, Balance={config.balance_blancos}, ISO={config.iso_valor}")
     except AttributeError:
-        print("Advertencia: Los campos resolucion_camara o balance_blancos no existen aún en la base de datos")
+        print("Advertencia: Algunos campos no existen aún en la base de datos")
     
     context = {
         'evento': evento,
         'form': form,
         'config': config,
         'selected_template': selected_template,
-        'frames': frames
+        'frames': frames,
+        'printers': printers,
+        # Añadir campos de agrupación para la plantilla
+        'field_groups': form.field_groups if hasattr(form, 'field_groups') else None,
     }
     
     return render(request, 'photobooth/configurar_photobooth.html', context)
@@ -659,12 +657,24 @@ def launch_photobooth(request, evento_id):
         messages.warning(request, "El photobooth no está configurado completamente")
         return redirect('configurar_photobooth', evento_id=evento_id)
     
+    # Crear una nueva sesión para CollageSession
+    session = CollageSession.objects.create(
+        evento=evento,
+        template=config.plantilla_collage,
+        session_id=str(uuid.uuid4()),
+        status='active'
+    )
+    
     context = {
         'evento': evento,
-        'config': config
+        'config': config,
+        'template': config.plantilla_collage,
+        'template_json': json.dumps(json.loads(config.plantilla_collage.template_data)) if config.plantilla_collage and config.plantilla_collage.template_data else '{}',
+        'session_id': session.session_id,
+        'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/')
     }
     
-    return render(request, 'photobooth/launch_photobooth.html', context)
+    return render(request, 'photobooth/session.html', context)
 
 def template_list(request, evento_id):
     if not request.user.is_authenticated:
@@ -738,8 +748,6 @@ def template_editor(request, evento_id, template_id=None):
 @csrf_exempt
 @require_POST
 def save_template(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
     """API para guardar una plantilla de collage vía AJAX"""
     try:
         data = json.loads(request.body)
@@ -767,7 +775,7 @@ def save_template(request):
         template.nombre = template_name
         template.descripcion = description
         template.background_color = data.get('backgroundColor', '#FFFFFF')
-
+        
         # Guardar propiedades del fondo
         template.background_size = data.get('backgroundSize', 'cover')
         template.background_position = data.get('backgroundPosition', 'center')
@@ -778,8 +786,23 @@ def save_template(request):
         if background_image and background_image.startswith('data:image'):
             format, imgstr = background_image.split(';base64,')
             ext = format.split('/')[-1]
-            image_data = ContentFile(base64.b64decode(imgstr), name=f"{template_id}_bg.{ext}")
-            template.background_image = image_data
+            
+            # Asegurarse de que existe el directorio destino
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'backgrounds')
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Crear un archivo temporal y guardarlo en la ubicación correcta
+            image_data = base64.b64decode(imgstr)
+            filename = f"{template_id}_bg.{ext}"
+            filepath = os.path.join(upload_dir, filename)
+            
+            # Guardar el archivo físicamente
+            with open(filepath, 'wb') as f:
+                f.write(image_data)
+                
+            # Actualizar la ruta relativa en el modelo
+            relative_path = os.path.join('collage', 'backgrounds', filename)
+            template.background_image = relative_path
         
         # Guardar datos completos de la plantilla
         template.template_data = json.dumps(data)
@@ -853,7 +876,7 @@ def start_session(request, evento_id, template_id):
         template_json = '{}'
     
     # Crear una nueva sesión para esta sesión de photobooth
-    session = PhotoboothSession.objects.create(
+    session = CollageSession.objects.create(
         evento=evento,
         template=template,
         session_id=str(uuid.uuid4())
@@ -871,8 +894,6 @@ def start_session(request, evento_id, template_id):
 @csrf_exempt
 @require_POST
 def save_session_photo(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
     """API para guardar una foto tomada durante la sesión"""
     try:
         data = json.loads(request.body)
@@ -880,11 +901,16 @@ def save_session_photo(request):
         frame_index = data.get('frame_index')
         image_data = data.get('image_data')
         
+        logger.info(f"Guardando foto para sesión {session_id}, frame {frame_index}")
+        
         if not all([session_id, image_data, frame_index is not None]):
             return JsonResponse({'success': False, 'error': 'Datos incompletos'})
         
-        # Obtener la sesión
-        session = get_object_or_404(CollageSession, session_id=session_id)
+        # Usar CollageSession directamente
+        try:
+            session = CollageSession.objects.get(session_id=session_id)
+        except CollageSession.DoesNotExist:
+            return JsonResponse({'success': False, 'error': f'Sesión con ID {session_id} no encontrada'})
         
         # Procesar la imagen base64
         if ',' in image_data:
@@ -892,77 +918,121 @@ def save_session_photo(request):
             ext = format.split('/')[-1]
             decoded_image = base64.b64decode(imgstr)
             
+            # Asegurar que existe el directorio destino
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'session_photos')
+            os.makedirs(upload_dir, exist_ok=True)
+            
             # Generar nombre de archivo único
             filename = f"session_{session_id}_frame_{frame_index}.{ext}"
+            filepath = os.path.join(upload_dir, filename)
             
-            # Guardar imagen
-            photo = SessionPhoto(session=session, frame_index=frame_index)
-            photo.image.save(filename, ContentFile(decoded_image), save=True)
+            # Guardar el archivo físicamente
+            with open(filepath, 'wb') as f:
+                f.write(decoded_image)
             
-            return JsonResponse({'success': True, 'photo_id': photo.id})
+            # Crear o actualizar registro de foto
+            try:
+                photo = SessionPhoto.objects.filter(
+                    session=session, 
+                    frame_index=frame_index
+                ).first()
+                
+                if photo:
+                    # Actualizar foto existente
+                    relative_path = os.path.join('collage', 'session_photos', filename)
+                    photo.image = relative_path
+                    photo.save()
+                else:
+                    # Crear nueva foto
+                    relative_path = os.path.join('collage', 'session_photos', filename)
+                    photo = SessionPhoto(
+                        session=session,
+                        frame_index=frame_index,
+                        image=relative_path
+                    )
+                    photo.save()
+                
+                return JsonResponse({'success': True, 'photo_id': photo.id})
+                
+            except Exception as photo_error:
+                logger.error(f"Error al guardar registro de foto: {str(photo_error)}")
+                return JsonResponse({'success': False, 'error': f'Error al guardar registro: {str(photo_error)}'})
+                
         else:
             return JsonResponse({'success': False, 'error': 'Formato de imagen no válido'})
         
     except Exception as e:
         logger.error(f"Error al guardar foto de sesión: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
         return JsonResponse({'success': False, 'error': str(e)})
 
 def session_result(request, session_id):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Vista para mostrar el resultado de una sesión de fotos"""
+    """Vista para mostrar el resultado de una sesión de photobooth"""
     session = get_object_or_404(CollageSession, session_id=session_id)
-    template = session.template
     evento = session.evento
+    template = session.template
     
-    # Obtener todas las fotos tomadas en esta sesión
+    # Obtener todas las fotos de la sesión
     photos = SessionPhoto.objects.filter(session=session).order_by('frame_index')
     
-    # Verificar si se completaron todas las fotos
-    template_data = json.loads(template.template_data)
-    frames = template_data.get('frames', [])
-    total_frames = len(frames)
+    # Determinar si la sesión está completa
+    template_data = json.loads(template.template_data) if template.template_data else {'frames': []}
+    total_frames = len(template_data.get('frames', []))
     is_complete = photos.count() == total_frames
     
-    # Si la sesión está completa, generar/obtener el collage final
+    # Obtener o crear el resultado del collage si está completo
     collage_result = None
+    remaining_frames = []
+    
     if is_complete:
+        # Buscar un resultado existente o crear uno nuevo
         collage_result = CollageResult.objects.filter(session=session).first()
+        
         if not collage_result and session.status == 'active':
             # Generar el collage si no existe
-            collage_result = generate_collage(session, template_data, photos, frames)
+            collage_result = generate_collage(session, template_data, photos, template_data.get('frames', []))
             
             # Actualizar estado de la sesión
             session.status = 'completed'
             session.completed_at = timezone.now()
             session.save()
+    else:
+        # Calcular marcos restantes
+        remaining_frames = range(total_frames - photos.count())
     
-    # Calcular marcos restantes para la vista
-    remaining_count = total_frames - photos.count()
-    remaining_frames = range(remaining_count)
-    
-    context = {
+    return render(request, 'collage/session_result.html', {
         'evento': evento,
-        'session': session,
         'template': template,
         'photos': photos,
         'is_complete': is_complete,
         'collage_result': collage_result,
-        'remaining_frames': remaining_frames
-    }
-    
-    return render(request, 'collage/session_result.html', context)
+        'remaining_frames': remaining_frames,
+        'session_id': session_id
+    })
 
 def generate_collage(session, template_data, photos, frames):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Genera una imagen de collage a partir de una sesión completada"""
+    """Genera una imagen de collage a partir de una sesión completada con mejor calidad y precisión"""
     try:
-        # Dimensiones del collage (10x15 cm a 300dpi)
-        width_px = int(10 * 118.11)  # 10cm a 300dpi
-        height_px = int(15 * 118.11)  # 15cm a 300dpi
+        # Asegurarse de que la sesión sea del tipo correcto
+        if not isinstance(session, CollageSession):
+            logger.error(f"Se esperaba una sesión del tipo CollageSession, pero se recibió {type(session)}")
+            
+            return None
         
-        # Crear imagen base
+                # Extraer dimensiones de la plantilla
+        width_px = int(15 * 118.11)  # 10cm a 300dpi = 1181.1px
+        height_px = int(10 * 118.11)  # 15cm a 300dpi = 1771.65px
+        
+        # Opcionalmente puede personalizarse con valores del template
+        if 'width' in template_data and 'height' in template_data:
+            try:
+                width_px = int(float(template_data['width']))
+                height_px = int(float(template_data['height']))
+            except (ValueError, TypeError):
+                pass  # Usar valores predeterminados si hay error
+        
+        # Crear imagen base para el collage
         background_color = template_data.get('backgroundColor', '#FFFFFF')
         if background_color.startswith('#'):
             r = int(background_color[1:3], 16)
@@ -974,81 +1044,533 @@ def generate_collage(session, template_data, photos, frames):
         
         collage_img = Image.new('RGBA', (width_px, height_px), bg_color)
         
-        # Si hay imagen de fondo, aplicarla
+        # Si hay imagen de fondo en la plantilla, aplicarla
         if session.template.background_image:
             try:
                 bg_img = Image.open(session.template.background_image.path)
-                bg_img = bg_img.resize((width_px, height_px), Image.LANCZOS)
+                
+                # Ajustar imagen de fondo según la configuración de la plantilla
+                bg_size = template_data.get('backgroundSize', 'cover')
+                bg_position = template_data.get('backgroundPosition', 'center')
+                
+                # Redimensionar imagen de fondo según el modo especificado
+                if bg_size == 'cover':
+                    # Escalar para cubrir completamente manteniendo proporción
+                    bg_ratio = bg_img.width / bg_img.height
+                    collage_ratio = width_px / height_px
+                    
+                    if bg_ratio > collage_ratio:
+                        # Imagen más ancha que alta en proporción
+                        new_height = width_px / bg_ratio
+                        new_width = width_px
+                        bg_img = bg_img.resize((int(new_width), int(new_height)), Image.LANCZOS)
+                    else:
+                        # Imagen más alta que ancha en proporción
+                        new_width = height_px * bg_ratio
+                        new_height = height_px
+                        bg_img = bg_img.resize((int(new_width), int(new_height)), Image.LANCZOS)
+                    
+                elif bg_size == 'contain':
+                    # Escalar para caber completamente manteniendo proporción
+                    bg_ratio = bg_img.width / bg_img.height
+                    collage_ratio = width_px / height_px
+                    
+                    if bg_ratio > collage_ratio:
+                        # Imagen más ancha que alta en proporción
+                        new_width = width_px
+                        new_height = width_px / bg_ratio
+                        bg_img = bg_img.resize((int(new_width), int(new_height)), Image.LANCZOS)
+                    else:
+                        # Imagen más alta que ancha en proporción
+                        new_height = height_px
+                        new_width = height_px * bg_ratio
+                        bg_img = bg_img.resize((int(new_width), int(new_height)), Image.LANCZOS)
+                    
+                else:
+                    # Modo stretch o tamaño personalizado
+                    bg_img = bg_img.resize((width_px, height_px), Image.LANCZOS)
+                
+                # Convertir a RGBA para poder combinar con el fondo
+                bg_img = bg_img.convert('RGBA')
+                
+                # Calcular posición para centrar la imagen
+                pos_x = 0
+                pos_y = 0
+                
+                if bg_img.width != width_px:
+                    # Posicionar horizontalmente según bg_position
+                    if 'left' in bg_position:
+                        pos_x = 0
+                    elif 'right' in bg_position:
+                        pos_x = width_px - bg_img.width
+                    else:  # center por defecto
+                        pos_x = (width_px - bg_img.width) // 2
+                
+                if bg_img.height != height_px:
+                    # Posicionar verticalmente según bg_position
+                    if 'top' in bg_position:
+                        pos_y = 0
+                    elif 'bottom' in bg_position:
+                        pos_y = height_px - bg_img.height
+                    else:  # center por defecto
+                        pos_y = (height_px - bg_img.height) // 2
+                
+                # Crear una nueva imagen para la mezcla
+                positioned_bg = Image.new('RGBA', (width_px, height_px), (0, 0, 0, 0))
+                positioned_bg.paste(bg_img, (pos_x, pos_y))
+                
                 # Mezclar con la imagen base
-                collage_img = Image.alpha_composite(collage_img, bg_img.convert('RGBA'))
+                collage_img = Image.alpha_composite(collage_img, positioned_bg)
+                
             except Exception as e:
                 logger.error(f"Error al aplicar imagen de fondo: {str(e)}")
         
-        # Colocar cada foto en su posición
-        for photo in photos:
-            frame = frames[photo.frame_index]
-            
-            # Convertir dimensiones relativas a píxeles
-            frame_width = int(float(frame['width'].replace('px', '')))
-            frame_height = int(float(frame['height'].replace('px', '')))
-            frame_left = int(float(frame['left'].replace('px', '')))
-            frame_top = int(float(frame['top'].replace('px', '')))
-            
-            # Escalar a dimensiones reales
-            scale_factor = width_px / 378  # Factor entre px de pantalla y px de imagen (10cm a 300dpi / 10cm a 96dpi)
-            frame_width = int(frame_width * scale_factor)
-            frame_height = int(frame_height * scale_factor)
-            frame_left = int(frame_left * scale_factor)
-            frame_top = int(frame_top * scale_factor)
-            
-            # Abrir foto y redimensionar para que encaje en el marco
-            photo_img = Image.open(photo.image.path)
-            photo_img = photo_img.resize((frame_width, frame_height), Image.LANCZOS)
-            
-            # Pegar la foto en la posición correcta
-            collage_img.paste(photo_img, (frame_left, frame_top))
+        # Escala entre la resolución de plantilla (diseño) y la resolución de salida
+        display_width = 378  # Ancho de diseño aproximado en píxeles (10cm a 96dpi)
+        scale_factor = width_px / display_width
         
-        # Guardar el resultado
+        # Colocar cada foto en su marco según la plantilla
+        for photo in photos:
+            try:
+                # Obtener el marco correspondiente a esta foto
+                frame = frames[photo.frame_index]
+                
+                # Extraer dimensiones y posición del marco (eliminar 'px' si está presente)
+                frame_width = int(float(frame['width'].replace('px', '')))
+                frame_height = int(float(frame['height'].replace('px', '')))
+                frame_left = int(float(frame['left'].replace('px', '')))
+                frame_top = int(float(frame['top'].replace('px', '')))
+                
+                # Escalar a dimensiones reales
+                frame_width = int(frame_width * scale_factor)
+                frame_height = int(frame_height * scale_factor)
+                frame_left = int(frame_left * scale_factor)
+                frame_top = int(frame_top * scale_factor)
+                
+                # Abrir foto y redimensionar para que encaje en el marco
+                photo_img = Image.open(photo.image.path)
+                photo_img = photo_img.resize((frame_width, frame_height), Image.LANCZOS)
+                
+                # Aplicar rotación si está especificada en el marco
+                if 'rotation' in frame and frame['rotation']:
+                    rotation_angle = float(frame['rotation'])
+                    # Rotar alrededor del centro con fondo transparente
+                    photo_img = photo_img.convert('RGBA')
+                    photo_img = photo_img.rotate(rotation_angle, resample=Image.BICUBIC, expand=True)
+                    
+                    # Recalcular posición para centrar la imagen rotada
+                    new_left = frame_left + (frame_width - photo_img.width) // 2
+                    new_top = frame_top + (frame_height - photo_img.height) // 2
+                    
+                    # Crear una máscara para pegar la imagen rotada
+                    mask = photo_img.split()[3]  # Canal alpha
+                    
+                    # Pegar la foto en la posición con máscara
+                    collage_img.paste(photo_img, (new_left, new_top), mask)
+                else:
+                    # Pegar la foto en la posición original si no hay rotación
+                    collage_img.paste(photo_img, (frame_left, frame_top))
+                
+                # Aplicar borde si está especificado en el marco
+                if 'borderWidth' in frame and frame['borderWidth']:
+                    try:
+                        # Extraer propiedades del borde
+                        border_width = int(float(frame['borderWidth'].replace('px', '')))
+                        border_color = frame.get('borderColor', '#FFFFFF')
+                        
+                        # Escalar ancho del borde
+                        border_width = int(border_width * scale_factor)
+                        
+                        # Convertir color a RGB
+                        if border_color.startswith('#'):
+                            r = int(border_color[1:3], 16)
+                            g = int(border_color[3:5], 16)
+                            b = int(border_color[5:7], 16)
+                            border_rgb = (r, g, b)
+                        else:
+                            border_rgb = (255, 255, 255)  # Blanco por defecto
+                        
+                        # Dibujar borde alrededor de la foto
+                        draw = ImageDraw.Draw(collage_img)
+                        draw.rectangle(
+                            [
+                                (frame_left - border_width, frame_top - border_width),
+                                (frame_left + frame_width + border_width, frame_top + frame_height + border_width)
+                            ],
+                            outline=border_rgb,
+                            width=border_width
+                        )
+                    except Exception as border_error:
+                        logger.error(f"Error al aplicar borde: {str(border_error)}")
+                
+            except Exception as photo_error:
+                logger.error(f"Error al procesar foto {photo.id}: {str(photo_error)}")
+        
+        # Añadir elementos de texto si están definidos en la plantilla
+        if 'textElements' in template_data and template_data['textElements']:
+            for text_element in template_data['textElements']:
+                try:
+                    # Extraer propiedades del texto
+                    text_content = text_element.get('text', '')
+                    text_x = int(float(text_element.get('left', '0').replace('px', '')))
+                    text_y = int(float(text_element.get('top', '0').replace('px', '')))
+                    font_size = int(float(text_element.get('fontSize', '24').replace('px', '')))
+                    font_family = text_element.get('fontFamily', 'Arial')
+                    text_color = text_element.get('color', '#000000')
+                    
+                    # Escalar posición y tamaño
+                    text_x = int(text_x * scale_factor)
+                    text_y = int(text_y * scale_factor)
+                    font_size = int(font_size * scale_factor)
+                    
+                    # Convertir color a RGB
+                    if text_color.startswith('#'):
+                        r = int(text_color[1:3], 16)
+                        g = int(text_color[3:5], 16)
+                        b = int(text_color[5:7], 16)
+                        color_rgb = (r, g, b)
+                    else:
+                        color_rgb = (0, 0, 0)  # Negro por defecto
+                    
+                    # Cargar fuente
+                    try:
+                        # Intentar cargar fuente del sistema
+                        font_path = f"fonts/{font_family}.ttf"
+                        font = ImageFont.truetype(font_path, font_size)
+                    except:
+                        # Si falla, usar fuente por defecto
+                        font = ImageFont.load_default()
+                    
+                    # Reemplazar variables en el texto
+                    text_content = text_content.replace('{evento}', session.evento.nombre)
+                    text_content = text_content.replace('{fecha}', session.evento.fecha_hora.strftime('%d/%m/%Y'))
+                    text_content = text_content.replace('{hora}', session.evento.fecha_hora.strftime('%H:%M'))
+                    text_content = text_content.replace('{cliente}', f"{session.evento.cliente.nombre} {session.evento.cliente.apellido}")
+                    
+                    # Dibujar texto
+                    draw = ImageDraw.Draw(collage_img)
+                    draw.text((text_x, text_y), text_content, fill=color_rgb, font=font)
+                    
+                except Exception as text_error:
+                    logger.error(f"Error al procesar elemento de texto: {str(text_error)}")
+        
+        # Añadir elementos decorativos si están definidos en la plantilla
+        if 'decorativeElements' in template_data and template_data['decorativeElements']:
+            for element in template_data['decorativeElements']:
+                try:
+                    element_type = element.get('type', '')
+                    element_x = int(float(element.get('left', '0').replace('px', '')))
+                    element_y = int(float(element.get('top', '0').replace('px', '')))
+                    element_width = int(float(element.get('width', '50').replace('px', '')))
+                    element_height = int(float(element.get('height', '50').replace('px', '')))
+                    element_color = element.get('color', '#000000')
+                    
+                    # Escalar posición y tamaño
+                    element_x = int(element_x * scale_factor)
+                    element_y = int(element_y * scale_factor)
+                    element_width = int(element_width * scale_factor)
+                    element_height = int(element_height * scale_factor)
+                    
+                    # Convertir color a RGB
+                    if element_color.startswith('#'):
+                        r = int(element_color[1:3], 16)
+                        g = int(element_color[3:5], 16)
+                        b = int(element_color[5:7], 16)
+                        el_color_rgb = (r, g, b)
+                    else:
+                        el_color_rgb = (0, 0, 0)  # Negro por defecto
+                    
+                    # Dibujar elemento según su tipo
+                    draw = ImageDraw.Draw(collage_img)
+                    
+                    if element_type == 'rectangle':
+                        draw.rectangle(
+                            [(element_x, element_y), (element_x + element_width, element_y + element_height)],
+                            fill=el_color_rgb
+                        )
+                    elif element_type == 'circle':
+                        draw.ellipse(
+                            [(element_x, element_y), (element_x + element_width, element_y + element_height)],
+                            fill=el_color_rgb
+                        )
+                    elif element_type == 'line':
+                        line_end_x = element.get('endX', element_x + element_width)
+                        line_end_y = element.get('endY', element_y + element_height)
+                        line_width = int(float(element.get('lineWidth', '2').replace('px', '')))
+                        
+                        # Escalar
+                        line_end_x = int(float(line_end_x) * scale_factor)
+                        line_end_y = int(float(line_end_y) * scale_factor)
+                        line_width = int(line_width * scale_factor)
+                        
+                        draw.line(
+                            [(element_x, element_y), (line_end_x, line_end_y)],
+                            fill=el_color_rgb,
+                            width=line_width
+                        )
+                    
+                except Exception as element_error:
+                    logger.error(f"Error al procesar elemento decorativo: {str(element_error)}")
+        
+        # Añadir marca de agua del evento si está configurado
+        # try:
+        #     config = PhotoboothConfig.objects.get(evento=session.evento)
+        #     if config.mostrar_marca_agua:
+        #         draw = ImageDraw.Draw(collage_img)
+        #         watermark_text = f"{session.evento.nombre} - {session.created_at.strftime('%d/%m/%Y')}"
+                
+        #         # Usar una fuente semi-transparente
+        #         font = ImageFont.load_default()
+        #         watermark_color = (128, 128, 128, 128)  # Gris semitransparente
+                
+        #         # Colocar en la esquina inferior derecha
+        #         text_width, text_height = draw.textsize(watermark_text, font=font)
+        #         position = (width_px - text_width - 10, height_px - text_height - 10)
+                
+        #         # Dibujar texto
+        #         draw.text(position, watermark_text, fill=watermark_color, font=font)
+        # except Exception as watermark_error:
+        #     logger.error(f"Error al añadir marca de agua: {str(watermark_error)}")
+        
+       # Al guardar el resultado, usar la ruta correcta:
         collage_id = str(uuid.uuid4())
         img_io = io.BytesIO()
-        collage_img.save(img_io, format='JPEG', quality=90)
-        img_content = ContentFile(img_io.getvalue())
+        
+        # Si la imagen es RGBA, convertir a RGB para JPEG
+        if collage_img.mode == 'RGBA':
+            # Crear fondo blanco y componer con la imagen
+            white_bg = Image.new('RGB', collage_img.size, (255, 255, 255))
+            white_bg.paste(collage_img, (0, 0), collage_img)
+            collage_img = white_bg
+        
+        # Guardar con alta calidad
+        collage_img.save(img_io, format='JPEG', quality=95, optimize=True)
+        img_content = img_io.getvalue()
+        
+        # Crear directorio si no existe
+        upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'results')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Nombre del archivo
+        filename = f"collage_{collage_id}.jpg"
         
         # Crear registro en la base de datos
         collage_result = CollageResult(
             collage_id=collage_id,
             session=session
         )
-        collage_result.image.save(f"collage_{collage_id}.jpg", img_content, save=True)
+        
+        # Guardar el archivo en la ubicación especificada
+        filepath = os.path.join(upload_dir, filename)
+        with open(filepath, 'wb') as f:
+            f.write(img_content)
+        
+        # Asignar la ruta relativa al modelo
+        relative_path = os.path.join('collage', 'results', filename)
+        collage_result.image = relative_path
+        collage_result.save()
+        
+        # Actualizar estadísticas
+        try:
+            config = PhotoboothConfig.objects.get(evento=session.evento)
+            config.total_sesiones += 1
+            config.total_fotos += len(photos)
+            config.save()
+        except:
+            pass
         
         return collage_result
         
     except Exception as e:
         logger.error(f"Error al generar collage: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
         return None
 
 @csrf_exempt
-@require_POST
-def update_print_count(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Actualizar el contador de impresiones de un collage"""
+def print_document(request):
+    """Función mejorada para imprimir documentos con soporte para imágenes y opciones de calidad"""
+    print("Solicitud de impresión recibida")
+    if request.method != 'POST':
+        return HttpResponseBadRequest("Método no permitido.")
+
+    # Leer datos JSON del body
     try:
         data = json.loads(request.body)
-        collage_id = data.get('collage_id')
+        printer_name = data.get('printer_name')
+        document_content = data.get('document_content')
+        paper_size = data.get('paper_size', 'A4')
+        copies = int(data.get('copies', 1))
+        quality = data.get('quality', 'high')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Error al leer los datos JSON.'}, status=400)
+    except ValueError:
+        return JsonResponse({'error': 'Valor numérico inválido.'}, status=400)
+
+    # Verificar que los datos esenciales estén presentes
+    if not printer_name or not document_content:
+        return JsonResponse({'error': 'Nombre de impresora y contenido del documento son obligatorios.'}, status=400)
+
+    # Validar número de copias
+    if copies < 1 or copies > 10:
+        copies = 1  # Restringir a un rango razonable
+
+    try:
+        # Verificar si el documento es una imagen en base64
+        is_image = False
+        image_data = None
         
-        if not collage_id:
-            return JsonResponse({'success': False, 'error': 'ID de collage no proporcionado'})
+        if document_content.startswith('data:image'):
+            is_image = True
+            # Extraer los datos de la imagen
+            header, encoded = document_content.split(",", 1)
+            image_data = base64.b64decode(encoded)
         
-        collage = get_object_or_404(CollageResult, collage_id=collage_id)
-        collage.print_count += 1
-        collage.save()
+        # Abrir la impresora seleccionada
+        printer_handle = win32print.OpenPrinter(printer_name)
+        printer_info = win32print.GetPrinter(printer_handle, 2)
+
+        # Configurar tamaño de papel
+        devmode = printer_info["pDevMode"]
         
-        return JsonResponse({'success': True, 'print_count': collage.print_count})
+        # Mapear tamaños de papel comunes
+        paper_sizes = {
+            '10x15': win32print.DMPAPER_10X15CM,  # Tamaño 10x15cm
+            '13x18': win32print.DMPAPER_13X18CM,  # Tamaño 13x18cm
+            '15x20': win32print.DMPAPER_15X20CM,  # Tamaño 15x20cm
+            '20x25': win32print.DMPAPER_20X25CM,  # Tamaño 20x25cm
+            'A4': win32print.DMPAPER_A4,          # A4
+            'Letter': win32print.DMPAPER_LETTER   # Carta (US Letter)
+        }
         
+        # Aplicar tamaño de papel si está disponible
+        if paper_size in paper_sizes:
+            devmode.PaperSize = paper_sizes[paper_size]
+        else:
+            # Si no encuentra el tamaño, usar 10x15 por defecto para photobooth
+            devmode.PaperSize = paper_sizes['10x15']
+        
+        # Configurar calidad de impresión
+        quality_settings = {
+            'draft': win32print.DMRES_DRAFT,
+            'normal': win32print.DMRES_MEDIUM,
+            'high': win32print.DMRES_HIGH,
+            'best': win32print.DMRES_HIGH  # El más alto disponible
+        }
+        
+        if quality in quality_settings:
+            devmode.PrintQuality = quality_settings[quality]
+        
+        # Configurar número de copias
+        devmode.Copies = copies
+        
+        # Aplicar configuración al controlador de impresora
+        win32print.SetPrinter(printer_handle, 2, printer_info, 0)
+        
+        # Crear el contexto de impresión
+        hdc = win32ui.CreateDC()
+        hdc.CreatePrinterDC(printer_name)
+        
+        if is_image:
+            # Imprimir imagen
+            try:
+                # Crear un archivo temporal para la imagen
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+                temp_file.write(image_data)
+                temp_file.close()
+                
+                # Abrir la imagen con PIL
+                img = Image.open(temp_file.name)
+                
+                # Iniciar el documento
+                hdc.StartDoc('Collage Photobooth')
+                hdc.StartPage()
+                
+                # Obtener dimensiones de la página
+                dpi_x = hdc.GetDeviceCaps(win32con.LOGPIXELSX)
+                dpi_y = hdc.GetDeviceCaps(win32con.LOGPIXELSY)
+                page_width = hdc.GetDeviceCaps(win32con.PHYSICALWIDTH)
+                page_height = hdc.GetDeviceCaps(win32con.PHYSICALHEIGHT)
+                
+                # Calcular dimensiones para mantener proporción
+                img_ratio = img.width / img.height
+                page_ratio = page_width / page_height
+                
+                if img_ratio > page_ratio:
+                    # Imagen más ancha que alta en proporción
+                    target_width = page_width
+                    target_height = int(page_width / img_ratio)
+                else:
+                    # Imagen más alta que ancha en proporción
+                    target_height = page_height
+                    target_width = int(page_height * img_ratio)
+                
+                # Calcular posición para centrar la imagen
+                pos_x = (page_width - target_width) // 2
+                pos_y = (page_height - target_height) // 2
+                
+                # Convertir la imagen a formato de mapa de bits compatible con Windows
+                dib = ImageWin.Dib(img)
+                
+                # Dibujar la imagen en el contexto de la impresora
+                dib.draw(hdc.GetHandleOutput(), (pos_x, pos_y, pos_x + target_width, pos_y + target_height))
+                
+                # Finalizar la página y el documento
+                hdc.EndPage()
+                hdc.EndDoc()
+                
+                # Eliminar el archivo temporal
+                os.unlink(temp_file.name)
+                
+            except Exception as img_error:
+                # Si falla la impresión de imagen, intentar imprimir como texto
+                logger.error(f"Error al imprimir imagen: {str(img_error)}")
+                return JsonResponse({'error': f'Error al imprimir imagen: {str(img_error)}'}, status=500)
+        else:
+            # Imprimir documento de texto
+            hdc.StartDoc('Documento Django')
+            hdc.StartPage()
+            
+            # Ajustar fuente y formato para imprimir
+            hdc.SetMapMode(win32con.MM_TWIPS)  # 1/1440 pulgadas
+            
+            # Crear fuente para el texto
+            font = win32ui.CreateFont({
+                'name': 'Arial',
+                'height': 36,  # Tamaño de fuente
+                'weight': 400  # Normal
+            })
+            
+            hdc.SelectObject(font)
+            
+            # Posición inicial (1 pulgada desde borde superior e izquierdo)
+            x = 1440  # 1 pulgada en twips
+            y = 1440  # 1 pulgada en twips
+            
+            # Dividir el texto en líneas
+            lines = document_content.split('\n')
+            
+            for line in lines:
+                if line.strip():  # No imprimir líneas vacías
+                    hdc.TextOut(x, y, line)
+                    y += 300  # Espacio entre líneas
+            
+            hdc.EndPage()
+            hdc.EndDoc()
+
+        # Limpiar recursos
+        hdc.DeleteDC()
+        win32print.ClosePrinter(printer_handle)
+
+        return JsonResponse({'success': True, 'message': 'Documento enviado a impresión correctamente.'})
+
+    except win32print.error as e:
+        return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
     except Exception as e:
-        logger.error(f"Error al actualizar contador de impresiones: {str(e)}")
-        return JsonResponse({'success': False, 'error': str(e)})
+        logger.error(f"Error inesperado: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
 @csrf_exempt
 @require_POST
@@ -1138,7 +1660,7 @@ def launch_photobooth(request, evento_id):
         })
     
     # Crear una nueva sesión para esta sesión de photobooth
-    session = PhotoboothSession.objects.create(
+    session = CollageSession.objects.create(
         evento=evento,
         template=template,
         session_id=str(uuid.uuid4())
@@ -1153,56 +1675,10 @@ def launch_photobooth(request, evento_id):
         'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/')
     })
 
-@csrf_exempt
-def save_session_photo(request):
-    """Guarda una foto tomada durante la sesión"""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método no permitido'})
-    
-    try:
-        data = json.loads(request.body)
-        session_id = data.get('session_id')
-        frame_index = data.get('frame_index')
-        image_data = data.get('image_data')
-        
-        if not session_id or frame_index is None or not image_data:
-            return JsonResponse({'success': False, 'error': 'Datos incompletos'})
-        
-        # Obtener la sesión
-        session = get_object_or_404(PhotoboothSession, session_id=session_id)
-        
-        # Procesar la imagen desde el data URL
-        format, imgstr = image_data.split(';base64,')
-        ext = format.split('/')[-1]
-        
-        # Crear un nombre de archivo único
-        filename = f"session_{session_id}_frame_{frame_index}.{ext}"
-        filepath = os.path.join(settings.MEDIA_ROOT, 'session_photos', filename)
-        
-        # Asegurar que el directorio existe
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-        
-        # Guardar la imagen
-        with open(filepath, "wb") as f:
-            f.write(base64.b64decode(imgstr))
-        
-        # Crear o actualizar el registro en la base de datos
-        photo, created = SessionPhoto.objects.update_or_create(
-            session=session,
-            frame_index=frame_index,
-            defaults={
-                'image': f'session_photos/{filename}'
-            }
-        )
-        
-        return JsonResponse({'success': True, 'photo_id': photo.id})
-        
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
 
 def session_result(request, session_id):
     """Muestra el resultado de una sesión de photobooth"""
-    session = get_object_or_404(PhotoboothSession, session_id=session_id)
+    session = get_object_or_404(CollageSession, session_id=session_id)
     evento = session.evento
     template = session.template
     
@@ -1675,10 +2151,10 @@ def video_feed(request):
                                  content_type='multipart/x-mixed-replace; boundary=frame')
 
 # funciones para la impresora
-'''def get_available_printers():
+def get_available_printers():
     printers = [printer[2] for printer in win32print.EnumPrinters(2)]
     return printers
-
+'''
 def list_printers(request):
     printers = get_available_printers()
     return JsonResponse({'printers': printers})'''
@@ -1695,51 +2171,51 @@ def impresoras(request, evento_id):
     except Exception as e:
         return render(request, 'impresoras/impresoras.html', {'error': str(e)})
 
-@csrf_exempt
-def print_document(request):
-    print("solicitud de impresión recibida")
-    if request.method != 'POST':
-        return HttpResponseBadRequest("Método no permitido.")
+# @csrf_exempt
+# def print_document(request):
+#     print("solicitud de impresión recibida")
+#     if request.method != 'POST':
+#         return HttpResponseBadRequest("Método no permitido.")
 
-    # Leer datos JSON del body
-    try:
-        data = json.loads(request.body)
-        printer_name = data.get('printer_name')
-        document_content = data.get('document_content')
-        paper_size = data.get('paper_size', 'A4')
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Error al leer los datos JSON.'}, status=400)
+#     # Leer datos JSON del body
+#     try:
+#         data = json.loads(request.body)
+#         printer_name = data.get('printer_name')
+#         document_content = data.get('document_content')
+#         paper_size = data.get('paper_size', 'A4')
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Error al leer los datos JSON.'}, status=400)
 
-    # Verificar que los datos esenciales estén presentes
-    if not printer_name or not document_content:
-        return JsonResponse({'error': 'Nombre de impresora y contenido del documento son obligatorios.'}, status=400)
+#     # Verificar que los datos esenciales estén presentes
+#     if not printer_name or not document_content:
+#         return JsonResponse({'error': 'Nombre de impresora y contenido del documento son obligatorios.'}, status=400)
 
-    try:
-        # Abrir la impresora seleccionada
-        printer_handle = win32print.OpenPrinter(printer_name)
-        printer_info = win32print.GetPrinter(printer_handle, 2)
+#     try:
+#         # Abrir la impresora seleccionada
+#         printer_handle = win32print.OpenPrinter(printer_name)
+#         printer_info = win32print.GetPrinter(printer_handle, 2)
 
-        # Crear el contexto de impresión
-        hprinter = win32ui.CreateDC()
-        hprinter.CreatePrinterDC(printer_name)
-        hprinter.StartDoc('Documento Django')
-        hprinter.StartPage()
+#         # Crear el contexto de impresión
+#         hprinter = win32ui.CreateDC()
+#         hprinter.CreatePrinterDC(printer_name)
+#         hprinter.StartDoc('Documento Django')
+#         hprinter.StartPage()
 
-        # Ajustar fuente y formato para imprimir
-        hprinter.TextOut(100, 100, document_content)  # Ajusta las coordenadas y el contenido del texto
-        hprinter.EndPage()
-        hprinter.EndDoc()
+#         # Ajustar fuente y formato para imprimir
+#         hprinter.TextOut(100, 100, document_content)  # Ajusta las coordenadas y el contenido del texto
+#         hprinter.EndPage()
+#         hprinter.EndDoc()
 
-        hprinter.DeleteDC()
-        win32print.ClosePrinter(printer_handle)
+#         hprinter.DeleteDC()
+#         win32print.ClosePrinter(printer_handle)
 
-        return JsonResponse({'message': 'Documento enviado a impresión correctamente.'})
+#         return JsonResponse({'message': 'Documento enviado a impresión correctamente.'})
 
-    except win32print.error as e:
-        return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
+#     except win32print.error as e:
+#         return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
 
-    except Exception as e:
-        return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
+#     except Exception as e:
+#         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
 @csrf_exempt
 def list_printers(request):
@@ -1749,6 +2225,104 @@ def list_printers(request):
         return JsonResponse({'printers': printers})
     except Exception as e:
         return JsonResponse({'error': f'Error al obtener las impresoras: {str(e)}'}, status=500)
+
+@csrf_exempt
+@require_POST
+def save_collage(request):
+    """API para guardar un collage generado en el frontend"""
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+        image_data = data.get('image_data')
+        
+        logger.info(f"Recibida solicitud para guardar collage. Session ID: {session_id}")
+        
+        if not session_id or not image_data:
+            logger.error("Datos incompletos en solicitud save_collage")
+            return JsonResponse({'success': False, 'error': 'Datos incompletos'})
+        
+        # Usar CollageSession directamente
+        try:
+            session = CollageSession.objects.get(session_id=session_id)
+        except CollageSession.DoesNotExist:
+            return JsonResponse({'success': False, 'error': f'Sesión con ID {session_id} no encontrada'})
+        
+        # Procesar la imagen base64
+        if image_data.startswith('data:image'):
+            format, imgstr = image_data.split(';base64,')
+            ext = format.split('/')[-1]
+            decoded_image = base64.b64decode(imgstr)
+            
+            # Generar un ID único para el collage
+            collage_id = str(uuid.uuid4())
+            
+            # Verificar si ya existe un resultado para esta sesión
+            existing_collage = CollageResult.objects.filter(session=session).first()
+            if existing_collage:
+                logger.info(f"Actualizando collage existente: {existing_collage.collage_id}")
+                # Si ya existe, actualizar su imagen
+                collage_result = existing_collage
+                collage_result.collage_id = collage_id
+            else:
+                logger.info(f"Creando nuevo registro de collage con ID: {collage_id}")
+                # Crear un nuevo registro de collage
+                collage_result = CollageResult(
+                    collage_id=collage_id,
+                    session=session
+                )
+            
+            # Asegurar que existe el directorio destino
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'results')
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Guardar la imagen en la ubicación especificada
+            filename = f"collage_{collage_id}.{ext}"
+            filepath = os.path.join(upload_dir, filename)
+            
+            with open(filepath, 'wb') as f:
+                f.write(decoded_image)
+            
+            # Actualizar el modelo con la ruta relativa
+            relative_path = os.path.join('collage', 'results', filename)
+            collage_result.image = relative_path
+            collage_result.save()
+            
+            logger.info(f"Imagen guardada como: {filename}")
+            
+            # Cambiar estado de la sesión
+            session.status = 'completed'
+            session.completed_at = timezone.now()
+            session.save()
+            logger.info(f"Sesión marcada como completada")
+            
+            # Actualizar estadísticas
+            try:
+                config = PhotoboothConfig.objects.get(evento=session.evento)
+                config.total_sesiones += 1
+                photos_count = SessionPhoto.objects.filter(session=session).count()
+                config.total_fotos += photos_count
+                config.save()
+                logger.info(f"Estadísticas actualizadas: {photos_count} fotos en sesión")
+            except Exception as stats_error:
+                logger.warning(f"No se pudieron actualizar estadísticas: {str(stats_error)}")
+            
+            # Construir URL completa para la respuesta
+            image_url = f"{settings.MEDIA_URL}{relative_path}"
+            
+            return JsonResponse({
+                'success': True, 
+                'collage_id': collage_id,
+                'image_url': image_url
+            })
+        else:
+            logger.error("Formato de imagen no válido en save_collage")
+            return JsonResponse({'success': False, 'error': 'Formato de imagen no válido'})
+        
+    except Exception as e:
+        logger.error(f"Error al guardar collage: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 
