@@ -3,9 +3,16 @@
 
 {% block title %}Listado de Clientes{% endblock %}
 
-{% block content %}
 
+{% block body %}
 
+{% include 'partials/navbar.html' %}
+<style>
+
+    body{
+        padding-top: 90px;
+    }
+</style>
 <div class="main-content">
     <div class="row mb-4">
         <div class="col-md-7">
@@ -132,4 +139,5 @@
     </ul>
 </nav>
 {% endif %}
+
 {% endblock %}

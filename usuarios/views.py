@@ -43,7 +43,8 @@ import win32ui
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
     
-
+  
+        
 
 
 def index(request):  #Función  para retornar vista principal
