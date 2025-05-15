@@ -34,12 +34,12 @@ Inicio
       <!-- services -->
       <div class="services_section layout_padding">
          <div class="container">
-            <h1 class="services_taital">Categoría de Fotos</h1>
+            <h1 class="services_taital">Nuestros Servicios</h1>
             <p class="services_text">El tiempo pasa, pero la esencia de un instante puede durar para siempre.</p>
             <div class="services_section_2">
                <div class="row">
                   <div class="col-md-4">
-                     <div><img src="{% static 'assets/imagenes_layout/report3690509125010332477aiease_flux_06937_.png' %}" class="services_img"></div>
+                     <div><img src="{% static 'assets/imagenes_layout/report3690509125010332477aiease_flux_06937_.png' %}" class="galeria-img img-fluid" class="services_img"></div>
                      <div class="btn_main"><a href="{% url 'galeria_quinces' %}">Quinces</a></div>
                   </div>
                   <div class="col-md-4">
@@ -47,7 +47,7 @@ Inicio
                      <div class="btn_main active"><a href="{% url 'galeria_bodas' %}">Bodas</a></div>
                   </div>
                   <div class="col-md-4">
-                     <div><img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" class="services_img"></div>
+                     <div><img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" class="galeria-img img-fluid" class="services_img"></div>
                      <div class="btn_main"><a href="{% url 'galeria_otros' %}">Otros</a></div>
                   </div>
                </div>
@@ -214,6 +214,25 @@ Ofrecemos un enfoque profesional y personalizado, adaptado a tus necesidades, co
         
        </script>
   
+
+  <style>
+   .galeria-img {
+      width: 150%;
+      height: 700px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+   }
+
+   .galeria-img:hover {
+      transform: scale(1.03);
+   }
+
+   .mb-4 {
+      margin-bottom: 1.5rem;
+   }
+</style>
 {% endblock %}
 
 
