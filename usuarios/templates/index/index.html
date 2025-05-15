@@ -27,25 +27,28 @@ Inicio
          
          </div>
       </div>
-
+<div style="text-align: center;">
+   <h1 class="services_taital">Isabel Alvarez Fotografía</h1>
+   <p class="services_text">La fotografía es una forma de sentir, de tocar, de amar. Lo que has capturado queda para simpre... por que la memoria olvida, pero la imagen recuerda con el corazón.</p>
+</div>
       <!-- services -->
       <div class="services_section layout_padding">
          <div class="container">
-            <h1 class="services_taital">Categorías</h1>
-            <p class="services_text">Puedes observar las fotografías de diferentes tipos de eventos que manejamos</p>
+            <h1 class="services_taital">Categoría de Fotos</h1>
+            <p class="services_text">El tiempo pasa, pero la esencia de un instante puede durar para siempre.</p>
             <div class="services_section_2">
                <div class="row">
                   <div class="col-md-4">
                      <div><img src="{% static 'assets/imagenes_layout/report3690509125010332477aiease_flux_06937_.png' %}" class="services_img"></div>
-                     <div class="btn_main"><a href="#">Quinces</a></div>
+                     <div class="btn_main"><a href="{% url 'galeria_quinces' %}">Quinces</a></div>
                   </div>
                   <div class="col-md-4">
                      <div><img src="{% static 'assets/imagenes_layout/55875043-2002-47d6-989f-a1b870f1db3e.webp' %}" class="services_img"></div>
-                     <div class="btn_main active"><a href="#">Bodas</a></div>
+                     <div class="btn_main active"><a href="{% url 'galeria_bodas' %}">Bodas</a></div>
                   </div>
                   <div class="col-md-4">
                      <div><img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" class="services_img"></div>
-                     <div class="btn_main"><a href="#">Otros</a></div>
+                     <div class="btn_main"><a href="{% url 'galeria_otros' %}">Otros</a></div>
                   </div>
                </div>
             </div>
@@ -73,8 +76,8 @@ Inicio
      <!-- Carousel Section -->
 <div class="carousel_section layout_padding">
    <div class="container">
-     <h1 class="carousel_taital">Galería de Fotos</h1>
-     <p class="carousel_text">Explora algunos de nuestros mejores momentos capturados por Isabel Álvarez Fotografía.</p>
+     <h1 class="carousel_taital">Nuestra Galería de Fotos</h1>
+     <p class="carousel_text">Mira despacio... cada fotografía guarda un instante eterno, cada imagen es una pausa del tiempo hablándote al corazón.</p>
  
      <!-- Swiper -->
      <div class="swiper">
@@ -106,7 +109,7 @@ Inicio
       <!-- testimonials -->
       <div class="client_section layout_padding">
          <div class="container">
-            <h1 class="client_taital">Opiniones de nuestros clientes </h1>
+            <h1 class="client_taital">Lo que opinan nuestros clientes </h1>
             <div class="client_section_2">
                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
                   <ol class="carousel-indicators">

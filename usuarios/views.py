@@ -1737,6 +1737,16 @@ def list_printers(request):
         return JsonResponse({'printers': printers})
     except Exception as e:
         return JsonResponse({'error': f'Error al obtener las impresoras: {str(e)}'}, status=500)
+    
+
+def galeria_quinces(request):
+    return render(request, 'index/galerias/quinces.html')
+
+def galeria_bodas(request):
+    return render(request, 'index/galerias/bodas.html')
+
+def galeria_otros(request):
+    return render(request, 'index/galerias/otros.html')
 
 
 
