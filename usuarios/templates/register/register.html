@@ -12,32 +12,14 @@
     <div class="container">
       <div class="container-form">
         <div class="comeback-button">
-          <a href="{% url 'index' %}">Volver atrás</a>
+          <a href="{% url 'index' %}">Ir a inicio</a>
         </div>
 
         <!-- 📌 Contenedor de errores en la parte superior -->
-        <div
-          id="error-container"
-          style="
-            display: none;
-            background-color: #ffdddd;
-            color: red;
-            padding: 10px;
-            border: 1px solid red;
-            border-radius: 5px;
-            margin-bottom: 15px;
-          "></div>
+        <div id="error-container"></div>
 
         {% if errores %}
-        <div
-          style="
-            background-color: #ffdddd;
-            color: red;
-            padding: 10px;
-            border: 1px solid red;
-            border-radius: 5px;
-            margin-bottom: 15px;
-          ">
+        <div id="error">
           <ul>
             {% for campo, mensaje in errores.items %}
             <li><strong>{{ campo }}:</strong> {{ mensaje }}</li>

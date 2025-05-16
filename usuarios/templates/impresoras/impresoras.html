@@ -1,0 +1,56 @@
+{% extends "layout/layout.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'impresoras/style.css' %}">
+
+<main class="print-main">
+    <div class="print-container">
+        <h1>Configuración de Impresión</h1>
+
+        <div class="form-group">
+            <label for="printerSelect">Selecciona una impresora:</label>
+            <select id="printerSelect"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="paperSize">Tamaño de papel:</label>
+            <select id="paperSize">
+                <option value="A4">A4</option>
+                <option value="Letter">Carta</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="orientation">Orientación:</label>
+            <select id="orientation">
+                <option value="portrait">Vertical</option>
+                <option value="landscape">Horizontal</option>
+            </select>
+        </div>
+
+        <div class="paper-preview-wrapper">
+            <h3>Vista previa del papel</h3>
+            <div id="paperPreview" class="paper-preview"></div>
+        </div>
+
+        <div class="form-group center-button">
+            <button onclick="printDocument()">Imprimir</button>
+            
+        </div>
+     
+
+    
+     <a href="{% url 'configurar_photobooth' eventos.id %}">Regresar</a>
+  
+  
+    
+        
+    </div>
+</main>
+<script src="{% static 'js/impresoras.js' %}"></script>
+
+{% endblock %}
+
+
+

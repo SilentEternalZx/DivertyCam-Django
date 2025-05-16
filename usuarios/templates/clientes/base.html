@@ -1,5 +1,6 @@
 {# templates/clientes/base.html #}
 {% extends "layout/layout.html" %}
+{% load static  %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,6 +11,7 @@
 <!-- SweetAlert2 CSS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
 
       
 </head>
@@ -39,7 +41,7 @@
        
 
 
-        {% block content %}
+        {% block body %}
         {% endblock %}
     </div>
     <!-- SweetAlert2 JS -->

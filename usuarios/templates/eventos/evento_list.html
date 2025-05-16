@@ -4,7 +4,7 @@
 {% block title %}Listado de Eventos{% endblock %}
 
 
-{% block content %}
+{% block body %}
 
 
 <div class="main-content">
@@ -51,6 +51,10 @@
                 <thead>
                     <tr>
                         <th>
+                            Categoría                            
+                            
+                        </th>
+                        <th>
                             <a href="?orden=nombre{% if request.GET.orden == 'nombre' %}_desc{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
                                 Nombre
                                 {% if request.GET.orden == 'nombre' %}
@@ -89,6 +93,7 @@
                 <tbody>
                     {% for evento in eventos %}
                     <tr>
+                        <td>{{ evento.categoria }}</td>
                         <td>{{ evento.nombre }}</td>
                         <td>{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</td>
                         <td>{{ evento.fecha_hora|date:"d/m/Y H:i" }}</td>

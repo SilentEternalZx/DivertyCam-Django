@@ -74,64 +74,12 @@
                 </div>
                 <div class="card-body">
                     <dib class="mb-3">
-                        <label for="camera-select" class="form-label">Cámara predeterminada:</label>
-                        <select id="camera-select" name="camera_default" class="form-select">
-                            <option value="" disabled selected>Seleccionar cámara...</option>
-                            <!-- Las opciones se cargarán dinámicamente -->
-                        </select>
-                        <div class="form-text">Selecciona la cámara que deseas utilizar para el photobooth.</div>
-                    
-                    <!-- Nuevos campos para resolución y balance de blancos -->
-                    <div class="mb-3">
-                        <label for="camera-resolution" class="form-label">Resolución de la cámara:</label>
-                        <select id="camera-resolution" name="resolucion_camara" class="form-select">
-                            <option value="640x480" {% if config.resolucion_camara == '640x480' %}selected{% endif %}>640x480 (VGA)</option>
-                            <option value="1280x720" {% if not config.resolucion_camara or config.resolucion_camara == '1280x720' %}selected{% endif %}>1280x720 (HD)</option>
-                            <option value="1920x1080" {% if config.resolucion_camara == '1920x1080' %}selected{% endif %}>1920x1080 (Full HD)</option>
-                            <option value="3840x2160" {% if config.resolucion_camara == '3840x2160' %}selected{% endif %}>3840x2160 (4K)</option>
-                        </select>
-                        <div class="form-text">Selecciona la resolución de captura para las fotos del photobooth.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="white-balance" class="form-label">Balance de blancos:</label>
-                        <select id="white-balance" name="balance_blancos" class="form-select">
-                            <option value="auto" {% if not config.balance_blancos or config.balance_blancos == 'auto' %}selected{% endif %}>Automático</option>
-                            <option value="cloudy" {% if config.balance_blancos == 'cloudy' %}selected{% endif %}>Nublado</option>
-                            <option value="sunny" {% if config.balance_blancos == 'sunny' %}selected{% endif %}>Soleado</option>
-                            <option value="fluorescent" {% if config.balance_blancos == 'fluorescent' %}selected{% endif %}>Fluorescente</option>
-                            <option value="incandescent" {% if config.balance_blancos == 'incandescent' %}selected{% endif %}>Incandescente</option>
-                        </select>
-                        <div class="form-text">Configura el balance de blancos para diferentes condiciones de iluminación.</div>
-                    </div>
-                    
-                    <div id="camera-alert" class="mt-3" style="display: none;"></div>
-                    <div class="form-text">Si no ves tu cámara, asegúrate de que esté conectada y habilitada.</div>
-                    
-                    <br>
-                    <br>
-                    <dib class="mt-4">
-                        <label for="camera-preview" class="form-label">Vista previa de la camara:</label>
-                        <div class="camera-preview-container" style="width: 100%; height: 300px; background-color: #000; border-radius: 8px; overflow: hidden;">
-                            <video id="camera-preview" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        </div>
-                        <div class="d-flex justify-content-between mt-2">
-                            <button type="button" id="start-preview-btn" class="btn btn-primary">
-                                <i class="fas fa-play"></i> Iniciar vista previa
-                            </button>
-                            <button type="button" id="stop-preview-btn" class="btn btn-secondary" disabled>
-                                <i class="fas fa-stop"></i> Detener vista previa
-                            </button>
-                        </div>
-                    
-                    
-                    <input type="hidden" id="selected-camera-id" name="selected_camera_id" value="{{ config.camera_id|default:'' }}">
-                </div>
-            
-
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">Guardar Configuración</button>
-                        <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-success">Ver Vista Previa</a>
+                        <a href="{% url 'camaras' %}" class="btn btn-primary">
+                            <i class=></i> Configurar Cámara
+                        </a>
+                        <a href="{% url 'impresoras' evento.id %}" class="btn btn-primary">
+                            <i class=></i> Configurar Impresora
+                        </a>
                         <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">Volver al Evento</a>
                     </div>
                 </form>

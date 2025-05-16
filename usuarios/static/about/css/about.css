@@ -10,6 +10,18 @@ body {
   *, *:before, *:after {
     box-sizing: inherit;
   }
+
+  h2{
+
+    text-align: center;
+  }
+
+  img{
+
+    width: 100%;
+  }
+
+
   
   .column {
     float: left;

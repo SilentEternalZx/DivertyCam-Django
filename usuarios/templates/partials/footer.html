@@ -1,17 +1,29 @@
-<!-- Footer-->
-<footer class="footer py-4">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-4 text-lg-start">Copyright &copy; DivertyCam 2024</div>
-            <div class="col-lg-4 my-3 my-lg-0">
-                <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a class="btn btn-dark btn-social mx-2" href="https://www.facebook.com/fotografiaprofesionalmedellin/?locale=es_LA" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+{% load static  %}
+
+<!-- footer -->
+      <div class="footer_section layout_padding">
+         <div class="container">
+           
+            <div class="location_main">
+               <div class="call_text"><img src="{% static 'assets/imagenes_layout/call-icon.png' %}"></div>
+               <div class="call_text"><a href="#">Teléfono 3069718021</a></div>
+               <div class="call_text"><img src="{% static 'assets/imagenes_layout/mail-icon.png' %}"></div>
+               <div class="call_text"><a href="#">divertycam@gmail.com</a></div>
             </div>
-            <div class="col-lg-4 text-lg-end">
-                <a class="link-dark text-decoration-none me-3" href="#!">Politica de privacidad</a>
-                <a class="link-dark text-decoration-none" href="#!">Términos de uso</a>
+            <div class="social_icon">
+               <ul>
+                  <li><a href="https://web.facebook.com/fotografiaprofesionalmedellin/?locale=es_LA&_rdc=1&_rdr#"><img src="{% static 'assets/imagenes_layout/fb-icon.png' %}"></a></li>
+                  <li><a href="#"><img src="{% static 'assets/imagenes_layout/twitter-icon.png' %}"></a></li>
+                  <li><a href="#"><img src="{% static 'assets/imagenes_layout/linkedin-icon.png' %}"></a></li>
+                  <li><a href="#"><img src="{% static 'assets/imagenes_layout/instagram-icon.png' %}"></a></li>
+               </ul>
             </div>
-        </div>
-    </div>
-</footer>
+         </div>
+      </div>
+
+      <!-- copyright -->
+      <div class="copyright_section">
+         <div class="container">
+            <p class="copyright_text">© 2025 DivertyCam todos los derechos reservados </p>
+         </div>
+      </div>

@@ -7,15 +7,29 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Div
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth import get_user_model
 
+
+User = get_user_model()
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not User.objects.filter(email__iexact=email, is_active=True).exists():
+            raise forms.ValidationError("Este correo no está registrado.")
+        return email
+    
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento', 
+        fields = ['nombre','apellido', 'cedula', 'fechaNacimiento', 
                   'direccion', 'correo', 'telefono', 'usuario']
         widgets = {
-            'fechaNacimiento': forms.DateInput(attrs={'type': 'date'}),
-            'direccion': forms.Textarea(attrs={'rows': 3}),
+            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'apellido'}),
+            
+            
+            
         }
     def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
@@ -50,7 +64,7 @@ class ClienteForm(forms.ModelForm):
 class FotografiaForm(forms.ModelForm):
     class Meta:
         model = Fotografia
-        fields = ['img', 'descripcion', 'invitado', 'evento']
+        fields = ['img', 'descripcion', 'invitado']
         
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(
@@ -220,8 +234,15 @@ class CollageTemplateForm(forms.ModelForm):
         return instance
         
   
+  
+  
+
+    
+    
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
     img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
     
+
+

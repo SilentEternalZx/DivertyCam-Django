@@ -3,16 +3,21 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import admin,views
+from .views import CustomPasswordResetView
+from .views import video_feed, index
+from .views import list_printers, print_document
+
 
 
 #Urls
 urlpatterns = [
     path("", views.index, name="index"),
+    path("about/", views.about, name="about"),
     path("login/", views.vista_login, name="login"),
     path("register", views.register_view, name="register"),
     path("logout", views.vista_logout, name="logout"),
     path("descargar_foto/<int:evento_id>", views.descargar_foto, name="descargar_foto"),
-    path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
+    path("password_reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"), 
@@ -43,6 +48,7 @@ urlpatterns = [
     path('evento/<int:evento_id>/collage/editor/', views.template_editor, name='template_editor'),
     path('evento/<int:evento_id>/collage/editor/<str:template_id>/', views.template_editor, name='template_editor_edit'),
     path('evento/<int:evento_id>/collage/template/<str:template_id>/delete/', views.template_delete, name='template_delete'),
+    path("eventos_cliente/", views.eventos_cliente, name="eventos_cliente"),
 
      # APIs para plantillas
     path('api/collage/save-template/', views.save_template, name='save_template'),
@@ -57,7 +63,7 @@ urlpatterns = [
     path('api/collage/update-print-count/', views.update_print_count, name='update_print_count'),
     path('api/collage/send-whatsapp/', views.send_whatsapp, name='send_whatsapp'),
     path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
-    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+  
     path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
     path("verificar_email/", views.verificar_email, name="verificar_email"),
 
@@ -67,7 +73,22 @@ urlpatterns = [
     path('photobooth/save-photo/', views.save_session_photo, name='save_session_photo'),
     path('photobooth/session/<str:session_id>/result/', views.session_result, name='session_result'),
     path('photobooth/update-print-count/', views.update_print_count, name='update_print_count'),
+    path('camaras', views.camaras, name='camaras'),
+    path('camara/video_feed/', views.video_feed, name='video_feed'),
+    path('mis_eventos', views.mis_eventos, name="mis_eventos"),
+    
    
+    path('capture', views.capture, name='capture'),
+    path('set_iso', views.set_iso, name='set_iso'),
+    path('set_white_balance/', views.set_white_balance, name='set_white_balance'),
+    path('switch_camera', views.switch_camera, name='switch_camera'),
+    path('impresoras/<int:evento_id>', views.impresoras, name='impresoras'),
+    path('list_printers/', views.list_printers, name='list_printers'),
+    path('print_document/', views.print_document, name='print_document'),
+
+    path('galeria/quinces/', views.galeria_quinces, name='galeria_quinces'),
+    path('galeria/bodas/', views.galeria_bodas, name='galeria_bodas'),
+    path('galeria/otros/', views.galeria_otros, name='galeria_otros'),
 ]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+

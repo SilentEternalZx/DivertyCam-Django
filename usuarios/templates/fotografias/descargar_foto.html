@@ -5,22 +5,18 @@
 {% block content %}
 
 
-{% if mensaje %}
 
-<h6 class="texto-mensaje" style="font-size: 40px; text-align: center; margin-top: 200px;"><strong>{{mensaje}}</strong></h6>
-
-{%  else %}
 <body id="page-top">
     <!-- Encabezado -->
     <header class="masthead">
         <div class="container">
        
 
-             
-
-            <div class="masthead-heading text-uppercase">Guardamos tus fotografías para ti, {{ user.username }} de {{ evento.nombre }}</div>
+            <div class="masthead-heading text-uppercase">Guardamos tus fotografías para ti {{ user.username }} pertenecientes a {{ evento.nombre }}</div>
         </div>
     </header>
+
+   
 
     <!-- Sección de fotos -->
     <section class="page-section bg-light" id="portfolio">
@@ -29,6 +25,10 @@
                 <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
                 <h3 class="section-subheading text-muted">Puedes descargarlas y visualizarlas en vista previa.</h3>
             </div>
+
+         
+
+         
 
             <div class="row">
                 {% if imagenes %}
@@ -49,6 +49,9 @@
                                 <div class="portfolio-caption">
                                     <div class="portfolio-caption-heading">{{ evento.nombre }}</div>
                                     <div class="portfolio-caption-subheading text-muted">{{ evento.fecha_hora }}</div>
+                                    {% if  request.user.is_superuser %}
+                                    <a href="{% url 'publicar_foto' imagen.id %}" class="btn btn-primary">Publicar en Facebook</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -96,5 +99,5 @@
         }
     </script>
 </body>
-{%endif%}
+
 {% endblock %}
