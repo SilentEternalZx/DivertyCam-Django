@@ -7,10 +7,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from urllib import request
 from django.utils import timezone
 from django import forms
-from django.shortcuts import get_object_or_404, render, redirect
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse, StreamingHttpResponse, HttpResponseBadRequest
 from django.contrib import messages
 from .models import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -52,6 +52,8 @@ class CustomPasswordResetView(PasswordResetView):
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
 
+def about(request):  #Función  para retornar vista principal
+    return render(request, "index/about.html")
 
 @csrf_exempt
 def vista_login(request): #Función para iniciar sesión
@@ -359,7 +361,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+            "http://127.0.0.1:8000", "https://68e1-191-156-39-254.ngrok-free.app"  # URL de ngrok
         )
 
         payload = {
@@ -397,7 +399,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+        "http://127.0.0.1:8000", "https://68e1-191-156-39-254.ngrok-free.app"  # URL de ngrok
     )
 
     # 📌 Definir la descripción de la foto
@@ -2421,6 +2423,110 @@ def save_collage(request):
         import traceback
         logger.error(traceback.format_exc())
         return JsonResponse({'success': False, 'error': str(e)})
+
+
+
+    
+
+def galeria_quinces(request):
+    return render(request, 'index/galerias/quinces.html')
+
+def galeria_bodas(request):
+    return render(request, 'index/galerias/bodas.html')
+
+def galeria_otros(request):
+    return render(request, 'index/galerias/otros.html')
+
+@csrf_exempt
+def latest_collage(request):
+    """
+    API endpoint para obtener el collage más reciente
+    Utilizado por la aplicación móvil para sincronizarse
+    """
+    try:
+        # Obtener el último collage creado
+        latest = CollageResult.objects.order_by('-created_at').first()
+        
+        # Si no hay collages, devolver error
+        if not latest:
+            return JsonResponse({
+                'success': False,
+                'error': 'No hay collages disponibles'
+            })
+            
+        # Construir la URL completa de la imagen
+        image_url = request.build_absolute_uri(latest.image.url)
+        
+        # Obtener información del evento para contexto
+        evento = latest.session.evento
+        client_name = f"{evento.cliente.nombre} {evento.cliente.apellido}" if evento.cliente else "Cliente"
+        event_name = evento.nombre
+        
+        # Devolver datos del collage
+        return JsonResponse({
+            'success': True,
+            'collage_id': latest.collage_id,
+            'image_url': image_url,
+            'created_at': latest.created_at.isoformat(),
+            'event_name': event_name,
+            'client_name': client_name
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en latest_collage: {str(e)}")
+        return JsonResponse({
+            'success': False, 
+            'error': str(e)
+        })
+
+@csrf_exempt
+@require_POST
+def update_share_count(request):
+    """
+    API endpoint para actualizar el contador de comparticiones
+    Llamado por la aplicación móvil cuando se comparte un collage
+    """
+    try:
+        # Leer datos del request
+        data = json.loads(request.body)
+        collage_id = data.get('collage_id')
+        
+        if not collage_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Collage ID no proporcionado'
+            })
+        
+        # Buscar el collage
+        collage = get_object_or_404(CollageResult, collage_id=collage_id)
+        
+        # Incrementar contador
+        collage.share_count += 1
+        collage.save()
+        
+        return JsonResponse({
+            'success': True,
+            'share_count': collage.share_count
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Formato JSON inválido'
+        }, status=400)
+        
+    except CollageResult.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Collage no encontrado'
+        }, status=404)
+        
+    except Exception as e:
+        logger.error(f"Error en update_share_count: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 
 

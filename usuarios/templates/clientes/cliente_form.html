@@ -2,10 +2,10 @@
 
 {% extends 'clientes/base.html' %}
 {% load widget_tweaks %}
-
+{% load static %}
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente{% endblock %}
 
-{% block content %}
+{% block body %}
 
 <div class="main-content">
     <div class="card form-container">
@@ -15,9 +15,11 @@
         <div class="card-body">
             <form method="post" novalidate>
             {% csrf_token %}
-            
+
+                       
+            <div class="row">
             {% for field in form %}
-            <div class="mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                 {{ field.errors }}
                 {{ field|add_class:"form-control" }}
@@ -26,6 +28,7 @@
                 {% endif %}
             </div>
             {% endfor %}
+        </div>
             
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">Guardar</button>
@@ -39,4 +42,26 @@
 
     </div>
 </div>
+
+<script>
+
+function calcularEdad(fecha_nacimiento) {
+    let hoy = new Date();
+    let cumpleanos = new Date(fecha_nacimiento);
+    let edad = hoy.getFullYear() - cumpleanos.getFullYear();
+    let m = hoy.getMonth() - cumpleanos.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+        edad--;
+    }
+    return edad;
+}
+
+let edad = calcularEdad("2007/08/10");
+if(edad >= 18){
+    console.log(`Eres mayor de edad, tienes ${edad}`);
+}else{
+    console.log(`Eres menor de edad, tienes ${edad}`);
+}
+
+</script>
 {% endblock %}

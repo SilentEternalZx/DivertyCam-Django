@@ -12,32 +12,14 @@
     <div class="container">
       <div class="container-form">
         <div class="comeback-button">
-          <a href="{% url 'index' %}">Volver atrás</a>
+          <a href="{% url 'index' %}">Ir a inicio</a>
         </div>
 
         <!-- 📌 Contenedor de errores en la parte superior -->
-        <div
-          id="error-container"
-          style="
-            display: none;
-            background-color: #ffdddd;
-            color: red;
-            padding: 10px;
-            border: 1px solid red;
-            border-radius: 5px;
-            margin-bottom: 15px;
-          "></div>
+        <div id="error-container"></div>
 
         {% if errores %}
-        <div
-          style="
-            background-color: #ffdddd;
-            color: red;
-            padding: 10px;
-            border: 1px solid red;
-            border-radius: 5px;
-            margin-bottom: 15px;
-          ">
+        <div id="error">
           <ul>
             {% for campo, mensaje in errores.items %}
             <li><strong>{{ campo }}:</strong> {{ mensaje }}</li>
@@ -65,7 +47,7 @@
               id="username"
               name="username"
               placeholder="Nombre de usuario"
-              onkeyup="verificar_usuario()" />
+              onkeyup="verificar_username()" />
           </div>
 
           <!-- Correo -->
@@ -87,7 +69,7 @@
               id="password1"
               name="password1"
               placeholder="Contraseña"
-              onkeyup="verificarPassword()" />
+              onkeyup="verificar_password()" />
           </div>
 
           <!-- Confirmar Contraseña -->
@@ -98,7 +80,7 @@
               id="password2"
               name="password2"
               placeholder="Confirmar contraseña"
-              onkeyup="verificarPassword()" />
+              onkeyup="verificar_password()" />
           </div>
 
           <div class="button-input">
@@ -125,6 +107,6 @@
     <script
       nomodule
       src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="{% static 'js/validaciones_register.js' %}"></script>
+    <script src="{% static 'js/validaciones_register.js' %}?v=3"></script>
   </body>
 </html>

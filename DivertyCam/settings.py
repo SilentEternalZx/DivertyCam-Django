@@ -30,14 +30,31 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['e8ee-191-156-33-165.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['68e1-191-156-39-254.ngrok-free.app', '127.0.0.1']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOxxbkZBZBMHxdQWb670Ph3EAQQnXMYBxliZBYpcmAtNfZCASV96VxnfMoOznIQA4O7HxMMubPSIdhGOuqjeFyys7rfPG80RYQSMGZBMTP4czndCKOULzW8MgptYzRQ90ekoEWMusornIBp54dfetbTRuBWfWaw3MFW5Hk210sHWabhgF2dI6ZBNAkT1SaTXwdGz3uS1E08ovvF"
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOw11gZCZCZAMDcYKBdRIq8DmYMKB0QfMe020ZCfR8mPqGNQ8YYPOA0fzoRMZChHEsSPCWUxcbxo6g3LLHYWELnKEs0euNweZCfxDUXnvOXkKqnFxA1vbWKhZA9C7xVNC952PxBZBxNe55oUiRdg4POpsoWNDAlcUrLpPzsMdI7dZBl1NVfdD4u52J1jfZBPCvVSNwFUGmpBbdapQQpywZDZD"
 FACEBOOK_PAGE_ID = "612248578630248"
+
+
+# Permitir credenciales
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Métodos permitidos
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
 
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+
 
 
 
@@ -47,6 +64,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 INSTALLED_APPS = [
     'usuarios',
     'jazzmin',
+    'corsheaders',
     'multiselectfield',
     'widget_tweaks',
     'requests',
@@ -65,6 +83,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,7 +92,7 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://e8ee-191-156-33-165.ngrok-free.app",
+    "https://68e1-191-156-39-254.ngrok-free.app",  # URL de ngrok
     "http://127.0.0.1:8000",  # Para pruebas locales
     "http://localhost:8000",
 ]
@@ -107,10 +126,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': '123456',  # La contraseña del usuario
+        'PASSWORD': 'Axel2201',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
         'PORT': '5433',  # El puerto por defecto de PostgreSQL
-       
     }
 }
 
@@ -162,6 +180,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+
+JAZZMIN_SETTINGS={
+    
+    "show_ui_builder":True
+}
 
 #SMTP configuration
 

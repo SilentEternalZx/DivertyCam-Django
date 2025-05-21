@@ -1,6 +1,6 @@
 import json
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
@@ -9,11 +9,15 @@ from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
-
+from django.forms.widgets import ClearableFileInput
 
 # Modelo de Usuario personalizado
 class User(AbstractUser):
    pass
+
+
+class CustomGroup(Group):
+    pass
 
 
 #Modelo de invitado
@@ -27,23 +31,26 @@ class Invitado(models.Model):
 #Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
-        max_length=100,
+        max_length=50, 
         verbose_name=_("Nombre"),
         
+       
     )
     
     usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)
     
     apellido = models.CharField(
-        max_length=100,
+        max_length=50,
         verbose_name=_("Apellido"),
-        
+       
+     
     )
     
     cedula = models.CharField(
         max_length=20,
         unique=True,
         verbose_name=_("Cédula"),
+       
         db_index=True
     )
     
@@ -55,7 +62,7 @@ class Cliente(models.Model):
     direccion = models.CharField(
         max_length=255,
         verbose_name=_("Dirección"),
-        
+      
     )
     
     correo = models.EmailField(
@@ -167,7 +174,7 @@ class Evento(models.Model):
     
     fecha_hora = models.DateTimeField(
         verbose_name=_("Fecha y hora del evento"),
-        
+      
     )
     
     servicios = MultiSelectField(
@@ -627,9 +634,14 @@ class CollageResult(models.Model):
 class Fotografia(models.Model):
     
     img=models.ImageField(null=True,blank=True, upload_to="imagenes/")
-    descripcion=models.TextField()
+    descripcion=models.TextField(max_length=34)
     invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE, null=True)
     evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
     
     def __str__(self):
         return f'{self.descripcion} {self.invitado}'
+
+
+
+
+

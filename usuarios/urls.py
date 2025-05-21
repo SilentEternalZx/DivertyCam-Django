@@ -12,6 +12,7 @@ from .views import list_printers, print_document
 #Urls
 urlpatterns = [
     path("", views.index, name="index"),
+    path("about/", views.about, name="about"),
     path("login/", views.vista_login, name="login"),
     path("register", views.register_view, name="register"),
     path("logout", views.vista_logout, name="logout"),
@@ -47,6 +48,7 @@ urlpatterns = [
     path('evento/<int:evento_id>/collage/editor/', views.template_editor, name='template_editor'),
     path('evento/<int:evento_id>/collage/editor/<str:template_id>/', views.template_editor, name='template_editor_edit'),
     path('evento/<int:evento_id>/collage/template/<str:template_id>/delete/', views.template_delete, name='template_delete'),
+    path("eventos_cliente/", views.eventos_cliente, name="eventos_cliente"),
 
      # APIs para plantillas
     path('api/collage/save-template/', views.save_template, name='save_template'),
@@ -73,12 +75,9 @@ urlpatterns = [
     path('photobooth/update-print-count/', views.update_print_count, name='update_print_count'),
     path('camaras', views.camaras, name='camaras'),
     path('camara/video_feed/', views.video_feed, name='video_feed'),
-    path('añadir_foto/<int:evento_id>', views.añadir_foto, name="añadir_foto"),
     path('mis_eventos', views.mis_eventos, name="mis_eventos"),
-    path("verificar_usuario/", views.verificar_usuario, name="verificar_usuario"),
-    path("verificar_email/", views.verificar_email, name="verificar_email"),
-    path('camaras', views.camaras, name='camaras'),
-    path('camara/video_feed/', views.video_feed, name='video_feed'),
+    
+   
     path('capture', views.capture, name='capture'),
     path('set_iso', views.set_iso, name='set_iso'),
     path('set_white_balance/', views.set_white_balance, name='set_white_balance'),
@@ -88,6 +87,12 @@ urlpatterns = [
     path('print_document/', views.print_document, name='print_document'),
     path('photobooth/save_collage/', views.save_collage, name='save_collage'),
     
+
+    path('galeria/quinces/', views.galeria_quinces, name='galeria_quinces'),
+    path('galeria/bodas/', views.galeria_bodas, name='galeria_bodas'),
+    path('galeria/otros/', views.galeria_otros, name='galeria_otros'),
+    path('latest_collage/', views.latest_collage, name='latest_collage'),
+    path('update_share_count/', views.update_share_count, name='update_share_count'),
 ]
 
 
