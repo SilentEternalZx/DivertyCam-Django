@@ -49,7 +49,11 @@ class ClienteForm(forms.ModelForm):
         
     def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
-        # Aquí puedes agregar validaciones específicas para la cédula
+        # Validaciones adicionales de cédula si es necesario
+        if not cedula.isdigit():
+            raise forms.ValidationError("La cédula debe contener solo números.")
+        if not (6 <= len(cedula) <= 10):
+            raise forms.ValidationError("La cédula debe tener entre 6 y 10 dígitos.")
         return cedula
         
     def clean_correo(self):

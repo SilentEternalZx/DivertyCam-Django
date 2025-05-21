@@ -100,10 +100,7 @@
 </div>
 {% endif %}
 <body>
-{% if mostrar_navbar|default:True %}
-    {% include "partials/navbar.html" %}
-{% endif %}
-
+{% include "partials/navbar.html" %}
 
 {%block content %}
     

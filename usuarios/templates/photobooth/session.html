@@ -379,6 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const startCameraBtn = document.getElementById('start-camera-btn');
     const startSessionBtn = document.getElementById('start-session-btn');
     const restartBtn = document.getElementById('restart-btn');
+    
+    const printBtn = document.getElementById('print-btn');
 
     
     // Variables de estado
@@ -568,23 +570,30 @@ function startSession() {
     
     // Iniciar cuenta atrás para tomar foto (usando el tiempo configurado)
     function startCountdown() {
-        let timeLeft = config.countdownSeconds;
-        countdownDisplay.textContent = timeLeft;
-        countdownOverlay.style.display = 'flex';
+    let timeLeft = config.countdownSeconds;
+    countdownDisplay.textContent = timeLeft;
+    countdownOverlay.style.display = 'flex';
+    
+    const countdownTimer = setInterval(() => {
+        timeLeft--;
         
-        const countdownTimer = setInterval(() => {
-            timeLeft--;
-            countdownDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownTimer);
+            // Mostrar mensaje "Sonríe" durante 1 segundo
+            countdownDisplay.textContent = "¡Sonríe!";
             
-            if (timeLeft <= 0) {
-                clearInterval(countdownTimer);
+            // Esperar 1 segundo adicional antes de tomar la foto
+            setTimeout(() => {
                 countdownOverlay.style.display = 'none';
-                
                 // Tomar la foto
                 takePhoto();
-            }
-        }, 1000);
-    }
+            }, 1000);
+        } else {
+            // Actualizar el contador normalmente
+            countdownDisplay.textContent = timeLeft;
+        }
+    }, 1000);
+}
     
     // Tomar foto
     function takePhoto() {
@@ -823,6 +832,7 @@ function startSession() {
     
     // Imprimir el collage
     
+// En el archivo session.html, actualiza la función printCollage
 function printCollage() {
     console.log("=== INICIO DE printCollage() ===");
     
@@ -839,48 +849,53 @@ function printCollage() {
     }
     
     console.log("Generando imagen del collage con html2canvas...");
-    html2canvas(collageResult, {
-        useCORS: true,      // Permitir imágenes de diferentes dominios
-        allowTaint: true,   // Permitir contenido que podría "contaminar" el canvas
-        scale: 2,           // Mayor calidad de imagen
-        logging: true       // Activar logs para depuración
-    }).then(canvas => {
-        console.log("Imagen del collage generada con éxito");
-        const imageData = canvas.toDataURL('image/jpeg', 0.95);
-        
-        console.log("Enviando datos a la API de impresión...");
-        console.log("Tamaño de la imagen:", Math.round(imageData.length / 1024), "KB");
-        
-        // Mostrar indicador de carga
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'loading-indicator';
-        loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Imprimiendo...';
-        loadingIndicator.style.position = 'fixed';
-        loadingIndicator.style.top = '50%';
-        loadingIndicator.style.left = '50%';
-        loadingIndicator.style.transform = 'translate(-50%, -50%)';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.7)';
-        loadingIndicator.style.color = 'white';
-        loadingIndicator.style.padding = '20px';
-        loadingIndicator.style.borderRadius = '10px';
-        loadingIndicator.style.zIndex = '10000';
-        
-        document.body.appendChild(loadingIndicator);
-        
-        // Enviar a la API de impresión con un timeout explícito
-        fetch('{% url "print_document" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                printer_name: selectedPrinter,
-                document_content: imageData,
-                paper_size: config.paperSize || "10x15",
-                copies: config.printCopies || 1,
-                quality: config.printQuality || "high"
-            })
+    
+    // Mostrar indicador de carga
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Imprimiendo...';
+    loadingIndicator.style.position = 'fixed';
+    loadingIndicator.style.top = '50%';
+    loadingIndicator.style.left = '50%';
+    loadingIndicator.style.transform = 'translate(-50%, -50%)';
+    loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    loadingIndicator.style.color = 'white';
+    loadingIndicator.style.padding = '20px';
+    loadingIndicator.style.borderRadius = '10px';
+    loadingIndicator.style.zIndex = '10000';
+    
+    document.body.appendChild(loadingIndicator);
+    
+    try {
+        html2canvas(collageResult, {
+            useCORS: true,      // Permitir imágenes de diferentes dominios
+            allowTaint: true,   // Permitir contenido que podría "contaminar" el canvas
+            scale: 1,           // Usar escala menor para reducir tamaño de datos
+            logging: true       // Activar logs para depuración
+        })
+        .then(canvas => {
+            console.log("Imagen del collage generada con éxito");
+            // Usar menor calidad para reducir tamaño
+            const imageData = canvas.toDataURL('image/jpeg', 0.7);
+            
+            console.log("Enviando datos a la API de impresión...");
+            console.log("Tamaño de la imagen:", Math.round(imageData.length / 1024), "KB");
+            
+            // Enviar a la API de impresión con un timeout explícito
+            return fetch('{% url "print_document" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    printer_name: selectedPrinter,
+                    document_content: imageData,
+                    paper_size: config.paperSize || "A4", // Usar A4 como fallback si no hay tamaño específico
+                    copies: config.printCopies || 1,
+                    quality: config.printQuality || "high"
+                })
+            });
         })
         .then(response => {
             console.log("Respuesta recibida del servidor:", response.status);
@@ -907,11 +922,10 @@ function printCollage() {
                 console.error("Error de impresión reportado por el servidor:", data.error);
                 showPrintNotification(false, 'Error al imprimir: ' + data.error);
                 
-                // Preguntar al usuario si desea imprimir con el navegador
+                // Si hay error, usar automáticamente el método del navegador
+                console.log("Usando método de navegador debido a error en servidor");
                 setTimeout(() => {
-                    if (confirm('No se pudo imprimir con la impresora seleccionada. ¿Desea usar el diálogo de impresión del navegador?')) {
-                        printCollageWithBrowser();
-                    }
+                    printCollageWithBrowser(); 
                 }, 1000);
             }
         })
@@ -919,29 +933,34 @@ function printCollage() {
             console.error('Error en la solicitud de impresión:', error);
             
             // Quitar indicador de carga
-            document.body.removeChild(loadingIndicator);
+            if (document.body.contains(loadingIndicator)) {
+                document.body.removeChild(loadingIndicator);
+            }
             
             showPrintNotification(false, 'Error de comunicación: ' + error.message);
             
-            // Preguntar al usuario si desea imprimir con el navegador
+            // Usar método de navegador automáticamente en caso de error
+            console.log("Usando método de navegador debido a error en la solicitud");
             setTimeout(() => {
-                if (confirm('Ocurrió un error al comunicarse con la impresora. ¿Desea usar el diálogo de impresión del navegador?')) {
-                    printCollageWithBrowser();
-                }
+                printCollageWithBrowser();
             }, 1000);
         });
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error al generar imagen del collage:', error);
+        
+        // Quitar indicador de carga
+        if (document.body.contains(loadingIndicator)) {
+            document.body.removeChild(loadingIndicator);
+        }
+        
         showPrintNotification(false, 'Error al generar imagen: ' + error.message);
         
-        // Como último recurso, intentar impresión del navegador
+        // Usar método alternativo
+        console.log("Usando método de navegador debido a error en html2canvas");
         setTimeout(() => {
-            if (confirm('No se pudo generar la imagen para impresión. ¿Desea intentar con el diálogo de impresión del navegador?')) {
-                printCollageWithBrowser();
-            }
+            printCollageWithBrowser();
         }, 1000);
-    });
+    }
 }
     
     // Mostrar notificación de impresión
@@ -1131,6 +1150,10 @@ function showPrintNotification(success, message) {
     restartBtn.addEventListener('click', function() {
         restart();
     });
+
+    printBtn.addEventListener('click', function() {
+        printCollage();
+    });
     
     // Configurar botón de WhatsApp
     if (document.getElementById('share-whatsapp-btn')) {
@@ -1176,19 +1199,19 @@ function showPrintNotification(success, message) {
     
     // Configurar botón de impresión manual
     // Configurar botón de impresión manual
-if (document.getElementById('print-btn')) {
-    document.getElementById('print-btn').addEventListener('click', function() {
-        console.log("Botón de impresión presionado");
-        // Eliminar el alert que puede estar causando problemas
-        // alert("Iniciando proceso de impresión..."); 
-        
-        // Mostrar notificación no bloqueante en su lugar
-        showPrintNotification(true, 'Iniciando proceso de impresión...');
-        
-        // Iniciar impresión
-        printCollage();
-    });
-}
+    if (document.getElementById('print-btn')) {
+        document.getElementById('print-btn').addEventListener('click', function() {
+            console.log("Botón de impresión presionado");
+            // Eliminar el alert que puede estar causando problemas
+            // alert("Iniciando proceso de impresión..."); 
+            
+            // Mostrar notificación no bloqueante en su lugar
+            showPrintNotification(true, 'Iniciando proceso de impresión...');
+            
+            // Iniciar impresión
+            printCollage();
+        });
+    }
     
     // Añadir animaciones CSS
     const style = document.createElement('style');

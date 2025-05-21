@@ -1389,7 +1389,7 @@ def generate_collage(session, template_data, photos, frames):
 
 @csrf_exempt
 def print_document(request):
-    """Función mejorada para imprimir documentos con soporte para imágenes y opciones de calidad"""
+    """Función mejorada para imprimir documentos con manejo correcto de excepciones"""
     print("Solicitud de impresión recibida")
     if request.method != 'POST':
         return HttpResponseBadRequest("Método no permitido.")
@@ -1411,10 +1411,6 @@ def print_document(request):
     if not printer_name or not document_content:
         return JsonResponse({'error': 'Nombre de impresora y contenido del documento son obligatorios.'}, status=400)
 
-    # Validar número de copias
-    if copies < 1 or copies > 10:
-        copies = 1  # Restringir a un rango razonable
-
     try:
         # Verificar si el documento es una imagen en base64
         is_image = False
@@ -1430,32 +1426,48 @@ def print_document(request):
         printer_handle = win32print.OpenPrinter(printer_name)
         printer_info = win32print.GetPrinter(printer_handle, 2)
 
-        # Configurar tamaño de papel
+        # Configurar tamaño de papel - USAR CONSTANTES ESTÁNDAR
         devmode = printer_info["pDevMode"]
         
-        # Mapear tamaños de papel comunes
-        paper_sizes = {
-            '10x15': win32print.DMPAPER_10X15CM,  # Tamaño 10x15cm
-            '13x18': win32print.DMPAPER_13X18CM,  # Tamaño 13x18cm
-            '15x20': win32print.DMPAPER_15X20CM,  # Tamaño 15x20cm
-            '20x25': win32print.DMPAPER_20X25CM,  # Tamaño 20x25cm
-            'A4': win32print.DMPAPER_A4,          # A4
-            'Letter': win32print.DMPAPER_LETTER   # Carta (US Letter)
+        # Definir códigos estándar para tamaños de papel comunes
+        # Estas constantes están definidas en win32con
+        PAPER_SIZES = {
+            '10x15': 1,    # Usar tamaño personalizado 
+            '13x18': 1,    # Usar tamaño personalizado
+            '15x20': 1,    # Usar tamaño personalizado
+            '20x25': 1,    # Usar tamaño personalizado
+            'A4': win32con.DMPAPER_A4,
+            'Letter': win32con.DMPAPER_LETTER
         }
         
         # Aplicar tamaño de papel si está disponible
-        if paper_size in paper_sizes:
-            devmode.PaperSize = paper_sizes[paper_size]
+        if paper_size in PAPER_SIZES:
+            devmode.PaperSize = PAPER_SIZES[paper_size]
+            
+            # Si es tamaño personalizado (valor 1), también configurar dimensiones físicas
+            if PAPER_SIZES[paper_size] == 1:
+                # Extraer dimensiones del string (formato '10x15')
+                if 'x' in paper_size:
+                    try:
+                        width_cm, height_cm = paper_size.split('x')
+                        width_mm = int(float(width_cm) * 10)  # cm a mm
+                        height_mm = int(float(height_cm) * 10)  # cm a mm
+                        
+                        # Solo configurar si los campos están disponibles
+                        if hasattr(devmode, 'PaperWidth') and hasattr(devmode, 'PaperLength'):
+                            devmode.PaperWidth = width_mm * 10  # mm a 0.1mm (unidad de DEVMODE)
+                            devmode.PaperLength = height_mm * 10  # mm a 0.1mm (unidad de DEVMODE)
+                    except:
+                        pass  # Si hay error, usar los valores por defecto
         else:
-            # Si no encuentra el tamaño, usar 10x15 por defecto para photobooth
-            devmode.PaperSize = paper_sizes['10x15']
+            # Usar A4 como tamaño por defecto
+            devmode.PaperSize = win32con.DMPAPER_A4
         
         # Configurar calidad de impresión
         quality_settings = {
-            'draft': win32print.DMRES_DRAFT,
-            'normal': win32print.DMRES_MEDIUM,
-            'high': win32print.DMRES_HIGH,
-            'best': win32print.DMRES_HIGH  # El más alto disponible
+            'draft': -1,    # Calidad borrador
+            'normal': 0,    # Calidad normal
+            'high': 1       # Alta calidad
         }
         
         if quality in quality_settings:
@@ -1524,7 +1536,32 @@ def print_document(request):
                 
             except Exception as img_error:
                 # Si falla la impresión de imagen, intentar imprimir como texto
-                logger.error(f"Error al imprimir imagen: {str(img_error)}")
+                print(f"Error al imprimir imagen: {str(img_error)}")
+                
+                # Intentar limpiar recursos si ya se iniciaron
+                try:
+                    if 'hdc' in locals() and hdc:
+                        try:
+                            if hasattr(hdc, 'AbortDoc'):
+                                hdc.AbortDoc()
+                            hdc.DeleteDC()
+                        except:
+                            pass
+                    
+                    if 'printer_handle' in locals() and printer_handle:
+                        try:
+                            win32print.ClosePrinter(printer_handle)
+                        except:
+                            pass
+                    
+                    if 'temp_file' in locals() and temp_file and os.path.exists(temp_file.name):
+                        try:
+                            os.unlink(temp_file.name)
+                        except:
+                            pass
+                except:
+                    pass
+                
                 return JsonResponse({'error': f'Error al imprimir imagen: {str(img_error)}'}, status=500)
         else:
             # Imprimir documento de texto
@@ -1564,13 +1601,74 @@ def print_document(request):
 
         return JsonResponse({'success': True, 'message': 'Documento enviado a impresión correctamente.'})
 
-    except win32print.error as e:
-        return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
+    # Cambiar esto:
+    # except win32print.error as e:
+    #     return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
+    
+    # Por esto (manejo general de excepciones):
     except Exception as e:
-        logger.error(f"Error inesperado: {str(e)}")
+        print(f"Error inesperado: {str(e)}")
         import traceback
-        logger.error(traceback.format_exc())
+        print(traceback.format_exc())
+        
+        # Intentar limpiar recursos si ya se iniciaron
+        try:
+            if 'hdc' in locals() and hdc:
+                try:
+                    if hasattr(hdc, 'AbortDoc'):
+                        hdc.AbortDoc()
+                    hdc.DeleteDC()
+                except:
+                    pass
+            
+            if 'printer_handle' in locals() and printer_handle:
+                try:
+                    win32print.ClosePrinter(printer_handle)
+                except:
+                    pass
+            
+            if is_image and 'temp_file' in locals() and temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
+        except:
+            pass
+        
         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
+    
+def check_print_spooler():
+    """Verifica el estado del servicio de cola de impresión y lo reinicia si es necesario"""
+    try:
+        import subprocess
+        
+        # Verificar el estado del servicio
+        result = subprocess.run(['sc', 'query', 'Spooler'], capture_output=True, text=True)
+        
+        if 'RUNNING' not in result.stdout:
+            # El servicio no está corriendo, intentar reiniciarlo
+            logger.warning("El servicio Print Spooler no está en ejecución. Intentando reiniciar...")
+            restart = subprocess.run(['sc', 'start', 'Spooler'], capture_output=True, text=True)
+            
+            # Esperar un momento para que se inicie
+            import time
+            time.sleep(5)
+            
+            # Verificar de nuevo
+            result = subprocess.run(['sc', 'query', 'Spooler'], capture_output=True, text=True)
+            if 'RUNNING' in result.stdout:
+                logger.info("Servicio Print Spooler reiniciado exitosamente")
+                return True
+            else:
+                logger.error("No se pudo reiniciar el servicio Print Spooler")
+                return False
+        else:
+            logger.info("Servicio Print Spooler funcionando correctamente")
+            return True
+            
+    except Exception as e:
+        logger.error(f"Error al verificar servicio Print Spooler: {str(e)}")
+        return False
 
 @csrf_exempt
 @require_POST
@@ -2154,10 +2252,10 @@ def video_feed(request):
 def get_available_printers():
     printers = [printer[2] for printer in win32print.EnumPrinters(2)]
     return printers
-'''
+
 def list_printers(request):
     printers = get_available_printers()
-    return JsonResponse({'printers': printers})'''
+    return JsonResponse({'printers': printers})
 
 def impresoras(request, evento_id):
     eventos=Evento.objects.get(id=evento_id)  # Obtener el evento
