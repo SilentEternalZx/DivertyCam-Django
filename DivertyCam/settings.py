@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     
+    
 ]
 
 MIDDLEWARE = [
@@ -197,3 +198,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Aumentar el límite de tamaño para cargas de datos (20MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
+
+# También ajustar el tamaño máximo de archivos si es necesario
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes

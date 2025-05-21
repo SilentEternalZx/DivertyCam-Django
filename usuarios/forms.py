@@ -52,7 +52,11 @@ class ClienteForm(forms.ModelForm):
         
     def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
-        # Aquí puedes agregar validaciones específicas para la cédula
+        # Validaciones adicionales de cédula si es necesario
+        if not cedula.isdigit():
+            raise forms.ValidationError("La cédula debe contener solo números.")
+        if not (6 <= len(cedula) <= 10):
+            raise forms.ValidationError("La cédula debe tener entre 6 y 10 dígitos.")
         return cedula
         
     def clean_correo(self):
@@ -241,11 +245,31 @@ class PhotoboothConfigForm(forms.ModelForm):
     class Meta:
         model = PhotoboothConfig
         fields = [
-            'mensaje_bienvenida', 'imagen_fondo', 'color_texto', 
-            'tamano_texto', 'tipo_letra', 
-             'plantilla_collage' #'permitir_personalizar'
+            # Campos básicos
+            'mensaje_bienvenida', 
+            'imagen_fondo', 
+            'color_texto', 
+            'tamano_texto', 
+            'tipo_letra',
+            'plantilla_collage',
+            # Nuevos campos de tiempo
+            'tiempo_entre_fotos',
+            'tiempo_cuenta_regresiva',
+            'tiempo_visualizacion_foto',
+            # Configuración de cámara
+            'camera_id',
+            'resolucion_camara',
+            'balance_blancos',
+            'iso_valor',
+            # Configuración de impresora
+            'printer_name',
+            'paper_size',
+            'copias_impresion',
+            'calidad_impresion',
+            'imprimir_automaticamente',
         ]
         widgets = {
+            # Widgets para campos existentes
             'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
             'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
             'color_texto': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
@@ -255,29 +279,100 @@ class PhotoboothConfigForm(forms.ModelForm):
                 ('Helvetica', 'Helvetica'),
                 ('Times New Roman', 'Times New Roman'),
                 ('Courier New', 'Courier New'),
-                ('Verdana', 'Verdana')
+                ('Verdana', 'Verdana'),
+                ('Open Sans', 'Open Sans'),
+                ('Roboto', 'Roboto'),
+                ('Montserrat', 'Montserrat'),
             ]),
-            #'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'plantilla_collage': forms.Select(attrs={'class': 'form-select'})
+            'plantilla_collage': forms.Select(attrs={'class': 'form-select'}),
+            
+            # Widgets para nuevos campos de tiempo
+            'tiempo_entre_fotos': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'min': '1', 
+                'max': '20', 
+                'id': 'tiempo-entre-fotos'
+            }),
+            'tiempo_cuenta_regresiva': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'min': '1', 
+                'max': '10', 
+                'id': 'tiempo-cuenta-regresiva'
+            }),
+            'tiempo_visualizacion_foto': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'min': '1', 
+                'max': '10', 
+                'id': 'tiempo-visualizacion-foto'
+            }),
+            
+            # Widgets para configuración de cámara
+            'camera_id': forms.HiddenInput(attrs={'id': 'selected-camera-id'}),
+            'resolucion_camara': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'camera-resolution'
+            }),
+            'balance_blancos': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'white-balance'
+            }),
+            'iso_valor': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '100',
+                'max': '3200',
+                'id': 'iso-valor'
+            }),
+            
+            # Widgets para configuración de impresora
+            'printer_name': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'printer-select'
+            }),
+            'paper_size': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'paper-size'
+            }),
+            'copias_impresion': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1',
+                'max': '10',
+                'id': 'copias-impresion'
+            }),
+            'calidad_impresion': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'calidad-impresion'
+            }),
+            'imprimir_automaticamente': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'imprimir-automaticamente'
+            }),
         }
     
     def __init__(self, *args, **kwargs):
         evento = kwargs.pop('evento', None)
         super().__init__(*args, **kwargs)
 
-        # Añadir depuración
-        print(f"Inicializando formulario con evento: {evento}")
-        if self.instance and self.instance.pk:
-            print(f"Instancia existente, plantilla: {self.instance.plantilla_collage}")
-        
         # Filtrar plantillas por evento si se proporciona
         if evento:
             self.fields['plantilla_collage'].queryset = CollageTemplate.objects.filter(evento=evento)
         else:
             self.fields['plantilla_collage'].queryset = CollageTemplate.objects.all()
         
-        # Añadir opción vacía
+        # Añadir opción vacía para el selector de plantillas
         self.fields['plantilla_collage'].empty_label = "-- Seleccionar plantilla --"
+        
+        # Para la selección de impresora, necesitamos obtener la lista de impresoras
+        # Este valor se llenará con JavaScript cuando se cargue la página
+        self.fields['printer_name'].choices = [('', '-- Seleccionar impresora --')]
+        
+        # Poner campos en grupos lógicos para una mejor organización en la plantilla
+        self.field_groups = {
+            'basicos': ['mensaje_bienvenida', 'imagen_fondo', 'color_texto', 'tamano_texto', 'tipo_letra'],
+            'plantilla': ['plantilla_collage'],
+            'tiempos': ['tiempo_entre_fotos', 'tiempo_cuenta_regresiva', 'tiempo_visualizacion_foto'],
+            'camara': ['camera_id', 'resolucion_camara', 'balance_blancos', 'iso_valor'],
+            'impresora': ['printer_name', 'paper_size', 'copias_impresion', 'calidad_impresion', 'imprimir_automaticamente'],
+        }
 
 class CollageTemplateForm(forms.ModelForm):
     """Formulario para crear/editar plantillas de collage"""

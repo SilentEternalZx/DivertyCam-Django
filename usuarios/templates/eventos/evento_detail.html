@@ -60,29 +60,85 @@
             <div class="card mb-2">
                 <div class="card-body">
                 <div class="col-12" style="padding: 0px 20px; border: 0;">
-                    <h4>Photobooth</h4>
+                    
                     
                         <div class="card-body">
                             {% if evento.photobooth_config %}
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <p><strong>Estado:</strong> <span class="badge bg-success">Configurado</span></p>
-                                        <p><strong>Mensaje de bienvenida:</strong> {{ evento.photobooth_config.mensaje_bienvenida }}</p>
-                                        {% if evento.photobooth_config.imagen_fondo %}
-                                            <p><strong>Imagen de fondo:</strong> <img src="{{ evento.photobooth_config.imagen_fondo.url }}" alt="Fondo" class="img-thumbnail" style="max-width: 200px;"></p>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="btn-group-vertical">
-                                            <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-warning mb-2">
-                                                <i class="fas fa-cog"></i> Configurar Photobooth
-                                            </a>
-                                            <a href="{% url 'preview_photobooth' evento.pk %}" class="btn btn-primary mb-2">
-                                                <i class="fas fa-eye"></i> Vista Previa
-                                            </a>
+                                
+                                    
+                                    <!-- Añadir este código en la plantilla evento_detail.html -->
+                                    <!-- Idealmente en la sección de acciones o en una sección destacada -->
+
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-primary text-white">
+                                            <h4><i class="fas fa-camera"></i> Photobooth</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <p>El Photobooth permite tomar fotos automáticamente y crear collages personalizados para los invitados del evento.</p>
+                                                    
+                                                    {% if evento.photobooth_config %}
+                                                        <p class="mb-0"><strong>Estado:</strong> 
+                                                            {% if evento.photobooth_config.activo %}
+                                                                <span class="badge bg-success">Configurado y Activo</span>
+                                                            {% else %}
+                                                                <span class="badge bg-warning">Configurado pero Inactivo</span>
+                                                            {% endif %}
+                                                        </p>
+                                                        
+                                                        {% if evento.photobooth_config.plantilla_collage %}
+                                                            <p class="mb-0 mt-2"><strong>Plantilla:</strong> {{ evento.photobooth_config.plantilla_collage.nombre }}</p>
+                                                        {% else %}
+                                                            <p class="text-danger mb-0 mt-2"><i class="fas fa-exclamation-triangle"></i> No hay plantilla de collage seleccionada.</p>
+                                                        {% endif %}
+                                                        
+                                                        <div class="mt-3">
+                                                            <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-primary">
+                                                                <i class="fas fa-cog"></i> Configurar
+                                                            </a>
+                                                            <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-outline-info">
+                                                                <i class="fas fa-eye"></i> Vista Previa
+                                                            </a>
+                                                        </div>
+                                                    {% else %}
+                                                        <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> El photobooth aún no está configurado para este evento.</p>
+                                                        
+                                                        <div class="mt-3">
+                                                            <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-primary">
+                                                                <i class="fas fa-cog"></i> Configurar Photobooth
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="col-md-4 text-center">
+                                                    {% if evento.photobooth_config and evento.photobooth_config.plantilla_collage %}
+                                                        <div class="photobooth-action mb-3">
+                                                            <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-success btn-lg d-block">
+                                                                <i class="fas fa-play-circle fa-lg me-2"></i> INICIAR PHOTOBOOTH
+                                                            </a>
+                                                            <small class="text-muted mt-2">Inicia la sesión en modo pantalla completa</small>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="alert alert-warning">
+                                                            <i class="fas fa-info-circle"></i> Configura el photobooth primero para poder iniciarlo
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if evento.collage_sessions.exists %}
+                                                        <div class="mt-4">
+                                                            <p><strong>{{ evento.collage_sessions.count }}</strong> sesiones realizadas</p>
+                                                            <a href="#" class="btn btn-outline-secondary btn-sm">
+                                                                <i class="fas fa-images"></i> Ver sesiones anteriores
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                
                             {% else %}
                                 <p>El photobooth no está configurado para este evento.</p>
                                 <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-primary">
