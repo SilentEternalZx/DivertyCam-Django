@@ -36,8 +36,25 @@ FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOw11gZCZCZAMDcYKBdRIq8DmYMKB0QfMe020ZCfR8
 FACEBOOK_PAGE_ID = "612248578630248"
 
 
+# Permitir credenciales
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Métodos permitidos
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+
 
 
 
@@ -47,6 +64,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 INSTALLED_APPS = [
     'usuarios',
     'jazzmin',
+    'corsheaders',
     'multiselectfield',
     'widget_tweaks',
     'requests',
@@ -64,6 +82,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -106,7 +125,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': 'posgres',  # La contraseña del usuario
+        'PASSWORD': 'Axel2201',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
         'PORT': '5433',  # El puerto por defecto de PostgreSQL
     }

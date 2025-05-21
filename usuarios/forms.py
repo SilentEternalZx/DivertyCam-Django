@@ -1,4 +1,3 @@
-
 import json
 from django import forms
 import json
@@ -9,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
+import re
 
 
 User = get_user_model()
@@ -69,7 +69,7 @@ class FotografiaForm(forms.ModelForm):
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput(),
-        max_length=20,  # 📌 Máximo 20 caracteres
+        max_length=20,
         help_text="La contraseña debe tener entre 8 y 20 caracteres.",
     )
     password2 = forms.CharField(
@@ -81,6 +81,89 @@ class RegistroForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '')
+
+        # Longitud
+        if not (6 <= len(username) <= 30):
+            raise forms.ValidationError("El nombre de usuario debe tener entre 6 y 30 caracteres.")
+
+        # Alfanumérico y espacios
+        if not re.match(r'^[\w\s]+$', username):
+            raise forms.ValidationError("El nombre de usuario solo puede contener letras, números y espacios.")
+
+        # No vacío (por claridad, aunque la longitud ya lo cubre)
+        if not username.strip():
+            raise forms.ValidationError("El nombre de usuario no puede estar vacío.")
+
+        return username
+    
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1', '')
+
+        # Longitud
+        if not (8 <= len(password) <= 15):
+            raise forms.ValidationError("La contraseña debe tener entre 8 y 15 caracteres.")
+
+        # No vacío (por claridad, aunque la longitud ya lo cubre)
+        if not password.strip():
+            raise forms.ValidationError("La contraseña no puede estar vacía.")
+        # Al menos una letra mayúscula
+        if not re.search(r'[A-Z]', password):
+            raise forms.ValidationError("La contraseña debe contener al menos una letra mayúscula.")
+        # Al menos un número
+        if not re.search(r'\d', password):
+            raise forms.ValidationError("La contraseña debe contener al menos un número.")
+        # Al menos un carácter especial
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            raise forms.ValidationError("La contraseña debe contener al menos un carácter especial.")
+        # No espacios
+        if re.search(r'\s', password):
+            raise forms.ValidationError("La contraseña no puede contener espacios.")
+        # No puede ser igual al nombre de usuario
+        username = self.cleaned_data.get('username', '')
+        if username and password.lower() == username.lower():
+            raise forms.ValidationError("La contraseña no puede ser igual al nombre de usuario.")
+        # No puede ser igual a la contraseña anterior
+        if hasattr(self, 'instance') and self.instance and self.instance.password:
+            if password == self.instance.password:
+                raise forms.ValidationError("La nueva contraseña no puede ser igual a la anterior.")
+        # No puede ser igual a la contraseña anterior (si existe)
+        if hasattr(self, 'instance') and self.instance and self.instance.password:
+            if password == self.instance.password:
+                raise forms.ValidationError("La nueva contraseña no puede ser igual a la anterior.")
+        # No puede contener el nombre de usuario
+        if username and username.lower() in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener el nombre de usuario.")
+        # No puede contener la palabra "password"
+        if "password" in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener la palabra 'password'.")
+        # No puede contener la palabra "user"
+        if "user" in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener la palabra 'user'.")
+        # No puede contener la palabra "admin"
+        if "admin" in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener la palabra 'admin'.")
+        # No puede contener la palabra "1234"
+        if re.search(r'1234', password):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia '1234'.")
+        # No puede contener la palabra "qwerty"
+        if re.search(r'qwerty', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'qwerty'.")
+        # No puede contener la palabra "abc"
+        if re.search(r'abc', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'abc'.")
+        # No puede contener la palabra "letmein"
+        if re.search(r'letmein', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia   'letmein'.")
+        # No puede contener la palabra "welcome"
+        if re.search(r'welcome', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'welcome'.")
+        # No puede contener la palabra "iloveyou"
+        if re.search(r'iloveyou', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'iloveyou'.")
+        return password
         
 class EventoForm(forms.ModelForm):
     class Meta:
@@ -243,6 +326,6 @@ class CollageTemplateForm(forms.ModelForm):
 class AñadirFotoForm(forms.Form):
     img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
-    
+
 
 

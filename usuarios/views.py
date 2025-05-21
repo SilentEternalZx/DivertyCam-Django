@@ -1748,6 +1748,97 @@ def galeria_bodas(request):
 def galeria_otros(request):
     return render(request, 'index/galerias/otros.html')
 
+@csrf_exempt
+def latest_collage(request):
+    """
+    API endpoint para obtener el collage más reciente
+    Utilizado por la aplicación móvil para sincronizarse
+    """
+    try:
+        # Obtener el último collage creado
+        latest = CollageResult.objects.order_by('-created_at').first()
+        
+        # Si no hay collages, devolver error
+        if not latest:
+            return JsonResponse({
+                'success': False,
+                'error': 'No hay collages disponibles'
+            })
+            
+        # Construir la URL completa de la imagen
+        image_url = request.build_absolute_uri(latest.image.url)
+        
+        # Obtener información del evento para contexto
+        evento = latest.session.evento
+        client_name = f"{evento.cliente.nombre} {evento.cliente.apellido}" if evento.cliente else "Cliente"
+        event_name = evento.nombre
+        
+        # Devolver datos del collage
+        return JsonResponse({
+            'success': True,
+            'collage_id': latest.collage_id,
+            'image_url': image_url,
+            'created_at': latest.created_at.isoformat(),
+            'event_name': event_name,
+            'client_name': client_name
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en latest_collage: {str(e)}")
+        return JsonResponse({
+            'success': False, 
+            'error': str(e)
+        })
+
+@csrf_exempt
+@require_POST
+def update_share_count(request):
+    """
+    API endpoint para actualizar el contador de comparticiones
+    Llamado por la aplicación móvil cuando se comparte un collage
+    """
+    try:
+        # Leer datos del request
+        data = json.loads(request.body)
+        collage_id = data.get('collage_id')
+        
+        if not collage_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Collage ID no proporcionado'
+            })
+        
+        # Buscar el collage
+        collage = get_object_or_404(CollageResult, collage_id=collage_id)
+        
+        # Incrementar contador
+        collage.share_count += 1
+        collage.save()
+        
+        return JsonResponse({
+            'success': True,
+            'share_count': collage.share_count
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Formato JSON inválido'
+        }, status=400)
+        
+    except CollageResult.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Collage no encontrado'
+        }, status=404)
+        
+    except Exception as e:
+        logger.error(f"Error en update_share_count: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
 
 
 

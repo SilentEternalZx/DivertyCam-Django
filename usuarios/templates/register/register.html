@@ -47,7 +47,7 @@
               id="username"
               name="username"
               placeholder="Nombre de usuario"
-              onkeyup="verificar_usuario()" />
+              onkeyup="verificar_username()" />
           </div>
 
           <!-- Correo -->
@@ -69,7 +69,7 @@
               id="password1"
               name="password1"
               placeholder="Contraseña"
-              onkeyup="verificarPassword()" />
+              onkeyup="verificar_password()" />
           </div>
 
           <!-- Confirmar Contraseña -->
@@ -80,7 +80,7 @@
               id="password2"
               name="password2"
               placeholder="Confirmar contraseña"
-              onkeyup="verificarPassword()" />
+              onkeyup="verificar_password()" />
           </div>
 
           <div class="button-input">
@@ -107,6 +107,6 @@
     <script
       nomodule
       src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="{% static 'js/validaciones_register.js' %}"></script>
+    <script src="{% static 'js/validaciones_register.js' %}?v=3"></script>
   </body>
 </html>
