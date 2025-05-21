@@ -1,47 +1,55 @@
-{# templates/clientes/cliente_form.html #}
-
 {% extends 'clientes/base.html' %}
 {% load widget_tweaks %}
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente{% endblock %}
 
 {% block body %}
+{% include 'partials/navbar.html' %}
 
-<div class="main-content">
-    <div class="card form-container">
-        <div class="card-header">
-            <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente</h2>
-        </div>
-        <div class="card-body">
-            <form method="post" novalidate>
-            {% csrf_token %}
-
-                       
-            <div class="row">
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="main-content w-100" style="max-width: 600px;">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white d-flex align-items-center gap-2">
+        <i class="fa-solid fa-user-edit fa-2x text-primary"></i>
+        <h2 class="mb-0 section-title">
+          {% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente
+        </h2>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate autocomplete="off">
+          {% csrf_token %}
+          <div class="row">
             {% for field in form %}
             <div class="col-md-6 mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field.errors }}
-                {{ field|add_class:"form-control" }}
-                {% if field.help_text %}
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                {{ field.label }}
+                {% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ field.errors }}
+              {{ field|add_class:"form-control" }}
+              {% if field.help_text %}
                 <div class="form-text">{{ field.help_text }}</div>
-                {% endif %}
+              {% endif %}
             </div>
             {% endfor %}
-        </div>
-            
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                
-                <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Cancelar</a>
-            </div>
-            </form>
-        </div>
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="submit" class="btn btn-primary shadow-sm">
+              <i class="fa-solid fa-save"></i> Guardar
+            </button>
+            <a href="{% url 'cliente_list' %}" class="btn btn-secondary shadow-sm">
+              <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
-<script>
+<!-- Opcional: Puedes dejar este script si tu formulario lo requiere, pero quítalo si no usas la edad en el front -->
 
+<script>
 function calcularEdad(fecha_nacimiento) {
     let hoy = new Date();
     let cumpleanos = new Date(fecha_nacimiento);
@@ -52,13 +60,6 @@ function calcularEdad(fecha_nacimiento) {
     }
     return edad;
 }
-
-let edad = calcularEdad("2007/08/10");
-if(edad >= 18){
-    console.log(`Eres mayor de edad, tienes ${edad}`);
-}else{
-    console.log(`Eres menor de edad, tienes ${edad}`);
-}
-
 </script>
+
 {% endblock %}

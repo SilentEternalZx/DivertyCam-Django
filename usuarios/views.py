@@ -60,6 +60,8 @@ def vista_login(request): #Función para iniciar sesión
         nombre_usuario = request.POST.get("nombre_usuario")
         contraseña = request.POST.get("contraseña")
         usuario = authenticate(request, username=nombre_usuario, password=contraseña)
+        
+       
 
 
         if usuario is not None:  #Si el usuario existe
@@ -1081,11 +1083,14 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
     if request.method=="POST": #Si la petición es POST
         form=FotografiaForm(request.POST, request.FILES) #Llamar al formulario
         if form.is_valid(): #Si el formulario es válido obtener los datos
+            
             descripcion=form.cleaned_data["descripcion"]
             img=form.cleaned_data["img"]
             invitado=form.cleaned_data["invitado"]
+            
             fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento, invitado=invitado)#Crear un objeto de Fotografia
             fotografia.save() #Guardar objeto
+            
             return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error
@@ -1364,67 +1369,7 @@ def publicar_foto_facebook(request, foto_id):
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
-class EventoListView(ListView):
-    model = Evento
-    context_object_name = 'eventos'
-    paginate_by = 10
-    template_name = 'eventos/evento_list.html'
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        q = self.request.GET.get('q')
-        orden = self.request.GET.get('orden', 'fecha_hora')  # Orden por defecto
 
-        # Búsqueda por vector de búsqueda
-        if q:
-            search_query = SearchQuery(q)
-            queryset = queryset.annotate(
-                rank=SearchRank('search_vector', search_query)
-            ).filter(search_vector=search_query).order_by('-rank')
-
-            # Si no hay resultados, usamos búsqueda con LIKE
-            if not queryset.exists():
-                queryset = Evento.objects.filter(
-                    Q(nombre__icontains=q) |
-                    Q(cliente__nombre__icontains=q) |
-                    Q(cliente__apellido__icontains=q) |
-                    Q(direccion__icontains=q)
-                )
-
-        # Ordenamiento dinámico
-        if orden.endswith("_desc"):
-            orden = "-" + orden.replace("_desc", "")  # Convierte 'nombre_desc' en '-nombre'
-
-        queryset = queryset.order_by(orden)
-        return queryset
-
-class EventoDetailView(DetailView):
-    model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_detail.html'
-
-class EventoCreateView( SuccessMessageMixin, CreateView):  
-    model = Evento
-    form_class = EventoForm
-    template_name = 'eventos/evento_form.html'
-    success_url = reverse_lazy('evento_list')
-    success_message = ("Evento creado exitosamente")
-
-class EventoUpdateView(SuccessMessageMixin, UpdateView):
-    model = Evento
-    form_class = EventoForm
-    template_name = 'eventos/evento_form.html'
-    success_message = ("Evento actualizado exitosamente")
-    
-    def get_success_url(self):
-        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
-
-class EventoDeleteView(SuccessMessageMixin, DeleteView):
-    model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_confirm_delete.html'
-    success_url = reverse_lazy('evento_list')
-    success_message = ("Evento eliminado exitosamente")
 
 def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
     if not request.user.is_authenticated: #Si el usuario no está autenticado...
@@ -1738,6 +1683,16 @@ def list_printers(request):
         return JsonResponse({'printers': printers})
     except Exception as e:
         return JsonResponse({'error': f'Error al obtener las impresoras: {str(e)}'}, status=500)
+    
+
+def galeria_quinces(request):
+    return render(request, 'index/galerias/quinces.html')
+
+def galeria_bodas(request):
+    return render(request, 'index/galerias/bodas.html')
+
+def galeria_otros(request):
+    return render(request, 'index/galerias/otros.html')
 
 
 

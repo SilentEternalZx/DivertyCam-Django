@@ -1,0 +1,149 @@
+.d-flex.justify-content-center.align-items-center.min-vh-100 {
+    min-height: 100vh !important;
+}
+
+.badge {
+    margin-top: 9px;
+}
+.navbar{
+    background-color: #232323;
+}
+
+body{
+    font-family: 'Poppins', sans-serif;
+}
+
+#btn-eventos{
+    background-color: #198754;
+}
+.avatar-circle {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #0d6efd 60%, #17c1e8 100%);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    box-shadow: 0 3px 8px rgba(13,110,253,0.10);
+}
+
+.title-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 10px;
+}
+
+.section-title {
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: #22223b;
+    letter-spacing: -1px;
+    margin-bottom: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.16s;
+}
+.btn-sm{
+    border:2px solid red;
+}
+
+.btn i {
+    margin-right: 6px;
+}
+
+.btn-outline-info i,
+.btn-outline-warning i,
+.btn-outline-danger i,
+.btn-outline-success i {
+    margin-right: 0;
+}
+
+.btn-outline-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+}
+.btn-outline-warning:hover {
+    background: #ffc107;
+    color: #22223b;
+}
+
+.btn-outline-info {
+    color: #17c1e8;
+    border-color: #17c1e8;
+}
+.btn-outline-info:hover {
+    background: #17c1e8;
+    color: #fff;
+}
+
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+.btn-outline-danger:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+.btn-outline-success {
+    color: #198754;
+    border-color: #198754;
+}
+.btn-outline-success:hover {
+    background: #198754;
+    color: #fff;
+}
+
+.table th {
+    background-color: #0d6efd;
+    color: white;
+    text-align: center;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.badge {
+    font-size: 1rem;
+    padding: 7px 16px;
+}
+
+@media (max-width: 767px) {
+    .main-content {
+        padding: 16px;
+        border-radius: 10px;
+    }
+    .section-title {
+        font-size: 1.4rem;
+    }
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.98rem;
+    }
+    .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+    }
+}

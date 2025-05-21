@@ -5,6 +5,7 @@ from .models import*
 admin.site.register(User)
 
 admin.site.register(CategoriaEvento)
+admin.site.register(Invitado)
 
 
 

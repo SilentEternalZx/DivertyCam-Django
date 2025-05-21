@@ -1,50 +1,57 @@
-{# templates/eventos/evento_form.html #}
 {% extends 'eventos/base.html' %}
 {% load widget_tweaks %}
 
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento{% endblock %}
 
 {% block body %}
+{% include 'partials/navbar.html' %}
 
-<div class="main-content">
-    <div class="card form-container">
-        <div class="card-header">
-            <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento</h2>
-        </div>
-    
-
-        <div class="card-body">
-            <form method="post" novalidate>
-                {% csrf_token %}
-
-                <div class="row">
-                
-                {% for field in form %}
-                <div class="mb-3 col-md-6">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    {{ field.errors }}
-                    {% if field.name == 'cliente' %}
-                        {{ field|add_class:"form-select" }}
-                    {% elif field.name == 'servicios' %}
-                        <div class="form-check">
-                            {{ field }}
-                        </div>
-                    {% else %}
-                        {{ field|add_class:"form-control" }}
-                    {% endif %}
-                    {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                    {% endif %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="main-content w-100" style="max-width: 700px;">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white d-flex align-items-center gap-2">
+        <i class="fa-solid fa-calendar-plus fa-2x text-primary"></i>
+        <h2 class="mb-0 section-title">
+          {% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento
+        </h2>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate autocomplete="off">
+          {% csrf_token %}
+          <div class="row">
+            {% for field in form %}
+            <div class="col-md-6 mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                {{ field.label }}
+                {% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ field.errors }}
+              {% if field.name == 'cliente' or field.name == 'categoria' %}
+                {{ field|add_class:"form-select" }}
+              {% elif field|field_type == "CheckboxInput" or field|field_type == "CheckboxSelectMultiple" %}
+                <div class="form-check">
+                  {{ field }}
                 </div>
-                {% endfor %}
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
             </div>
-                
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                    <a href="{% url 'evento_list' %}" class="btn btn-secondary">Cancelar</a>
-                </div>
-            </form>
-        </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="submit" class="btn btn-primary shadow-sm">
+              <i class="fa-solid fa-save"></i> Guardar
+            </button>
+            <a href="{% url 'evento_list' %}" class="btn btn-secondary shadow-sm">
+              <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

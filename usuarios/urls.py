@@ -85,6 +85,10 @@ urlpatterns = [
     path('impresoras/<int:evento_id>', views.impresoras, name='impresoras'),
     path('list_printers/', views.list_printers, name='list_printers'),
     path('print_document/', views.print_document, name='print_document'),
+
+    path('galeria/quinces/', views.galeria_quinces, name='galeria_quinces'),
+    path('galeria/bodas/', views.galeria_bodas, name='galeria_bodas'),
+    path('galeria/otros/', views.galeria_otros, name='galeria_otros'),
 ]
 
 

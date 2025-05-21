@@ -20,6 +20,8 @@ class CustomGroup(Group):
     pass
 
 
+
+
 #Modelo de invitado
 class Invitado(models.Model):
     nombre=models.CharField(max_length=20)
@@ -428,7 +430,7 @@ class Fotografia(models.Model):
     
     img=models.ImageField(null=True,blank=True, upload_to="imagenes/")
     descripcion=models.TextField(max_length=34)
-    invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE, null=True)
+    invitado=models.ManyToManyField(Invitado, related_name="fotografias", null=True)
     evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
     
     def __str__(self):

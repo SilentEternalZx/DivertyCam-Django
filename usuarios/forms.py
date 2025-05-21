@@ -243,6 +243,6 @@ class CollageTemplateForm(forms.ModelForm):
 class AñadirFotoForm(forms.Form):
     img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
-    
+    invitado=forms.ModelMultipleChoiceField(queryset=Invitado.objects.all(), widget=forms.CheckboxSelectMultiple)
 
 
