@@ -4,6 +4,8 @@
 
 .badge {
     margin-top: 9px;
+
+   
 }
 .navbar{
     background-color: #232323;
@@ -37,6 +39,7 @@ body{
     align-items: center;
     justify-content: flex-start;
     padding-bottom: 10px;
+   
 }
 
 .section-title {
@@ -45,6 +48,7 @@ body{
     color: #22223b;
     letter-spacing: -1px;
     margin-bottom: 0;
+   
 }
 
 .action-buttons {
@@ -123,6 +127,13 @@ body{
     border-bottom: 1px solid #e9ecef;
 }
 
+.formulario-evento {
+    padding-top: 72px; 
+}
+
+.main-content{
+    padding-top: 75px;
+}
 .badge {
     font-size: 1rem;
     padding: 7px 16px;

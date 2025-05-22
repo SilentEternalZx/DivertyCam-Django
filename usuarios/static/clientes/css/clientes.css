@@ -42,7 +42,9 @@ body{
     padding-bottom: 10px;
 }
 
-
+.main-content{
+    padding-top: 75px;
+}
 
 .section-title {
     font-weight: 700;
@@ -50,6 +52,7 @@ body{
     color: #22223b;
     letter-spacing: -1px;
     margin-bottom: 0;
+   
 }
 
 /* Botones */

@@ -21,7 +21,8 @@ class CustomPasswordResetForm(PasswordResetForm):
         return email
     
 class ClienteForm(forms.ModelForm):
-    class Meta:
+       
+       class Meta:
         model = Cliente
         fields = ['nombre','apellido', 'cedula', 'fechaNacimiento', 
                   'direccion', 'correo', 'telefono', 'usuario']
@@ -31,7 +32,7 @@ class ClienteForm(forms.ModelForm):
             
             
         }
-    def clean_fechaNacimiento(self):
+       def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
         
         if fechaNacimiento:
@@ -50,12 +51,12 @@ class ClienteForm(forms.ModelForm):
         
         
         
-    def clean_cedula(self):
+       def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
         # Aquí puedes agregar validaciones específicas para la cédula
         return cedula
         
-    def clean_correo(self):
+       def clean_correo(self):
         correo = self.cleaned_data.get('correo')
         # Validaciones adicionales de correo si es necesario
         return correo

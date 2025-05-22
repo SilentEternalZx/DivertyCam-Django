@@ -142,49 +142,49 @@ def eventos_cliente(request):
         cliente = Cliente.objects.get(usuario=request.user)  #Intentar obtener un cliente relacionado al usuario
     except ObjectDoesNotExist:  #De lo contrario 
         mensaje = "El usuario no tiene un cliente asignado"  #Retornar mensaje
-        return render(request, "fotografias/eventos_cliente.html", {
+        return render(request, "eventos/partials/table.html", {
             "mensaje": mensaje
         })
     
-    lista_eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
+    eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
 
-    if not lista_eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
-        return render(request, "fotografias/eventos_cliente.html", {
+    if not eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
+        return render(request, "eventos/partials/table.html", {
             "mensaje": "No tiene eventos actualmente"
         })
     
     # --- FILTRO POR BÚSQUEDA ---
     query = request.GET.get('q')
     if query:
-        lista_eventos = lista_eventos.filter(
+        eventos = eventos.filter(
             Q(nombre__icontains=query)
         )
 
     # --- ORDENAMIENTO ---
     orden = request.GET.get('orden')
     if orden == 'nombre':
-        lista_eventos = lista_eventos.order_by('nombre')
+        eventos = eventos.order_by('nombre')
     elif orden == 'nombre_desc':
-        lista_eventos = lista_eventos.order_by('-nombre')
+        eventos = eventos.order_by('-nombre')
     elif orden == 'cliente':
-        lista_eventos = lista_eventos.order_by('cliente__nombre')
+        eventos = eventos.order_by('cliente__nombre')
     elif orden == 'cliente_desc':
-        lista_eventos = lista_eventos.order_by('-cliente__nombre')
+        eventos = eventos.order_by('-cliente__nombre')
     elif orden == 'fecha_hora':
-        lista_eventos = lista_eventos.order_by('fecha_hora')
+        eventos = eventos.order_by('fecha_hora')
     elif orden == 'fecha_hora_desc':
-        lista_eventos = lista_eventos.order_by('-fecha_hora')
+        eventos = eventos.order_by('-fecha_hora')
 
     # Evento e imágenes para vista previa (por ejemplo, el primero)
-    evento = lista_eventos.first()
+    evento = eventos.first()
     imagenes = evento.fotografias.all() if evento else []
     
     #Retornar vista con respectivos contextos
 
-    return render(request, "fotografias/eventos_cliente.html", {
+    return render(request, "eventos/eventos_cliente.html", {
         "evento": evento,
         "imagenes": imagenes,
-        "lista_eventos": lista_eventos
+        "eventos": eventos
     })
 
 class ClienteListView(LoginRequiredMixin, ListView):  
