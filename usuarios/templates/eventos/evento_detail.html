@@ -6,31 +6,53 @@
 {% include 'partials/navbar.html' %}
 
 <div class="d-flex justify-content-center align-items-center min-vh-100">
-  <div class="main-content w-100" style="max-width: 850px;">
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-white d-flex align-items-center gap-2">
-        <i class="fa-solid fa-calendar-day fa-2x text-primary"></i>
-        <h2 class="section-title mb-0">Detalles del Evento</h2>
+  <div class="main-content w-100" style="max-width: 1050px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+      <div class="title-container d-flex align-items-center">
+        <i class="fa-solid fa-calendar-day fa-2x me-2"></i>
+        <h2 class="section-title mb-0" id="titulo-detalles">Detalles del Evento</h2>
       </div>
+      <div class="action-buttons">
+        <a href="{% url 'evento_update' evento.pk %}" class="btn btn-warning shadow-sm me-2">
+          <i class="fa-solid fa-pen"></i> Editar
+        </a>
+        <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger shadow-sm me-2"">
+          <i class="fa-solid fa-trash"></i> Eliminar
+        </a>
+        <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+      </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
       <div class="card-body">
         <div class="row">
           <div class="col-md-6">
-            <h4 class="mb-3">Información del Evento</h4>
-            <dl class="row">
-              <dt class="col-sm-5 text-end text-muted">Nombre</dt>
-              <dd class="col-sm-7">{{ evento.nombre }}</dd>
-
-              <dt class="col-sm-5 text-end text-muted">Fecha y Hora</dt>
+            <div class="d-flex align-items-center mb-3">
+              <div class="avatar-circle me-3" style="font-size: 2rem;" title="{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}">
+                {{ evento.cliente.nombre|slice:":1" }}{{ evento.cliente.apellido|slice:":1" }}
+              </div>
+              <div>
+                <h3 class="mb-0">{{ evento.nombre }}</h3>
+                <span class="badge rounded-pill bg-primary">
+                  {{ evento.categoria }}
+                </span>
+              </div>
+            </div>
+            <h5 class="mb-3">Información del Evento</h5>
+            <dl class="row mb-0">
+              <dt class="col-sm-5">Fecha y Hora</dt>
               <dd class="col-sm-7">{{ evento.fecha_hora|date:"d/m/Y H:i" }}</dd>
 
-              <dt class="col-sm-5 text-end text-muted">Dirección</dt>
+              <dt class="col-sm-5">Dirección</dt>
               <dd class="col-sm-7">{{ evento.direccion }}</dd>
             </dl>
           </div>
           <div class="col-md-6">
-            <h4 class="mb-3">Información del Cliente</h4>
-            <dl class="row">
-              <dt class="col-sm-5 text-end text-muted">Cliente</dt>
+            <h5>Información del Cliente</h5>
+            <dl class="row mb-0">
+              <dt class="col-sm-5">Cliente</dt>
               <dd class="col-sm-7 d-flex align-items-center gap-2">
                 <div class="avatar-circle" title="{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}">
                   {{ evento.cliente.nombre|slice:":1" }}{{ evento.cliente.apellido|slice:":1" }}
@@ -40,70 +62,56 @@
                 </a>
               </dd>
 
-              <dt class="col-sm-5 text-end text-muted">Teléfono</dt>
+              <dt class="col-sm-5">Teléfono</dt>
               <dd class="col-sm-7">{{ evento.cliente.telefono }}</dd>
 
-              <dt class="col-sm-5 text-end text-muted">Correo</dt>
+              <dt class="col-sm-5">Correo</dt>
               <dd class="col-sm-7">{{ evento.cliente.correo }}</dd>
             </dl>
           </div>
         </div>
-
-        <div class="row mt-4">
-          <div class="col-12">
-            <h4>Servicios Contratados</h4>
+        <hr>
+        <div class="row">
+          <div class="col-md-6">
+            <h5>Servicios Contratados</h5>
             <div class="mt-2">
               {% for servicio in evento.servicios %}
                 <span class="badge bg-primary mb-2 me-2">{{ servicio }}</span>
               {% endfor %}
             </div>
           </div>
+          <div class="col-md-6 text-end">
+            {% if evento.photobooth_config %}
+              <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-warning mb-2">
+                <i class="fas fa-cog"></i> Configurar Photobooth
+              </a>
+              <a href="{% url 'preview_photobooth' evento.pk %}" class="btn btn-primary mb-2">
+                <i class="fas fa-eye"></i> Vista Previa
+              </a>
+            {% else %}
+              <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-primary mb-2">
+                <i class="fas fa-plus-circle"></i> Configurar Photobooth
+              </a>
+            {% endif %}
+          </div>
         </div>
-      </div>
-
-      <!-- Photobooth Section -->
-      <div class="card m-4 shadow-none border-0">
-        <div class="card-body" style="padding: 0 20px;">
-          <h4>Photobooth</h4>
-          {% if evento.photobooth_config %}
-            <div class="row">
-              <div class="col-md-8">
-                <p><strong>Estado:</strong> <span class="badge bg-success">Configurado</span></p>
-                <p><strong>Mensaje de bienvenida:</strong> {{ evento.photobooth_config.mensaje_bienvenida }}</p>
-                {% if evento.photobooth_config.imagen_fondo %}
-                  <p>
-                    <strong>Imagen de fondo:</strong>
-                    <img src="{{ evento.photobooth_config.imagen_fondo.url }}" alt="Fondo" class="img-thumbnail" style="max-width: 200px;">
-                  </p>
-                {% endif %}
-              </div>
-              <div class="col-md-4 d-flex flex-column align-items-end">
-                <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-warning mb-2 w-100">
-                  <i class="fas fa-cog"></i> Configurar Photobooth
-                </a>
-                <a href="{% url 'preview_photobooth' evento.pk %}" class="btn btn-primary mb-2 w-100">
-                  <i class="fas fa-eye"></i> Vista Previa
-                </a>
-              </div>
+        {% if evento.photobooth_config %}
+        <div class="mt-4">
+          <h5>Photobooth</h5>
+          <div class="row">
+            <div class="col-md-8">
+              <p><strong>Estado:</strong> <span class="badge bg-success">Configurado</span></p>
+              <p><strong>Mensaje de bienvenida:</strong> {{ evento.photobooth_config.mensaje_bienvenida }}</p>
+              {% if evento.photobooth_config.imagen_fondo %}
+                <p>
+                  <strong>Imagen de fondo:</strong>
+                  <img src="{{ evento.photobooth_config.imagen_fondo.url }}" alt="Fondo" class="img-thumbnail" style="max-width: 200px;">
+                </p>
+              {% endif %}
             </div>
-          {% else %}
-            <p>El photobooth no está configurado para este evento.</p>
-            <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-primary">
-              <i class="fas fa-plus-circle"></i> Configurar Photobooth
-            </a>
-          {% endif %}
+          </div>
         </div>
-        <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2">
-          <a href="{% url 'evento_update' evento.pk %}" class="btn btn-warning">
-            <i class="fa-solid fa-pen"></i> Editar Evento
-          </a>
-          <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger">
-            <i class="fa-solid fa-trash"></i> Eliminar Evento
-          </a>
-          <a href="{% url 'evento_list' %}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Volver al Listado
-          </a>
-        </div>
+        {% endif %}
       </div>
     </div>
   </div>

@@ -1,239 +1,360 @@
 {% extends "layout/layout.html" %}
 {% load static %}
 
-{% block title %}
+{% block title %}Inicio{% endblock %}
 
-Inicio
+{% block extra_head %}
 
+
+      <!-- Css de librería Swiper para manejo de carrusel de fotos -->
+      
+      <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet"/>
 {% endblock %}
-
 
 {% block content %}
-
-         
-        
-      <!-- header section -->
-      <div class="header_section">
-         {% include 'partials/navbar.html' %}
- 
-
-
-         <!-- banner -->
-         <div class="banner_section layout_padding">
-            <div class="contenido-banner">
-      <h1 id="header-banner">¡ Hola {{user.username}} !</h1>
-      <p id="parrafo-banner">Bienvenido a DivertyCam</p>
-   </div>
-         
-         </div>
-      </div>
-<div style="text-align: center;">
-   <h1 class="services_taital">Isabel Álvarez Fotografía</h1>
-   <p class="services_text">La fotografía es una forma de sentir, de tocar, de amar. Lo que has capturado queda para siempre... porque la memoria olvida, pero la imagen recuerda con el corazón.</p>
+<!-- Header Section -->
+<div class="header_section">
+    {% include 'partials/navbar.html' %}
+    
+    <!-- Banner Section -->
+    <div class="banner_section layout_padding">
+        <div class="contenido-banner">
+            <h1 id="header-banner">¡Hola {{user.username}}!</h1>
+            <p id="parrafo-banner">Bienvenido a DivertyCam</p>
+        </div>
+    </div>
 </div>
-      <!-- services -->
-      <div class="services_section layout_padding">
-         <div class="container">
-            <h1 class="services_taital">Nuestros Servicios</h1>
-            <p class="services_text">El tiempo pasa, pero la esencia de un instante puede durar para siempre.</p>
-            <div class="services_section_2">
-               <div class="row">
-                  <div class="col-md-4">
-                     <div><img src="{% static 'assets/imagenes_layout/report3690509125010332477aiease_flux_06937_.png' %}" class="galeria-img img-fluid" class="services_img"></div>
-                     <div class="btn_main"><a href="{% url 'galeria_quinces' %}">Quinces</a></div>
-                  </div>
-                  <div class="col-md-4">
-                     <div><img src="{% static 'assets/imagenes_layout/55875043-2002-47d6-989f-a1b870f1db3e.webp' %}" class="services_img"></div>
-                     <div class="btn_main active"><a href="{% url 'galeria_bodas' %}">Bodas</a></div>
-                  </div>
-                  <div class="col-md-4">
-                     <div><img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" class="galeria-img img-fluid" class="services_img"></div>
-                     <div class="btn_main"><a href="{% url 'galeria_otros' %}">Otros</a></div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
 
-      <!-- about -->
-      <div class="about_section layout_padding">
-         <div class="container-fluid">
+<!-- Introduction Section -->
+<div class="intro_section text-center layout_padding">
+    <div class="container">
+        <h1 class="services_taital">Isabel Álvarez Fotografía</h1>
+        <p class="services_text">
+            La fotografía es una forma de sentir, de tocar, de amar. Lo que has capturado queda para siempre... 
+            porque la memoria olvida, pero la imagen recuerda con el corazón.
+        </p>
+    </div>
+</div>
+
+<!-- Services Section -->
+<div class="services_section layout_padding">
+    <div class="container">
+        <h1 class="services_taital">Nuestros Servicios</h1>
+        <p class="services_text">El tiempo pasa, pero la esencia de un instante puede durar para siempre.</p>
+        
+        <div class="services_section_2">
             <div class="row">
-               <div class="col-md-6">
-                  <div class="about_taital_main">
-                     <h1 class="about_taital">Acerca de nosotros</h1>
-                     <p class="about_text">En Isabel Álvarez Fotografía, capturamos momentos que cuentan historias. Con una pasión profunda por la luz, la emoción y los detalles,  hemos dedicado más de una década a transformar instantes fugaces en recuerdos eternos. Nos especializamos en sesiones familiares, bodas, retratos y fotografía artística, siempre buscando la autenticidad y la belleza en cada imagen. Más que una cámara, usamos la sensibilidad y el respeto por cada historia que nos confían. Nuestro compromiso es ofrecerte una experiencia cercana, profesional y personalizada, donde cada fotografía refleje quién eres y lo que sientes.</p>
-                     <div class="readmore_bt"><a href="#">Leer más</a></div>
-                  </div>
-               </div>
-               <div class="col-md-6 padding_right_0">
-                  <div><img src="{% static 'assets/imagenes_layout/c470d893d53f46158dd9b2c297c537e2.webp' %}" class="about_img"></div>
-               </div>
+                <div class="col-md-4">
+                    <div class="service_item">
+                        <img src="{% static 'assets/imagenes_layout/report3690509125010332477aiease_flux_06937_.png' %}" 
+                             class="services_img img-fluid" alt="Fotografía de Quinces">
+                        <div class="btn_main">
+                            <a href="{% url 'galeria_quinces' %}">Quinces</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="service_item">
+                        <img src="{% static 'assets/imagenes_layout/55875043-2002-47d6-989f-a1b870f1db3e.webp' %}" 
+                             class="services_img img-fluid" alt="Fotografía de Bodas">
+                        <div class="btn_main active">
+                            <a href="{% url 'galeria_bodas' %}">Bodas</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="service_item">
+                        <img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" 
+                             class="services_img img-fluid" alt="Otros Eventos">
+                        <div class="btn_main">
+                            <a href="{% url 'galeria_otros' %}">Otros</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
+        </div>
+    </div>
+</div>
 
-     <!-- Carousel Section -->
+<!-- About Section -->
+<div class="about_section layout_padding">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="about_taital_main">
+                    <h1 class="about_taital">Acerca de nosotros</h1>
+                    <p class="about_text">
+                        En Isabel Álvarez Fotografía, capturamos momentos que cuentan historias. Con una pasión profunda 
+                        por la luz, la emoción y los detalles, hemos dedicado más de una década a transformar instantes 
+                        fugaces en recuerdos eternos. Nos especializamos en sesiones familiares, bodas, retratos y 
+                        fotografía artística, siempre buscando la autenticidad y la belleza en cada imagen.
+                    </p>
+                    <p class="about_text">
+                        Más que una cámara, usamos la sensibilidad y el respeto por cada historia que nos confían. 
+                        Nuestro compromiso es ofrecerte una experiencia cercana, profesional y personalizada, donde 
+                        cada fotografía refleje quién eres y lo que sientes.
+                    </p>
+                    <div class="readmore_bt">
+                        <a href="#">Ver más</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 padding_right_0">
+                <img src="{% static 'assets/imagenes_layout/c470d893d53f46158dd9b2c297c537e2.webp' %}" 
+                     class="about_img img-fluid" alt="Sobre nosotros">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gallery Carousel Section -->
 <div class="carousel_section layout_padding">
-   <div class="container">
-     <h1 class="carousel_taital">Nuestra Galería de Fotos</h1>
-     <p class="carousel_text">Mira despacio... cada fotografía guarda un instante eterno, cada imagen es una pausa del tiempo hablándote al corazón.</p>
- 
-     <!-- Swiper -->
-     <div class="swiper">
-       <div class="swiper-wrapper">
-         <!-- Slide 1 -->
-         <div class="swiper-slide">
-           <img src="{% static 'assets/imagenes_layout/piclumen-1746903395554.png' %}" alt="Foto 1" />
-         </div>
-         <!-- Slide 2 -->
-         <div class="swiper-slide">
-           <img src="{% static 'assets/imagenes_layout/piclumen-1746903400883.png' %}" alt="Foto 2" />
-         </div>
-         <!-- Slide 3 -->
-         <div class="swiper-slide">
-           <img src="{% static 'assets/imagenes_layout/piclumen-1746903404456.png' %}" alt="Foto 3" />
-         </div>
-         <!-- Agrega más imágenes según necesites -->
-       </div>
-
+    <div class="container">
+        <h1 class="carousel_taital">Nuestra Galería de Fotos</h1>
+        <p class="carousel_text">
+            Mira despacio... cada fotografía guarda un instante eterno, cada imagen es una pausa del tiempo 
+            hablándote al corazón.
+        </p>
         
-  
-         <div class="swiper-button-prev"></div>
-  <div class="swiper-button-next"></div>
-     </div>
-   </div>
- </div>
- 
-
-      <!-- testimonials -->
-      <div class="client_section layout_padding">
-         <div class="container">
-            <h1 class="client_taital">Lo que opinan nuestros clientes </h1>
-            <div class="client_section_2">
-               <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-                  <ol class="carousel-indicators">
-                     <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-                     <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-                     <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-                  </ol>
-                  <div class="carousel-inner">
-                     <div class="carousel-item active">
-                        <div class="client_main">
-                           <div class="box_left">
-                              <p class="lorem_text">"No puedo estar más feliz con mis fotos. Isabel capturó momentos tan auténticos y emotivos durante mis quinces que no dejo de verlas. Tiene un ojo artístico increíble y te hace sentir muy cómoda frente a la cámara."</p>
-                           </div>
-                           <div class="box_right">
-                              <div class="client_taital_left">
-                                 <div class="client_img"><img src="{% static 'assets/imagenes_layout/a-photo-of-a-close-up-portrait-of-a-youn_RhH8Jc_QT0-8X1iDxsQzmA_CvfSMiZmSoCzIVPQbYo85Q.jpg' %}"></div>
-                                 <div class="quick_icon"><img src="{% static 'assets/imagenes_layout/quick-icon.png' %}"></div>
-                              </div>
-                              <div class="client_taital_right">
-                                 <h4 class="client_name">Mariana Gómez</h4>
-                                 <p class="customer_text">Cliente</p>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="carousel-item">
-                        <div class="client_main">
-                           <div class="box_left">
-                              <p class="lorem_text">"Necesitaba fotos profesionales para mi boda y quedé impresionada con el resultado. Isabel supo guiarme, cuidar la estética y reflejar justo lo que quería. ¡100% recomendada!"</p>
-                           </div>
-                           <div class="box_right">
-                              <div class="client_taital_left">
-                                 <div class="client_img"><img src="{% static 'assets/imagenes_layout/Retrato de una mujer  joven y hermosa.jpg' %}"></div>
-                                 <div class="quick_icon"><img src="{% static 'assets/imagenes_layout/quick-icon.png' %}"></div>
-                              </div>
-                              <div class="client_taital_right">
-                                 <h4 class="client_name">Laura Méndez</h4>
-                                 <p class="customer_text">Cliente</p>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="carousel-item">
-                        <div class="client_main">
-                           <div class="box_left">
-                              <p class="lorem_text">"Contratar a Isabel fue la mejor decisión que tomamos para nuestra boda. Cada foto cuenta una historia, y logró documentar nuestro día con tanta emoción y detalle que pareciera que lo estamos reviviendo."</p>
-                           </div>
-                           <div class="box_right">
-                              <div class="client_taital_left">
-                                 <div class="client_img"><img src="{% static 'assets/imagenes_layout/Retrato de un hombre con corbata.jpg' %}"></div>
-                                 <div class="quick_icon"><img src="{% static 'assets/imagenes_layout/quick-icon.png' %}"></div>
-                              </div>
-                              <div class="client_taital_right">
-                                 <h4 class="client_name">Daniel Restrepo</h4>
-                                 <p class="customer_text">Cliente</p>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+        <!-- Swiper -->
+        <div class="swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <img src="{% static 'assets/imagenes_layout/piclumen-1746903395554.png' %}" alt="Galería 1">
+                </div>
+                <div class="swiper-slide">
+                    <img src="{% static 'assets/imagenes_layout/piclumen-1746903400883.png' %}" alt="Galería 2">
+                </div>
+                <div class="swiper-slide">
+                    <img src="{% static 'assets/imagenes_layout/piclumen-1746903404456.png' %}" alt="Galería 3">
+                </div>
             </div>
-         </div>
-      </div>
+            
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+        </div>
+    </div>
+</div>
 
-      <!-- choose -->
-      <div class="choose_section layout_padding">
-         <div class="container">
-            <h1 class="choose_taital">¿Por qué escogernos?</h1>
-            <p class="choose_text">En Isabel Álvarez Fotografía no solo tomamos fotos, capturamos emociones, historias y momentos únicos que perduran para siempre. Nos apasiona lo que hacemos y eso se refleja en cada imagen.
-Ofrecemos un enfoque profesional y personalizado, adaptado a tus necesidades, con un trato cercano y amable que te hará sentir en confianza desde el primer clic. Cada sesión es una experiencia pensada para que disfrutes mientras creamos juntos recuerdos inolvidables.</p>
-          
-           
-         </div>
-      </div>
-
-   {% include 'partials/footer.html' %}
-
- <script>
-         const swiper = new Swiper('.swiper', {
-  
-            // Optional parameters
-  direction: 'horizontal',
-  loop: true,
-
-  autoplay: {
-    delay: 3000,
-    disableOnInteraction: false,
-  },
-    effect: "fade",
-
- 
-
-  // Navigation arrows
-  navigation: {
-    nextEl: '.swiper-button-next',
-    prevEl: '.swiper-button-prev',
-  },
-
- 
-});
+<!-- Videos Section -->
+<div class="embed_videos_section layout_padding">
+    <div class="container">
+        <h1 class="embed_taital">¡Explora nuestros vídeos!</h1>
+        <p class="embed_text">
+            Disfruta de algunos de nuestros mejores momentos capturados en video.<br>
+            ¡Dale play y sumérgete en la experiencia DivertyCam!
+        </p>
         
-       </script>
-  
+        <div class="row justify-content-center">
+            <!-- Video 1 -->
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm border-0 w-100">
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.youtube.com/embed/hQScjqs5Z_A?si=Pi6ZF8Pifj3Jgm8y" 
+                                title="Nuestros mejores momentos" 
+                                frameborder="0" 
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                        </iframe>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">¡Nuestros mejores momentos!</h5>
+                        <p class="card-text">
+                            Una recopilación de las sesiones más emotivas realizadas por Isabel Álvarez Fotografía.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Video 2 -->
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm border-0 w-100">
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                                title="Tips para tus fotos" 
+                                frameborder="0" 
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                        </iframe>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Tips para tus fotos</h5>
+                        <p class="card-text">
+                            Consejos y trucos para posar y lograr las mejores imágenes en tus sesiones.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Video 3 -->
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-sm border-0 w-100">
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.youtube.com/embed/tgbNymZ7vqY" 
+                                title="Detrás de cámaras" 
+                                frameborder="0" 
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                        </iframe>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Detrás de cámaras</h5>
+                        <p class="card-text">
+                            Mira cómo trabajamos y la energía que ponemos en cada sesión fotográfica.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-  <style>
-   .galeria-img {
-      width: 150%;
-      height: 700px;
-      object-fit: cover;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
-   }
+<!-- Testimonials Section -->
+<div class="client_section layout_padding">
+    <div class="container">
+        <h1 class="client_taital">Lo que opinan nuestros clientes</h1>
+        
+        <div class="client_section_2">
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                </ol>
+                
+                <div class="carousel-inner">
+                    <!-- Testimonial 1 -->
+                    <div class="carousel-item active">
+                        <div class="client_main">
+                            <div class="box_left">
+                                <p class="lorem_text">
+                                    "No puedo estar más feliz con mis fotos. Isabel capturó momentos tan auténticos y 
+                                    emotivos durante mis quinces que no dejo de verlas. Tiene un ojo artístico increíble 
+                                    y te hace sentir muy cómoda frente a la cámara."
+                                </p>
+                            </div>
+                            <div class="box_right">
+                                <div class="client_taital_left">
+                                    <div class="client_img">
+                                        <img src="{% static 'assets/imagenes_layout/a-photo-of-a-close-up-portrait-of-a-youn_RhH8Jc_QT0-8X1iDxsQzmA_CvfSMiZmSoCzIVPQbYo85Q.jpg' %}" 
+                                             alt="Mariana Gómez">
+                                    </div>
+                                    <div class="quick_icon">
+                                        <img src="{% static 'assets/imagenes_layout/quick-icon.png' %}" alt="Quote">
+                                    </div>
+                                </div>
+                                <div class="client_taital_right">
+                                    <h4 class="client_name">Mariana Gómez</h4>
+                                    <p class="customer_text">Cliente</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Testimonial 2 -->
+                    <div class="carousel-item">
+                        <div class="client_main">
+                            <div class="box_left">
+                                <p class="lorem_text">
+                                    "Necesitaba fotos profesionales para mi boda y quedé impresionada con el resultado. 
+                                    Isabel supo guiarme, cuidar la estética y reflejar justo lo que quería. 
+                                    ¡100% recomendada!"
+                                </p>
+                            </div>
+                            <div class="box_right">
+                                <div class="client_taital_left">
+                                    <div class="client_img">
+                                        <img src="{% static 'assets/imagenes_layout/Retrato de una mujer  joven y hermosa.jpg' %}" 
+                                             alt="Laura Méndez">
+                                    </div>
+                                    <div class="quick_icon">
+                                        <img src="{% static 'assets/imagenes_layout/quick-icon.png' %}" alt="Quote">
+                                    </div>
+                                </div>
+                                <div class="client_taital_right">
+                                    <h4 class="client_name">Laura Méndez</h4>
+                                    <p class="customer_text">Cliente</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Testimonial 3 -->
+                    <div class="carousel-item">
+                        <div class="client_main">
+                            <div class="box_left">
+                                <p class="lorem_text">
+                                    "Contratar a Isabel fue la mejor decisión que tomamos para nuestra boda. Cada foto 
+                                    cuenta una historia, y logró documentar nuestro día con tanta emoción y detalle que 
+                                    pareciera que lo estamos reviviendo."
+                                </p>
+                            </div>
+                            <div class="box_right">
+                                <div class="client_taital_left">
+                                    <div class="client_img">
+                                        <img src="{% static 'assets/imagenes_layout/Retrato de un hombre con corbata.jpg' %}" 
+                                             alt="Daniel Restrepo">
+                                    </div>
+                                    <div class="quick_icon">
+                                        <img src="{% static 'assets/imagenes_layout/quick-icon.png' %}" alt="Quote">
+                                    </div>
+                                </div>
+                                <div class="client_taital_right">
+                                    <h4 class="client_name">Daniel Restrepo</h4>
+                                    <p class="customer_text">Cliente</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-   .galeria-img:hover {
-      transform: scale(1.03);
-   }
+<!-- Why Choose Us Section -->
+<div class="choose_section layout_padding">
+    <div class="container">
+        <h1 class="choose_taital">¿Por qué escogernos?</h1>
+        <p class="choose_text">
+            En Isabel Álvarez Fotografía no solo tomamos fotos, capturamos emociones, historias y momentos únicos 
+            que perduran para siempre. Nos apasiona lo que hacemos y eso se refleja en cada imagen.
+        </p>
+        <p class="choose_text">
+            Ofrecemos un enfoque profesional y personalizado, adaptado a tus necesidades, con un trato cercano y 
+            amable que te hará sentir en confianza desde el primer clic. Cada sesión es una experiencia pensada 
+            para que disfrutes mientras creamos juntos recuerdos inolvidables.
+        </p>
+    </div>
+</div>
 
-   .mb-4 {
-      margin-bottom: 1.5rem;
-   }
-</style>
+<!-- Footer -->
+{% include 'partials/footer.html' %}
+
 {% endblock %}
+{% block extra_scripts %}
+
+      <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Scripts -->
+<script>
+const swiper = new Swiper('.swiper', {
+    direction: 'horizontal',
+    loop: true,
+    autoplay: {
+        delay: 3000,
+        disableOnInteraction: false,
+    },
+    effect: "fade",
+    navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+    },
+});
+</script>
 
 
 
+{% endblock %}

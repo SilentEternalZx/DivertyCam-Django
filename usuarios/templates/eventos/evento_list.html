@@ -12,16 +12,14 @@
         <i class="fa-solid fa-calendar-days fa-2x me-2"></i>
         <h2 class="section-title mb-0">Listado de Eventos</h2>
       </div>
-      {% if request.user.is_superuser %}
       <div class="action-buttons">
-        <a href="{% url 'evento_create' %}" class="btn btn-primary shadow-sm" id="btn-eventos">
-          <i class="fa-solid fa-plus"></i> Nuevo Evento
+        <a href="{% url 'evento_create' %}" class="btn btn-blanco shadow-sm">
+          <i class="fa-solid fa-calendar-plus"></i> Nuevo Evento
         </a>
-        <a href="{% url 'cliente_list' %}" class="btn btn-primary shadow-sm">
-          <i class="fa-solid fa-users"></i> Clientes
+        <a href="{% url 'cliente_list' %}" class="btn btn-blanco shadow-sm">
+          <i class="fa-solid fa-user-gear"></i> Clientes
         </a>
       </div>
-      {% endif %}
     </div>
 
     <div class="card mb-4 shadow-sm">
@@ -32,15 +30,108 @@
               <div class="input-group">
                 <span class="input-group-text bg-light border-0"><i class="fa-solid fa-search"></i></span>
                 <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, cliente, categoría..." value="{{ request.GET.q }}">
-                <button class="btn btn-primary" type="submit">Buscar</button>
+                <button class="btn btn-buscar" type="submit">Buscar</button>
               </div>
             </div>
+            <!-- Puedes agregar aquí, si lo necesitas, un switch para mostrar finalizados, pero por ahora lo dejamos igual que clientes -->
           </div>
         </form>
 
-      {% include 'eventos/partials/table.html' %}
+        <div class="table-responsive">
+          <table id="evento-table" class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Nombre</th>
+                <th>Cliente</th>
+                <th>Fecha y Hora</th>
+                <th>Servicios</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for evento in eventos %}
+              <tr>
+                <td>{{ evento.categoria }}</td>
+                <td><strong>{{ evento.nombre }}</strong></td>
+                <td class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle" title="{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}">
+                    {{ evento.cliente.nombre|slice:":1" }}{{ evento.cliente.apellido|slice:":1" }}
+                  </div>
+                  <div>
+                    {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
+                  </div>
+                </td>
+                <td>{{ evento.fecha_hora|date:"d/m/Y H:i" }}</td>
+                <td>
+                  {% for servicio in evento.servicios %}
+                  <span class="badge bg-primary">{{ servicio }}</span>
+                  {% endfor %}
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="{% url 'evento_detail' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver">
+                      <i class="fa-solid fa-eye"></i>
+                    </a>
+                    <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Editar">
+                      <i class="fa-solid fa-pen"></i>
+                    </a>
+                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-outline-negro"" title="Eliminar">
+                      <i class="fa-solid fa-trash"></i>
+                    </a>
+                 
+                    <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-outline-negro"" title="Ver fotografías">
+                      <i class="fa-solid fa-images"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="fa-solid fa-calendar-xmark fa-lg mb-2"></i><br>
+                  No hay eventos registrados.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  $(document).ready(function() {
+      $('#evento-table').DataTable({
+          pageLength:5,
+          pagingType: "simple_numbers",
+          ordering: true,
+          language: {
+              search: "Buscar:",
+              lengthMenu: "Mostrar _MENU_ registros",
+              zeroRecords: "No se encontraron resultados",
+              info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+              infoEmpty: "No hay registros",
+              infoFiltered: "(filtrado de _MAX_ registros)",
+              paginate: {
+                  first:    "Primera",
+                  last:     "Última",
+                  next:     "Siguiente",
+                  previous: "Anterior"
+              }
+          },
+          lengthChange: false,
+          searching: false,
+          columnDefs: [
+              { orderable: false, targets: 5 }
+          ]
+      });
+  });
+</script>
 {% endblock %}

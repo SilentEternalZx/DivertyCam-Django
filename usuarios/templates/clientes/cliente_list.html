@@ -13,10 +13,10 @@
         <h2 class="section-title mb-0">Listado de Clientes</h2>
       </div>
       <div class="action-buttons">
-        <a href="{% url 'cliente_create' %}" class="btn btn-primary shadow-sm" id="btn-clientes">
-          <i class="fa-solid fa-user-plus" ></i> Nuevo Cliente
+        <a href="{% url 'cliente_create' %}" class="btn btn-blanco shadow-sm">
+          <i class="fa-solid fa-user-plus"></i> Nuevo Cliente
         </a>
-        <a href="{% url 'evento_list' %}" class="btn btn-primary shadow-sm">
+        <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
           <i class="fa-solid fa-folder-open"></i> Eventos
         </a>
       </div>
@@ -30,7 +30,7 @@
               <div class="input-group">
                 <span class="input-group-text bg-light border-0"><i class="fa-solid fa-search"></i></span>
                 <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, cédula, correo..." value="{{ request.GET.q }}">
-                <button class="btn btn-primary" type="submit">Buscar</button>
+                <button class="btn btn-buscar" type="submit">Buscar</button>
               </div>
             </div>
             <div class="col-md-4 d-flex align-items-center justify-content-md-end">
@@ -43,7 +43,7 @@
         </form>
 
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <table id="cliente-table" class="table table-hover align-middle">
             <thead>
               <tr>
                 <th>Cliente</th>
@@ -69,20 +69,20 @@
                 <td>{{ cliente.correo }}</td>
                 <td>{{ cliente.telefono }}</td>
                 <td>
-                  <span class="badge rounded-pill {% if cliente.activo %}bg-success{% else %}bg-secondary{% endif %}">
+                  <span class="badge rounded-pill {% if cliente.activo %}badge-morado{% else %}badge-secondary{% endif %}">
                     {% if cliente.activo %}Activo{% else %}Inactivo{% endif %}
                   </span>
                 </td>
                 <td>
                   <div class="btn-group" role="group">
-                    <a href="{% url 'cliente_detail' cliente.pk %}" class="btn btn-sm btn-info" title="Ver">
+                    <a href="{% url 'cliente_detail' cliente.pk %}" class="btn btn-sm btn-outline-negro" title="Ver">
                       <i class="fa-solid fa-eye"></i>
                     </a>
-                    <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-sm btn-warning" title="Editar">
+                    <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-sm btn-outline-negro" title="Editar">
                       <i class="fa-solid fa-pen"></i>
                     </a>
                     {% if cliente.activo %}
-                    <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-sm btn-danger" title="Inactivar">
+                    <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-sm btn-outline-negro"" title="Inactivar">
                       <i class="fa-solid fa-ban"></i>
                     </a>
                     {% else %}
@@ -111,4 +111,37 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  $(document).ready(function() {
+      $('#cliente-table').DataTable({
+          pageLength:5,
+          pagingType: "simple_numbers",
+          ordering: true,
+          language: {
+              search: "Buscar:",
+              lengthMenu: "Mostrar _MENU_ registros",
+              zeroRecords: "No se encontraron resultados",
+              info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+              infoEmpty: "No hay registros",
+              infoFiltered: "(filtrado de _MAX_ registros)",
+              paginate: {
+                  first:    "Primera",
+                  last:     "Última",
+                  next:     "Siguiente",
+                  previous: "Anterior"
+              }
+          },
+          lengthChange: false,
+          searching: false,
+          columnDefs: [
+              { orderable: false, targets: 5 }
+          ]
+      });
+  });
+</script>
 {% endblock %}

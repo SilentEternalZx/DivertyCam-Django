@@ -30,9 +30,10 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['e8ee-191-156-33-165.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['55dc-191-156-43-126.ngrok-free.app', '127.0.0.1']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOxxbkZBZBMHxdQWb670Ph3EAQQnXMYBxliZBYpcmAtNfZCASV96VxnfMoOznIQA4O7HxMMubPSIdhGOuqjeFyys7rfPG80RYQSMGZBMTP4czndCKOULzW8MgptYzRQ90ekoEWMusornIBp54dfetbTRuBWfWaw3MFW5Hk210sHWabhgF2dI6ZBNAkT1SaTXwdGz3uS1E08ovvF"
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO59aAEDXxzxYqXAfdVpOQFOLRw16EjMQJIRUUXVd1E2Uv8N28dUpxqor6HDiJQJnyeZA8RaAqfYIgmHlYpBKw3VpJpn9Pso6dWWk7vfvWZAROsAy5VPHFV8GGjSPAZAhTtj72frs5Yr1QiG8BMTTKjuBpDvZAQSC2ZCZAvE4EoZCG6yhqDwmPgJkK92uGjO2yNlMEuvwSNjFT9fACaJ"
+
 FACEBOOK_PAGE_ID = "612248578630248"
 
 
@@ -72,7 +73,7 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://e8ee-191-156-33-165.ngrok-free.app",
+    "https://55dc-191-156-43-126.ngrok-free.app",
     "http://127.0.0.1:8000",  # Para pruebas locales
     "http://localhost:8000",
 ]
@@ -162,8 +163,49 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 JAZZMIN_SETTINGS={
+    "site_title":"DivertyCam",
+    "site_header":"DivertyCam",
+    "site_brand":"DivertyCam",
     
-    "show_ui_builder":True
+    "show_ui_builder":True,
+     "topmenu_links": [
+        {"name": "Inicio", "url": "/", "new_window": False, "icon": "fas fa-home"},
+        
+    ],
+    
+    
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": True,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-navy",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": False,
+    "sidebar": "sidebar-dark-purple",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "lux",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-outline-primary",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
 }
 
 #SMTP configuration

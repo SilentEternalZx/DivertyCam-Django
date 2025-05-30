@@ -9,12 +9,12 @@
   <div class="main-content w-100" style="max-width: 500px;">
     <div class="card shadow-sm">
       <div class="card-header bg-white d-flex align-items-center gap-2">
-        <i class="fa-solid fa-user-slash fa-2x text-warning"></i>
+        <i class="fa-solid fa-user-slash fa-2x text-danger"></i>
         <h2 class="mb-0 section-title">Inactivar Cliente</h2>
       </div>
       <div class="card-body">
         <p class="alert alert-warning d-flex align-items-center gap-2 mb-4">
-          <i class="fa-solid fa-triangle-exclamation fa-lg text-warning"></i>
+          <i class="fa-solid fa-triangle-exclamation fa-lg text-danger"></i>
           <span>
             ¿Está seguro que desea inactivar al cliente <strong>"{{ cliente.nombre }} {{ cliente.apellido }}"</strong>?<br>
             El cliente no será eliminado completamente, solo quedará marcado como inactivo.
@@ -23,10 +23,10 @@
         <form method="post" action="{% url 'cliente_inactivar' cliente.pk %}">
           {% csrf_token %}
           <div class="d-flex justify-content-end gap-2">
-            <button type="submit" class="btn btn-warning">
+            <button type="submit" class="btn btn-danger">
               <i class="fa-solid fa-ban"></i> Sí, inactivar
             </button>
-            <a href="{% url 'cliente_list' %}" class="btn btn-secondary">
+            <a href="{% url 'cliente_list' %}" class="btn btn-blanco shadow-sm">
               <i class="fa-solid fa-arrow-left"></i> No, cancelar
             </a>
           </div>

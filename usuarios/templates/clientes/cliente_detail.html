@@ -19,7 +19,7 @@
         <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-danger shadow-sm me-2">
           <i class="fa-solid fa-ban"></i> Inactivar
         </a>
-        <a href="{% url 'cliente_list' %}" class="btn btn-secondary shadow-sm">
+        <a href="{% url 'cliente_list' %}" class="btn btn-blanco shadow-sm">
           <i class="fa-solid fa-arrow-left"></i> Volver
         </a>
       </div>
@@ -82,7 +82,7 @@
             </dl>
           </div>
           <div class="col-md-6 text-end">
-            <a href="{% url 'evento_create' %}" class="btn btn-primary mt-3">
+            <a href="{% url 'evento_create' %}" class="btn btn-blanco shadow-sm">
               <i class="fa-solid fa-plus"></i> Agregar Evento
             </a>
           </div>
@@ -110,7 +110,7 @@
                     {% endfor %}
                   </td>
                   <td>
-                    <a href="{% url 'evento_detail' evento.pk %}" class="btn btn-sm btn-info" title="Ver">
+                    <a href="{% url 'evento_detail' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver">
                       <i class="fa-solid fa-eye"></i>
                     </a>
                   </td>

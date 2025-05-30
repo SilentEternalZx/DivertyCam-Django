@@ -10,7 +10,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
 from django.forms.widgets import ClearableFileInput
-
+from django.core.validators import MinLengthValidator
 # Modelo de Usuario personalizado
 class User(AbstractUser):
    pass
@@ -30,23 +30,32 @@ class Invitado(models.Model):
     def __str__(self):
         return f'{self.nombre} {self.telefono}'
     
+    
+
+    
 #Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
         max_length=50, 
         verbose_name=_("Nombre"),
+        validators=[MinLengthValidator(3, 'El nombre debe ser de al menos 2 caracteres')]
         
        
     )
     
+    
+    
     usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)
     
     apellido = models.CharField(
+        
         max_length=50,
         verbose_name=_("Apellido"),
        
      
     )
+    
+
     
     cedula = models.CharField(
         max_length=20,

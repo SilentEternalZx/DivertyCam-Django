@@ -20,8 +20,7 @@
       <link href="https://fonts.googleapis.com/css?family=Poppins:400,700|Righteous&display=swap" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-         
-
+        
 
       <!--Bootstrap-->
 
@@ -32,10 +31,7 @@
 
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
 
-      <!-- Css de librería Swiper para manejo de carrusel de fotos -->
-      
-      <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet"/>
-      
+      <!--Encabezado extra-->
 {% block extra_head %}{% endblock %}
 
      
@@ -43,19 +39,7 @@
 <body>
 
     
-    <!-- JS -->
-      <script src="{% static 'index_js/jquery.min.js' %}"></script>
-      <script src="{% static 'index_js/popper.min.js' %}"></script>
-      <script src="{% static 'index_js/bootstrap.bundle.min.js' %}"></script>
-      <script src="{% static 'index_js/jquery-3.0.0.min.js' %}"></script>
-      <script src="{% static 'index_js/plugin.js' %}"></script>
-      <script src="{% static 'index_js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
-      <script src="{% static 'index_js/custom.js' %}"></script>
-      <script src="{% static 'index_js/owl.carousel.js' %}"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script> 
-      <script src="{% static 'js/scroll.js' %}"> </script>
+
 
       <button id="btn-scroll-top" title="Subir arriba">
     <i class="fa-solid fa-arrow-up"></i>
@@ -69,15 +53,23 @@
   </main>
 
  
-
-
-
-  {% block extra_scripts %}{% endblock %}
-
- 
  </body>
+    <!-- JS -->
+      <script src="{% static 'index_js/jquery.min.js' %}"></script>
+      <script src="{% static 'index_js/popper.min.js' %}"></script>
+      <script src="{% static 'index_js/bootstrap.bundle.min.js' %}"></script>
+      <script src="{% static 'index_js/jquery-3.0.0.min.js' %}"></script>
+      <script src="{% static 'index_js/plugin.js' %}"></script>
+      <script src="{% static 'index_js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+      <script src="{% static 'index_js/custom.js' %}"></script>
+      <script src="{% static 'index_js/owl.carousel.js' %}"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script> 
+      <script src="{% static 'js/scroll.js' %}"> </script>
 
 
+      <!-- Archivos javascript extra -->
+{% block extra_scripts %}{% endblock %}
    
 
 </html>

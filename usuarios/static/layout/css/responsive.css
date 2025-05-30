@@ -211,7 +211,7 @@
     }
     .about_text {
         padding-top: 0px;
-        font-size: 14px;
+        
     }
     .readmore_bt {
         margin-top: 30px;
@@ -563,7 +563,7 @@
         padding-left: 0px;
     }
     .about_text {
-        font-size: 15px;
+        font-size: 1.25rem
     }
     .about_img {
         padding-top: 30px;
@@ -666,4 +666,22 @@
         padding-top: 90px;
     }
 
+}
+
+@media (max-width: 1200px){
+    .services_taital{
+       
+        padding-top: 20px;
+        
+    }
+
+    .about_text{
+        font-size: 1.25rem;
+    }
+
+    .choose_text{
+        font-size: 1.25rem;
+    }
+
+    
 }

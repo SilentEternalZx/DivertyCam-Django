@@ -1,27 +1,23 @@
+/* Centrado vertical usando flexbox en el contenedor principal */
 .d-flex.justify-content-center.align-items-center.min-vh-100 {
     min-height: 100vh !important;
-}
-
-.badge {
-    margin-top: 9px;
-
-   
 }
 .navbar{
     background-color: #232323;
 }
 
-body{
-    font-family: 'Poppins', sans-serif;
+* {
+    box-sizing: border-box !important;
+    transition: ease all 0.5s;
+    margin-top: 0;
+    padding: 0;
 }
 
-#btn-eventos{
-    background-color: #198754;
-}
+/* Avatar con iniciales */
 .avatar-circle {
     width: 38px;
     height: 38px;
-    background: linear-gradient(135deg, #0d6efd 60%, #17c1e8 100%);
+    background: linear-gradient(135deg, #2b2278 60%, #444 100%);
     color: #fff;
     font-size: 1.1rem;
     font-weight: bold;
@@ -30,27 +26,38 @@ body{
     align-items: center;
     justify-content: center;
     margin-right: 10px;
-    box-shadow: 0 3px 8px rgba(13,110,253,0.10);
+    box-shadow: 0 3px 8px rgba(43,34,120,0.10);
 }
 
+/* Título */
 .title-container {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     padding-bottom: 10px;
-   
+}
+.text-primary{
+    color:#222 !important
+}
+.main-content{
+    padding-top: 75px;
+     max-width: 1400px;
 }
 
 .section-title {
     font-weight: 700;
     font-size: 2.2rem;
-    color: #22223b;
+    color: #222;
     letter-spacing: -1px;
     margin-bottom: 0;
-   
 }
 
+#evento-form-text{
+    color:white;
+}
+
+/* Botones */
 .action-buttons {
     display: flex;
     gap: 12px;
@@ -61,12 +68,26 @@ body{
     font-weight: 500;
     transition: all 0.16s;
 }
-.btn-sm{
-    border:2px solid red;
+.btn-blanco:hover{
+    background-color: #444 !important;
+    color:white !important;
+    
 }
+
+
 
 .btn i {
     margin-right: 6px;
+}
+
+#guardar-btn{
+    background: #2b2278;
+    color: #fff;
+    border:none;
+}
+
+#guardar-btn:hover{
+    background-color: #222;
 }
 
 .btn-outline-info i,
@@ -76,73 +97,194 @@ body{
     margin-right: 0;
 }
 
-.btn-outline-warning {
-    color: #ffc107;
-    border-color: #ffc107;
-}
-.btn-outline-warning:hover {
-    background: #ffc107;
-    color: #22223b;
-}
-
-.btn-outline-info {
-    color: #17c1e8;
-    border-color: #17c1e8;
-}
-.btn-outline-info:hover {
-    background: #17c1e8;
-    color: #fff;
-}
-
-.btn-outline-danger {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-.btn-outline-danger:hover {
-    background: #dc3545;
-    color: #fff;
-}
-
-.btn-outline-success {
-    color: #198754;
-    border-color: #198754;
-}
-.btn-outline-success:hover {
-    background: #198754;
-    color: #fff;
-}
-
+/* Tabla */
 .table th {
-    background-color: #0d6efd;
-    color: white;
+    background-color: #2b2278 !important;
+    color: white !important;
     text-align: center;
     border: none;
     font-weight: 600;
     letter-spacing: 0.5px;
 }
 
+.table thead th {
+    white-space: nowrap;
+    padding-left: 16px;
+    padding-right: 16px;
+    
+}
 .table td, .table th {
     vertical-align: middle;
     text-align: center;
     border-bottom: 1px solid #e9ecef;
 }
-
-.formulario-evento {
-    padding-top: 72px; 
+.table tbody tr {
+    background: #fff;
+}
+.table tbody tr.table-light {
+    background: #f0f0f0 !important;
 }
 
-.main-content{
-    padding-top: 75px;
-}
+/* Badge estilos */
 .badge {
     font-size: 1rem;
     padding: 7px 16px;
 }
+.badge-morado {
+    background: #2b2278 !important;
+    color: #fff !important;
+}
+.badge-secondary {
+    background: #444 !important;
+    color: #fff !important;
+}
 
+/* DataTables paginación #2b2278 elegante */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: #fff !important;
+    border-radius: 16px !important;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 6px 20px;
+    margin: 0 4px;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: background 0.15s, color 0.15s;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current),
+.dataTables_wrapper .dataTables_paginate .paginate_button:focus:not(.current) {
+    color: #fff !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    color: #fff !important;
+}
+.dataTables_wrapper .dataTables_paginate {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+.dataTables_wrapper .dataTables_info {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0.5rem 0;
+    color: #2b2278;
+}
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2b2278;
+}
+.dataTables_filter input {
+    border-radius: 20px;
+    padding: 8px 16px;
+    border: 1.5px solid #2b2278;
+    margin-left: 10px;
+}
+
+.card-header{
+    background-color: #222 !important;
+}
+
+.evento-form-header {
+    border-radius: 1.5rem 1.5rem 0 0;
+    box-shadow: 0 2px 8px rgba(43,34,120,0.07);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: none;
+    position: relative;
+    z-index: 2;
+    padding: 0;
+}
+.header-center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 25px 0 10px 0;
+}
+.evento-form-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: white;
+    color: #222;
+    box-shadow: 0 2px 8px rgba(43,34,120,0.14);
+    transition: background .3s;
+    font-size: 2.3rem;
+    margin-bottom: 12px;
+}
+.evento-form-icon.icon-bounce {
+    animation: bounce-infinite 2.1s infinite;
+}
+@keyframes bounce-infinite {
+  0%, 100% { transform: translateY(0);}
+  20% { transform: translateY(-10px);}
+  40% { transform: translateY(0);}
+  60% { transform: translateY(-5px);}
+  80% { transform: translateY(0);}
+}
+
+/* Animación de entrada en cascada para los campos */
+.campo-animado {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: opacity 0.45s cubic-bezier(.45,.05,.55,.95) var(--anim-delay,0ms), transform 0.45s cubic-bezier(.45,.05,.55,.95) var(--anim-delay,0ms);
+}
+.campo-animado.mostrar-campo {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Pulse suave para el botón guardar */
+.pulse-btn {
+    animation: pulse-btn-shadow 1.7s infinite;
+}
+@keyframes pulse-btn-shadow {
+  0% { box-shadow: 0 0 0 0 rgba(43,34,120, 0.18);}
+  70% { box-shadow: 0 0 0 10px rgba(43,34,120, 0);}
+  100% { box-shadow: 0 0 0 0 rgba(43,34,120, 0);}
+}
+
+/* Centrado en campos y textos */
+.text-center, .form-label.text-center, .form-text.text-center {
+    text-align: center !important;
+}
+.form-control.text-center {
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .evento-form-header {
+        min-height: 70px;
+        padding: 0;
+    }
+    .header-center-content {
+        padding: 14px 0 6px 0;
+    }
+    .evento-form-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+        margin-bottom: 7px;
+    }
+    .evento-card-efecto {
+        border-radius: 1rem !important;
+    }
+}
+
+/* Responsive */
 @media (max-width: 767px) {
     .main-content {
         padding: 16px;
         border-radius: 10px;
+        margin-top:55px;
     }
     .section-title {
         font-size: 1.4rem;

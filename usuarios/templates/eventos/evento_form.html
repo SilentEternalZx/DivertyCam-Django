@@ -1,51 +1,71 @@
 {% extends 'eventos/base.html' %}
 {% load widget_tweaks %}
+{% load static %}
 
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'eventos/css/eventos-form.css' %}">
+{% endblock %}
 
 {% block body %}
 {% include 'partials/navbar.html' %}
 
-<div class="d-flex justify-content-center align-items-center min-vh-100">
-  <div class="main-content w-100" style="max-width: 700px;">
-    <div class="card shadow-sm">
-      <div class="card-header bg-white d-flex align-items-center gap-2">
-        <i class="fa-solid fa-calendar-plus fa-2x text-primary"></i>
-        <h2 class="mb-0  section-title">
-          {% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Evento
-        </h2>
+<div class="d-flex justify-content-center align-items-center min-vh-100  animate__animated animate__fadeIn">
+  <div class="main-content w-100" style="max-width: 600px;">
+    <div class="card shadow-lg border-0 evento-card-efecto">
+      <div class="card-header evento-form-header justify-content-center">
+        <div class="header-center-content">
+          <span class="evento-form-icon">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </span>
+          <h2 class="section-title mb-0 animate__animated animate__fadeInDown" id="evento-form-text">
+            {% if form.instance.pk %}Editar Evento{% else %}Nuevo Evento{% endif %}
+          </h2>
+        </div>
       </div>
-      <div class="card-body">
-        <form method="post" novalidate autocomplete="off">
+      <div class="card-body px-4 py-4 bg-white">
+        <form method="post" novalidate autocomplete="off" id="form">
           {% csrf_token %}
-          <div class="row">
-            {% for field in form %}
-            <div class="col-md-6 mb-3">
-              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
-                {{ field.label }}
-                {% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+          <div class="row g-3 justify-content-center">
+            {% for field in form.visible_fields %}
+            <div class="col-12 col-md-6 campo-animado" style="--anim-delay: {{ forloop.counter0|add:"1" }}00ms;">
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-secondary text-center w-100">
+                {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
               </label>
-              {{ field.errors }}
+              {% if field.errors %}
+                <div class="invalid-feedback d-block animate__animated animate__shakeX animate__fast">
+                  {{ field.errors|striptags }}
+                </div>
+              {% endif %}
               {% if field.name == 'cliente' or field.name == 'categoria' %}
-                {{ field|add_class:"form-select" }}
-              {% elif field|field_type == "CheckboxInput" or field|field_type == "CheckboxSelectMultiple" %}
-                <div class="form-check">
-                  {{ field }}
+                {{ field|add_class:"form-select form-control-lg text-center" }}
+              {% elif field.name == "servicios" %}
+                <div class="row">
+                  {% for checkbox in field %}
+                    <div class="form-check form-check-inline">
+                      {{ checkbox.tag }}
+                      <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                        {{ checkbox.choice_label }}
+                      </label>
+                    </div>
+                  {% endfor %}
                 </div>
               {% else %}
-                {{ field|add_class:"form-control" }}
+                {{ field|add_class:"form-control form-control-lg text-center" }}
               {% endif %}
               {% if field.help_text %}
-                <div class="form-text">{{ field.help_text }}</div>
+                <div class="form-text text-secondary text-center w-100">{{ field.help_text }}</div>
               {% endif %}
             </div>
             {% endfor %}
           </div>
-          <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="submit" class="btn btn-primary shadow-sm">
-              <i class="fa-solid fa-save"></i> Guardar
+          <div class="d-flex justify-content-center gap-2 mt-4 action-buttons">
+            <button type="submit" class="btn btn-primary shadow-sm guardar-btn-efecto" id="guardar-btn">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar
             </button>
-            <a href="{% url 'evento_list' %}" class="btn btn-secondary shadow-sm">
+            <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
               <i class="fa-solid fa-arrow-left"></i> Cancelar
             </a>
           </div>
@@ -54,4 +74,22 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Icon bounce infinito
+    const icon = document.querySelector('.evento-form-icon');
+    if(icon){
+      icon.classList.add('icon-bounce');
+    }
+    // Campos animados en cascada
+    const campos = document.querySelectorAll('.campo-animado');
+    campos.forEach((campo, idx) => {
+      setTimeout(() => campo.classList.add('mostrar-campo'), 120 * idx);
+    });
+});
+</script>
 {% endblock %}

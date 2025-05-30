@@ -18,6 +18,24 @@
    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
 }
 
+.btn-success{
+     background: #2b2278;
+    color: #fff;
+    border:none;
+}
+
+.btn-success:hover{
+     background: #222;
+    color: #fff;
+    border:none;
+}
+
+.btn-blanco:hover{
+    background-color: #444 !important;
+    color:white !important;
+
+}
+
 .galeria-hover {
    position: absolute;
    top: 0; left: 0; width: 100%; height: 100%;
@@ -31,9 +49,7 @@
    border-radius: 12px;
 }
 
-.btn{
-    border:2px solid red;
-}
+
 .galeria-img-container:hover .galeria-hover {
    opacity: 1;
 }

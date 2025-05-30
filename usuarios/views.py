@@ -206,6 +206,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
         
         if query:
             # Tu código de búsqueda existente...
+            
             search_query = SearchQuery(query)
             queryset = queryset.annotate(
                 rank=SearchRank('search_vector', search_query)
@@ -217,7 +218,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
                         Q(nombre__icontains=query) |
                         Q(apellido__icontains=query) |
                         Q(cedula__icontains=query) |
-                        Q(correo__icontains=query) |
+                      
                         Q(telefono__icontains=query)
                     )
                 else:
@@ -225,7 +226,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
                         Q(nombre__icontains=query) |
                         Q(apellido__icontains=query) |
                         Q(cedula__icontains=query) |
-                        Q(correo__icontains=query) |
+                    
                         Q(telefono__icontains=query),
                         activo=True
                     )
@@ -361,7 +362,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+            "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
         )
 
         payload = {
@@ -399,7 +400,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+        "http://127.0.0.1:8000", " https://55dc-191-156-43-126.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -486,6 +487,9 @@ class EventoForm(LoginRequiredMixin,forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Filtra solo clientes activos
         self.fields['cliente'].queryset = Cliente.objects.filter(activo=True)
+        
+        if 'class' in self.fields['servicios'].widget.attrs:
+            del self.fields['servicios'].widget.attrs['class']
 
 class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):  
     model = Evento
@@ -1072,37 +1076,7 @@ def send_whatsapp(request):
     success_message = ("Evento eliminado exitosamente")
     
 
-def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
-    if not request.user.is_authenticated: #Si el usuario no está autenticado...
-        return redirect("login") #Redirigir al login
-    
-    if  not request.user.is_superuser:  #Si no es un superusuario...
-     return HttpResponse("No estás autorizado para acceder a esta página") #Retornar mensaje de error
-    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
-    
-    if request.method=="POST": #Si la petición es POST
-        form=FotografiaForm(request.POST, request.FILES) #Llamar al formulario
-        if form.is_valid(): #Si el formulario es válido obtener los datos
-            
-            descripcion=form.cleaned_data["descripcion"]
-            img=form.cleaned_data["img"]
-            invitado=form.cleaned_data["invitado"]
-            
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento, invitado=invitado)#Crear un objeto de Fotografia
-            fotografia.save() #Guardar objeto
-            
-            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
-            
-        else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
-                "form":form
-            })
-        
-    
-    return render(request,"añadir_fotos/formulario.html",{
-        "evento":evento,
-        "form":FotografiaForm()
-    })
+
 
 def launch_photobooth(request, evento_id):
     """Vista principal que inicia el flujo del photobooth"""
@@ -1323,7 +1297,7 @@ def lista_fotos(request):
 # Subir fotos de los eventos
 def subir_foto(request):
     if request.method == "POST":
-        form = FotografiaForm(request.POST, request.FILES)
+        form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
             foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
             foto.usuario = request.user  # 📌 Asigna el usuario autenticado
@@ -1338,7 +1312,7 @@ def subir_foto(request):
             print("Errores en el formulario:", form.errors)
 
     else:
-        form = FotografiaForm()
+        form = AñadirFotoForm()
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
@@ -1350,8 +1324,20 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "hhttps://22b3-179-15-25-167.ngrok-free.app "
+        "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
     )
+
+    # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
+    import requests
+    try:
+        test_response = requests.get(imagen_url)
+        print("[TEST] Status de acceso a la imagen:", test_response.status_code)
+        if test_response.status_code != 200:
+            print("[TEST] Contenido recibido:", test_response.content[:200])
+    except Exception as e:
+        print("[TEST] Error accediendo a la imagen:", e)
+
+    print("[TEST] URL enviada a Facebook:", imagen_url)
 
     url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
     payload = {
@@ -1381,11 +1367,17 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
     
     if request.method=="POST": #Si la petición es POST
         form=AñadirFotoForm(request.POST, request.FILES) #Llamar al formulario
+        archivos = request.FILES.getlist('img')
+       
+
         if form.is_valid(): #Si el formulario es válido obtener los datos
             descripcion=form.cleaned_data["descripcion"]
-            img=form.cleaned_data["img"]
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
-            fotografia.save() #Guardar objeto
+            
+            for imagen in archivos:
+               
+                
+                 fotografia=Fotografia.objects.create(descripcion=descripcion, img=imagen, evento=evento)#Crear un objeto de Fotografia
+                 fotografia.save() #Guardar objeto
             return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error

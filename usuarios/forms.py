@@ -25,13 +25,35 @@ class ClienteForm(forms.ModelForm):
        class Meta:
         model = Cliente
         fields = ['nombre','apellido', 'cedula', 'fechaNacimiento', 
-                  'direccion', 'correo', 'telefono', 'usuario']
+                  'direccion',  'telefono', 'usuario']
         widgets = {
-            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'apellido'}),
+            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'fechaNacimiento'}),
             
             
             
         }
+        
+        #Función para filtrar que la lista de usuarios no sea un superusuario o no ese usuario no pertenezca ya a un cliente
+        
+       def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        clientes = Cliente.objects.values_list('usuario_id', flat=True)
+        # Si estás editando, permite el usuario ya asignado
+        if self.instance.pk and self.instance.usuario:
+            self.fields['usuario'].queryset = (
+                User.objects
+                .filter(is_superuser=False)
+                .exclude(id__in=clientes)
+                .union(User.objects.filter(pk=self.instance.usuario.pk))
+            )
+        else:
+            self.fields['usuario'].queryset = (
+                User.objects
+                .filter(is_superuser=False)
+                .exclude(id__in=clientes)
+            )
+        
+    
        def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
         
@@ -56,17 +78,9 @@ class ClienteForm(forms.ModelForm):
         # Aquí puedes agregar validaciones específicas para la cédula
         return cedula
         
-       def clean_correo(self):
-        correo = self.cleaned_data.get('correo')
-        # Validaciones adicionales de correo si es necesario
-        return correo
+      
 
 
-class FotografiaForm(forms.ModelForm):
-    class Meta:
-        model = Fotografia
-        fields = ['img', 'descripcion', 'invitado']
-        
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput(),
@@ -94,11 +108,15 @@ class EventoForm(forms.ModelForm):
                     'type': 'datetime-local'
                 }
             ),
-            'servicios': forms.CheckboxSelectMultiple(),
+           
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+          # Elimina cualquier clase previa que pudiera venir de la definición del campo
+        if 'class' in self.fields['servicios'].widget.attrs:
+            del self.fields['servicios'].widget.attrs['class']
         
         # Asegurarse de que todos los campos sean requeridos
         for field in self.fields.values():
@@ -236,13 +254,27 @@ class CollageTemplateForm(forms.ModelForm):
         
   
   
-  
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
 
     
     
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
-    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
+    img=MultipleFileField(label='Select files', required=False)
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
     invitado=forms.ModelMultipleChoiceField(queryset=Invitado.objects.all(), widget=forms.CheckboxSelectMultiple)
 
