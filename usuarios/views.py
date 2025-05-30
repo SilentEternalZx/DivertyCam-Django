@@ -86,8 +86,16 @@ def register_view(request):
     if request.method == "POST":
         form = RegistroForm(request.POST)
         if form.is_valid():
+            username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
+            # Validar si el usuario ya existe
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "El nombre de usuario ya está registrado. Por favor elige otro.")
+                return render(request, "register/register.html", {"form": form})
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "El correo electrónico ya está registrado. Por favor usa otro.")
+                return render(request, "register/register.html", {"form": form})
             usuario = form.save()
-            
             login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
             return redirect("index")
         else:
@@ -440,10 +448,9 @@ class EventoListView(LoginRequiredMixin, ListView):
                 rank=SearchRank('search_vector', search_query)
             ).filter(search_vector=search_query).order_by('-rank')
             
-            # Si no hay resultados con la búsqueda de texto completo, intentamos con LIKE
+            # Si no hay resultados, usamos búsqueda con LIKE
             if not queryset.exists():
                 queryset = Evento.objects.filter(
-        
                     Q(nombre__icontains=q) |
                     Q(cliente__nombre__icontains=q) |
                     Q(cliente__apellido__icontains=q) |
@@ -1763,7 +1770,8 @@ def launch_photobooth(request, evento_id):
     session = CollageSession.objects.create(
         evento=evento,
         template=template,
-        session_id=str(uuid.uuid4())
+        session_id=str(uuid.uuid4()),
+        status='active'
     )
     
     return render(request, 'photobooth/session.html', {
@@ -2528,8 +2536,29 @@ def update_share_count(request):
             'error': str(e)
         }, status=500)
 
+def api_session_photos(request):
+    """
+    API para obtener las fotos individuales y el collage de una sesión de photobooth.
+    Recibe el session_id por GET o POST y responde con las URLs de las fotos y el collage.
+    """
+    session_id = request.GET.get('session_id') or request.POST.get('session_id')
+    if not session_id:
+        return JsonResponse({'success': False, 'error': 'session_id es requerido'}, status=400)
 
+    session = CollageSession.objects.filter(session_id=session_id).first()
+    if not session:
+        return JsonResponse({'success': False, 'error': 'Sesión no encontrada'}, status=404)
 
+    # Obtener fotos individuales
+    photos = SessionPhoto.objects.filter(session=session).order_by('frame_index')
+    photo_urls = [request.build_absolute_uri(photo.image.url) for photo in photos if photo.image]
 
+    # Obtener collage
+    collage_result = CollageResult.objects.filter(session=session).first()
+    collage_url = request.build_absolute_uri(collage_result.image.url) if collage_result and collage_result.image else None
 
-
+    return JsonResponse({
+        'success': True,
+        'photos': photo_urls,
+        'collage': collage_url
+    })

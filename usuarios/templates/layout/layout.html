@@ -18,6 +18,10 @@
       <link rel="stylesheet" href="{% static 'layout/css/jquery.mCustomScrollbar.min.css' %}">
       <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
       <link href="https://fonts.googleapis.com/css?family=Poppins:400,700|Righteous&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+         
+
 
       <!--Bootstrap-->
 
@@ -32,7 +36,7 @@
       
       <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet"/>
       
-
+{% block extra_head %}{% endblock %}
 
      
  </head>
@@ -50,16 +54,25 @@
       <script src="{% static 'index_js/owl.carousel.js' %}"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script> 
+      <script src="{% static 'js/scroll.js' %}"> </script>
 
+      <button id="btn-scroll-top" title="Subir arriba">
+    <i class="fa-solid fa-arrow-up"></i>
+</button>
+   
 
- {% block body %}
-
- {% include 'partials/navbar.html' %}
- {% include 'partials/footer.html' %}
+  <main class="content-wrapper">
+    {% block content %}
+   
+     {% endblock %}
+  </main>
 
  
- {% endblock %}
+
+
+
+  {% block extra_scripts %}{% endblock %}
 
  
  </body>
@@ -68,5 +81,3 @@
    
 
 </html>
-
-

@@ -9,6 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 import re
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -69,6 +70,10 @@ class FotografiaForm(forms.ModelForm):
     class Meta:
         model = Fotografia
         fields = ['img', 'descripcion', 'invitado']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['img'].required = True
         
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(
@@ -419,8 +424,54 @@ class CollageTemplateForm(forms.ModelForm):
     
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
-    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
-    descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
+    img = forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}), label="Imagen")
+    descripcion = forms.CharField(
+        widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),
+        label="Descripción",
+        min_length=5,
+        max_length=34,
+        required=True
+    )
+    evento = forms.ModelChoiceField(
+        queryset=Evento.objects.all(),
+        label="Evento",
+        required=True
+    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['evento'].label_from_instance = lambda obj: f"{obj.nombre} - {obj.fecha_hora.strftime('%d/%m/%Y %H:%M')}"
+    
+    def clean_img(self):
+        img = self.cleaned_data.get('img')
+        if img:
+            # Validar tipo de archivo
+            if not img.content_type in ['image/jpeg', 'image/png']:
+                raise forms.ValidationError('Solo se permiten imágenes JPEG o PNG.')
+            # Validar tamaño (máx 5MB)
+            if img.size > 5*1024*1024:
+                raise forms.ValidationError('La imagen no puede superar los 5MB.')
+        return img
+
+    def clean_evento(self):
+        evento = self.cleaned_data.get('evento')
+        if evento and evento.fecha_hora < timezone.now():
+            raise forms.ValidationError('No puedes asociar la foto a un evento pasado.')
+        return evento
+
+class EventoAdminForm(forms.ModelForm):
+    class Meta:
+        model = Evento
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['categoria'].required = True
+
+    def clean_categoria(self):
+        categoria = self.cleaned_data.get('categoria')
+        if categoria is None:
+            raise forms.ValidationError('Debes seleccionar una categoría para el evento.')
+        return categoria
 
 
 

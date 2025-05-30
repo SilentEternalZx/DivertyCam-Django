@@ -92,6 +92,7 @@ urlpatterns = [
     path('galeria/bodas/', views.galeria_bodas, name='galeria_bodas'),
     path('galeria/otros/', views.galeria_otros, name='galeria_otros'),
     path('latest_collage/', views.latest_collage, name='latest_collage'),
+    path('session_photos/', views.api_session_photos, name='api_session_photos'),
     path('update_share_count/', views.update_share_count, name='update_share_count'),
 ]
 
