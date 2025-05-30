@@ -69,7 +69,7 @@ class ClienteForm(forms.ModelForm):
 class FotografiaForm(forms.ModelForm):
     class Meta:
         model = Fotografia
-        fields = ['img', 'descripcion', 'invitado', 'categoria']
+        fields = ['img', 'descripcion', 'invitado']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
