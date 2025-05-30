@@ -22,7 +22,7 @@ function verificar_username() {
     }
 
     // Si pasa las validaciones, consulta al backend
-    fetch(`/usuarios/verificar_usuario/?username=${encodeURIComponent(username)}`)
+    fetch(`verificar_usuario/?username=${encodeURIComponent(username)}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error en la respuesta del servidor");
@@ -179,7 +179,7 @@ function verificar_email() {
     }
 
     // Si pasa las validaciones, consulta al backend
-    fetch(`/usuarios/verificar_email/?email=${encodeURIComponent(email)}`)
+    fetch(`verificar_email/?email=${encodeURIComponent(email)}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error en la respuesta del servidor");
