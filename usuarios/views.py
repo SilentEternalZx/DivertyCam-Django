@@ -48,6 +48,10 @@ logger = logging.getLogger(__name__)
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
+    
+  
+        
+
 
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
@@ -62,6 +66,8 @@ def vista_login(request): #Función para iniciar sesión
         nombre_usuario = request.POST.get("nombre_usuario")
         contraseña = request.POST.get("contraseña")
         usuario = authenticate(request, username=nombre_usuario, password=contraseña)
+        
+       
 
 
         if usuario is not None:  #Si el usuario existe
@@ -150,49 +156,49 @@ def eventos_cliente(request):
         cliente = Cliente.objects.get(usuario=request.user)  #Intentar obtener un cliente relacionado al usuario
     except ObjectDoesNotExist:  #De lo contrario 
         mensaje = "El usuario no tiene un cliente asignado"  #Retornar mensaje
-        return render(request, "fotografias/eventos_cliente.html", {
+        return render(request, "eventos/partials/table.html", {
             "mensaje": mensaje
         })
     
-    lista_eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
+    eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
 
-    if not lista_eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
-        return render(request, "fotografias/eventos_cliente.html", {
+    if not eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
+        return render(request, "eventos/partials/table.html", {
             "mensaje": "No tiene eventos actualmente"
         })
     
     # --- FILTRO POR BÚSQUEDA ---
     query = request.GET.get('q')
     if query:
-        lista_eventos = lista_eventos.filter(
+        eventos = eventos.filter(
             Q(nombre__icontains=query)
         )
 
     # --- ORDENAMIENTO ---
     orden = request.GET.get('orden')
     if orden == 'nombre':
-        lista_eventos = lista_eventos.order_by('nombre')
+        eventos = eventos.order_by('nombre')
     elif orden == 'nombre_desc':
-        lista_eventos = lista_eventos.order_by('-nombre')
+        eventos = eventos.order_by('-nombre')
     elif orden == 'cliente':
-        lista_eventos = lista_eventos.order_by('cliente__nombre')
+        eventos = eventos.order_by('cliente__nombre')
     elif orden == 'cliente_desc':
-        lista_eventos = lista_eventos.order_by('-cliente__nombre')
+        eventos = eventos.order_by('-cliente__nombre')
     elif orden == 'fecha_hora':
-        lista_eventos = lista_eventos.order_by('fecha_hora')
+        eventos = eventos.order_by('fecha_hora')
     elif orden == 'fecha_hora_desc':
-        lista_eventos = lista_eventos.order_by('-fecha_hora')
+        eventos = eventos.order_by('-fecha_hora')
 
     # Evento e imágenes para vista previa (por ejemplo, el primero)
-    evento = lista_eventos.first()
+    evento = eventos.first()
     imagenes = evento.fotografias.all() if evento else []
     
     #Retornar vista con respectivos contextos
 
-    return render(request, "fotografias/eventos_cliente.html", {
+    return render(request, "eventos/eventos_cliente.html", {
         "evento": evento,
         "imagenes": imagenes,
-        "lista_eventos": lista_eventos
+        "eventos": eventos
     })
 
 class ClienteListView(LoginRequiredMixin, ListView):  
@@ -214,6 +220,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
         
         if query:
             # Tu código de búsqueda existente...
+            
             search_query = SearchQuery(query)
             queryset = queryset.annotate(
                 rank=SearchRank('search_vector', search_query)
@@ -225,7 +232,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
                         Q(nombre__icontains=query) |
                         Q(apellido__icontains=query) |
                         Q(cedula__icontains=query) |
-                        Q(correo__icontains=query) |
+                      
                         Q(telefono__icontains=query)
                     )
                 else:
@@ -233,7 +240,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
                         Q(nombre__icontains=query) |
                         Q(apellido__icontains=query) |
                         Q(cedula__icontains=query) |
-                        Q(correo__icontains=query) |
+                    
                         Q(telefono__icontains=query),
                         activo=True
                     )
@@ -369,7 +376,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://68e1-191-156-39-254.ngrok-free.app"  # URL de ngrok
+            "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
         )
 
         payload = {
@@ -407,7 +414,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://68e1-191-156-39-254.ngrok-free.app"  # URL de ngrok
+        "http://127.0.0.1:8000", " https://55dc-191-156-43-126.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -493,6 +500,9 @@ class EventoForm(LoginRequiredMixin,forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Filtra solo clientes activos
         self.fields['cliente'].queryset = Cliente.objects.filter(activo=True)
+        
+        if 'class' in self.fields['servicios'].widget.attrs:
+            del self.fields['servicios'].widget.attrs['class']
 
 class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):  
     model = Evento
@@ -1710,34 +1720,7 @@ def send_whatsapp(request):
     success_message = ("Evento eliminado exitosamente")
     
 
-def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
-    if not request.user.is_authenticated: #Si el usuario no está autenticado...
-        return redirect("login") #Redirigir al login
-    
-    if  not request.user.is_superuser:  #Si no es un superusuario...
-     return HttpResponse("No estás autorizado para acceder a esta página") #Retornar mensaje de error
-    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
-    
-    if request.method=="POST": #Si la petición es POST
-        form=FotografiaForm(request.POST, request.FILES) #Llamar al formulario
-        if form.is_valid(): #Si el formulario es válido obtener los datos
-            descripcion=form.cleaned_data["descripcion"]
-            img=form.cleaned_data["img"]
-            invitado=form.cleaned_data["invitado"]
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento, invitado=invitado)#Crear un objeto de Fotografia
-            fotografia.save() #Guardar objeto
-            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
-            
-        else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
-                "form":form
-            })
-        
-    
-    return render(request,"añadir_fotos/formulario.html",{
-        "evento":evento,
-        "form":FotografiaForm()
-    })
+
 
 def launch_photobooth(request, evento_id):
     """Vista principal que inicia el flujo del photobooth"""
@@ -1913,7 +1896,7 @@ def lista_fotos(request):
 # Subir fotos de los eventos
 def subir_foto(request):
     if request.method == "POST":
-        form = FotografiaForm(request.POST, request.FILES)
+        form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
             foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
             foto.usuario = request.user  # 📌 Asigna el usuario autenticado
@@ -1928,7 +1911,7 @@ def subir_foto(request):
             print("Errores en el formulario:", form.errors)
 
     else:
-        form = FotografiaForm()
+        form = AñadirFotoForm()
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
@@ -1940,8 +1923,20 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "hhttps://22b3-179-15-25-167.ngrok-free.app "
+        "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
     )
+
+    # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
+    import requests
+    try:
+        test_response = requests.get(imagen_url)
+        print("[TEST] Status de acceso a la imagen:", test_response.status_code)
+        if test_response.status_code != 200:
+            print("[TEST] Contenido recibido:", test_response.content[:200])
+    except Exception as e:
+        print("[TEST] Error accediendo a la imagen:", e)
+
+    print("[TEST] URL enviada a Facebook:", imagen_url)
 
     url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
     payload = {
@@ -1959,67 +1954,7 @@ def publicar_foto_facebook(request, foto_id):
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
-class EventoListView(ListView):
-    model = Evento
-    context_object_name = 'eventos'
-    paginate_by = 10
-    template_name = 'eventos/evento_list.html'
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        q = self.request.GET.get('q')
-        orden = self.request.GET.get('orden', 'fecha_hora')  # Orden por defecto
 
-        # Búsqueda por vector de búsqueda
-        if q:
-            search_query = SearchQuery(q)
-            queryset = queryset.annotate(
-                rank=SearchRank('search_vector', search_query)
-            ).filter(search_vector=search_query).order_by('-rank')
-
-            # Si no hay resultados, usamos búsqueda con LIKE
-            if not queryset.exists():
-                queryset = Evento.objects.filter(
-                    Q(nombre__icontains=q) |
-                    Q(cliente__nombre__icontains=q) |
-                    Q(cliente__apellido__icontains=q) |
-                    Q(direccion__icontains=q)
-                )
-
-        # Ordenamiento dinámico
-        if orden.endswith("_desc"):
-            orden = "-" + orden.replace("_desc", "")  # Convierte 'nombre_desc' en '-nombre'
-
-        queryset = queryset.order_by(orden)
-        return queryset
-
-class EventoDetailView(DetailView):
-    model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_detail.html'
-
-class EventoCreateView( SuccessMessageMixin, CreateView):  
-    model = Evento
-    form_class = EventoForm
-    template_name = 'eventos/evento_form.html'
-    success_url = reverse_lazy('evento_list')
-    success_message = ("Evento creado exitosamente")
-
-class EventoUpdateView(SuccessMessageMixin, UpdateView):
-    model = Evento
-    form_class = EventoForm
-    template_name = 'eventos/evento_form.html'
-    success_message = ("Evento actualizado exitosamente")
-    
-    def get_success_url(self):
-        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
-
-class EventoDeleteView(SuccessMessageMixin, DeleteView):
-    model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_confirm_delete.html'
-    success_url = reverse_lazy('evento_list')
-    success_message = ("Evento eliminado exitosamente")
 
 def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
     if not request.user.is_authenticated: #Si el usuario no está autenticado...
@@ -2031,11 +1966,17 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
     
     if request.method=="POST": #Si la petición es POST
         form=AñadirFotoForm(request.POST, request.FILES) #Llamar al formulario
+        archivos = request.FILES.getlist('img')
+       
+
         if form.is_valid(): #Si el formulario es válido obtener los datos
             descripcion=form.cleaned_data["descripcion"]
-            img=form.cleaned_data["img"]
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
-            fotografia.save() #Guardar objeto
+            
+            for imagen in archivos:
+               
+                
+                 fotografia=Fotografia.objects.create(descripcion=descripcion, img=imagen, evento=evento)#Crear un objeto de Fotografia
+                 fotografia.save() #Guardar objeto
             return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error

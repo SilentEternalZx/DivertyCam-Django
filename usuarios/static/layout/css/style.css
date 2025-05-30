@@ -37,7 +37,12 @@
 * {
     box-sizing: border-box !important;
     transition: ease all 0.5s;
+    margin-top: 0;
+    padding: 0;
+
+  
 }
+
 
 html {
     scroll-behavior: smooth;
@@ -50,6 +55,9 @@ body {
     font-weight: normal;
     overflow-x: hidden;
     font-family: 'Poppins', sans-serif;
+    
+ 
+    
 }
 
 a {
@@ -124,6 +132,26 @@ h6 a {
 
 button:focus {
     outline: none;
+}
+
+
+
+#btn-scroll-top{
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    display: none;
+    z-index: 9999;
+    background: #007bff;
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    font-size: 1.7rem;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 ul,
@@ -232,8 +260,9 @@ button {
     float: left;
     padding: 0px 0px 20px 0px;
     position: relative;
-    z-index: 1;
+    z-index: 1000;
 }
+
 
 
 
@@ -250,12 +279,7 @@ button {
 
 
 
-.btn:not(:disabled):not(.disabled) {
-    cursor: pointer;
-    border-radius: 20px;
-    border: 2px solid #fff;
-    color: #fff;
-}
+
 
 
 
@@ -358,7 +382,6 @@ button {
 .services_taital {
     width: 100%;
     float: left;
-    font-size: 40px;
     color: #1f1f1f;
     font-weight: bold;
 }
@@ -366,9 +389,10 @@ button {
 .services_text {
     width: 100%;
     float: left;
-    font-size: 20px;
+    font-size: 1.25rem;
     color: #1f1f1f;
     margin: 0px;
+    
 }
 
 .services_section_2 {
@@ -436,6 +460,7 @@ button {
     width: 100%;
     padding-left: 100px;
     padding-top: 70px;
+   
 }
 
 .padding_right_0 {
@@ -445,19 +470,20 @@ button {
 .about_taital {
     width: 100%;
     float: left;
-    font-size: 40px;
     color: #1f1f1f;
     font-weight: bold;
+    
 }
 
 .about_text {
     width: 100%;
     float: left;
-    font-size: 18px;
+    font-size: 1.25rem;
     color: #1f1f1f;
     margin: 0px;
     padding-top: 40px;
     text-align: justify;
+ 
 }
 
 .readmore_bt {
@@ -490,6 +516,9 @@ button {
     width: 100%;
     float: left;
 }
+.swiper, .swiper-wrapper, .swiper-slide, .swiper-button-next, .swiper-button-prev {
+  z-index: 1 !important;
+}
 
 
 /* contact section end */
@@ -501,6 +530,8 @@ button {
     margin: auto;
     border-radius: 12px;
     overflow: hidden;
+ 
+   
   
   }
   
@@ -508,6 +539,8 @@ button {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    
+   
    
   }
   
@@ -634,6 +667,7 @@ button {
   -webkit-backdrop-filter: blur(10px);
   transition: background-color 0.3s ease;
   z-index: 1030;
+  
 }
 
 /* Estilo para los links y marca */
@@ -642,9 +676,11 @@ button {
   color: white !important;
 }
 
+
+
 /* Hover bonito */
 .transparent-navbar .nav-link:hover {
-  color: #ffcad4 !important;
+  color: #444 !important;
 }
 
 /* Padding y estilos previos */
@@ -654,7 +690,7 @@ button {
   padding-right: 1rem;
   white-space: nowrap;
   font-size: 1.1rem !important;
-  
+
 }
 
 
@@ -671,7 +707,6 @@ button {
 .navbar-brand img {
   margin-right: 0.5rem;
 }
-
 
 
 
@@ -896,3 +931,73 @@ button {
 .copyright_text a:hover {
     color: #e27141;
 }
+
+
+/* Vídeos responsivos para la sección de embebido */
+
+.embed_videos_section{
+   background: #f8f9fa; 
+   padding: 60px 0;
+}
+.embed_text{
+    text-align:center; 
+    margin-bottom:2.5rem;
+    font-size: 20px;
+}
+.embed_videos_section .card {
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.22s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1.5px 8px rgba(0,0,0,0.11);
+  background: #fff;
+}
+.embed_videos_section .card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 12px rgba(0,0,0,0.13);
+}
+.embed_videos_section .card-title {
+  font-size: 1.1rem;
+  color: #d48872;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.embed_videos_section .card-text {
+  font-size: 0.98rem;
+  color: #555;
+  
+}
+.embed_videos_section .ratio {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.embed_taital{
+    text-align:center; 
+    font-size:40px; 
+    font-weight:700; 
+    margin-bottom:1rem; 
+    color:#222;
+}
+
+.galeria-img {
+      width: 150%;
+      height: 700px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+}
+
+.galeria-img:hover {
+      transform: scale(1.03);
+   }
+
+.mb-4 {
+      margin-bottom: 1.5rem;
+   }
+   
+
+
+
+
+

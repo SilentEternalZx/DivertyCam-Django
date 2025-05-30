@@ -36,5 +36,9 @@ class EventoAdmin(admin.ModelAdmin):
     def get_servicios_display_admin(self, obj):
         return ", ".join([str(s) for s in obj.get_servicios_display()])
     get_servicios_display_admin.short_description = 'Servicios'
+admin.site.register(Invitado)
+admin.site.register(Fotografia)
+
+
 
 

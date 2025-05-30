@@ -22,17 +22,40 @@ class CustomPasswordResetForm(PasswordResetForm):
         return email
     
 class ClienteForm(forms.ModelForm):
-    class Meta:
+       
+       class Meta:
         model = Cliente
         fields = ['nombre','apellido', 'cedula', 'fechaNacimiento', 
-                  'direccion', 'correo', 'telefono', 'usuario']
+                  'direccion',  'telefono', 'usuario']
         widgets = {
-            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'apellido'}),
+            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'fechaNacimiento'}),
             
             
             
         }
-    def clean_fechaNacimiento(self):
+        
+        #Función para filtrar que la lista de usuarios no sea un superusuario o no ese usuario no pertenezca ya a un cliente
+        
+       def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        clientes = Cliente.objects.values_list('usuario_id', flat=True)
+        # Si estás editando, permite el usuario ya asignado
+        if self.instance.pk and self.instance.usuario:
+            self.fields['usuario'].queryset = (
+                User.objects
+                .filter(is_superuser=False)
+                .exclude(id__in=clientes)
+                .union(User.objects.filter(pk=self.instance.usuario.pk))
+            )
+        else:
+            self.fields['usuario'].queryset = (
+                User.objects
+                .filter(is_superuser=False)
+                .exclude(id__in=clientes)
+            )
+        
+    
+       def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
         
         if fechaNacimiento:
@@ -51,7 +74,7 @@ class ClienteForm(forms.ModelForm):
         
         
         
-    def clean_cedula(self):
+       def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
         # Validaciones adicionales de cédula si es necesario
         if not cedula.isdigit():
@@ -60,21 +83,9 @@ class ClienteForm(forms.ModelForm):
             raise forms.ValidationError("La cédula debe tener entre 6 y 10 dígitos.")
         return cedula
         
-    def clean_correo(self):
-        correo = self.cleaned_data.get('correo')
-        # Validaciones adicionales de correo si es necesario
-        return correo
+      
 
 
-class FotografiaForm(forms.ModelForm):
-    class Meta:
-        model = Fotografia
-        fields = ['img', 'descripcion', 'invitado']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['img'].required = True
-        
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput(),
@@ -185,11 +196,15 @@ class EventoForm(forms.ModelForm):
                     'type': 'datetime-local'
                 }
             ),
-            'servicios': forms.CheckboxSelectMultiple(),
+           
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+          # Elimina cualquier clase previa que pudiera venir de la definición del campo
+        if 'class' in self.fields['servicios'].widget.attrs:
+            del self.fields['servicios'].widget.attrs['class']
         
         # Asegurarse de que todos los campos sean requeridos
         for field in self.fields.values():
@@ -418,60 +433,28 @@ class CollageTemplateForm(forms.ModelForm):
         
   
   
-  
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
 
     
     
   #Formulario Django para añadir fotografía      
 class AñadirFotoForm(forms.Form):
-    img = forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}), label="Imagen")
-    descripcion = forms.CharField(
-        widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),
-        label="Descripción",
-        min_length=5,
-        max_length=34,
-        required=True
-    )
-    evento = forms.ModelChoiceField(
-        queryset=Evento.objects.all(),
-        label="Evento",
-        required=True
-    )
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['evento'].label_from_instance = lambda obj: f"{obj.nombre} - {obj.fecha_hora.strftime('%d/%m/%Y %H:%M')}"
-    
-    def clean_img(self):
-        img = self.cleaned_data.get('img')
-        if img:
-            # Validar tipo de archivo
-            if not img.content_type in ['image/jpeg', 'image/png']:
-                raise forms.ValidationError('Solo se permiten imágenes JPEG o PNG.')
-            # Validar tamaño (máx 5MB)
-            if img.size > 5*1024*1024:
-                raise forms.ValidationError('La imagen no puede superar los 5MB.')
-        return img
-
-    def clean_evento(self):
-        evento = self.cleaned_data.get('evento')
-        if evento and evento.fecha_hora < timezone.now():
-            raise forms.ValidationError('No puedes asociar la foto a un evento pasado.')
-        return evento
-
-class EventoAdminForm(forms.ModelForm):
-    class Meta:
-        model = Evento
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['categoria'].required = True
-
-    def clean_categoria(self):
-        categoria = self.cleaned_data.get('categoria')
-        if categoria is None:
-            raise forms.ValidationError('Debes seleccionar una categoría para el evento.')
-        return categoria
-
+    img=MultipleFileField(label='Select files', required=False)
+    descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
+    invitado=forms.ModelMultipleChoiceField(queryset=Invitado.objects.all(), widget=forms.CheckboxSelectMultiple)
 
 

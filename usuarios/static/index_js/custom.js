@@ -55,12 +55,9 @@ $(function () {
 		cursorcolor:"#9b9b9c",
 	});	
 	
-	/* NiceSelect
-	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */
+
 	
-	$(document).ready(function() {
-		$('select').niceSelect();
-	});	
+
 		
 	/* OwlCarousel - Blog Post slider
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- */

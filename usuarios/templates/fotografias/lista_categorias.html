@@ -1,10 +1,17 @@
 {% extends "layout/layout.html" %}
 
-{% block content %}
+{% block body %}
+{% include 'partials/navbar.html' %}
 {% if request.user.is_authenticated and request.user.is_superuser %}
 
 
 {% if request.user.is_authenticated and request.user.is_superuser %}
+
+<style>
+    body{
+        padding-top: 90px;
+    }
+</style>
 <div class="container mt-4">
     <h2 class="mb-4">Lista de Categorías</h2>
     

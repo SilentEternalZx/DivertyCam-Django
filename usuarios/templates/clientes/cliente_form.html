@@ -1,67 +1,82 @@
-{# templates/clientes/cliente_form.html #}
-
 {% extends 'clientes/base.html' %}
 {% load widget_tweaks %}
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente{% endblock %}
 
-{% block content %}
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'clientes/css/clientes-form.css' %}">
+{% endblock %}
 
-<div class="main-content">
-    <div class="card form-container">
-        <div class="card-header">
-            <h2>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Cliente</h2>
+{% block body %}
+{% include 'partials/navbar.html' %}
+
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light animate__animated animate__fadeIn">
+  <div class="main-content w-100" style="max-width: 600px;">
+    <div class="card shadow-lg border-0 cliente-card-efecto">
+      <div class="card-header cliente-form-header justify-content-center">
+        <div class="header-center-content">
+          <span class="cliente-form-icon">
+            <i class="fa-solid fa-user"></i>
+          </span>
+          <h2 class="section-title mb-0 animate__animated animate__fadeInDown" id="cliente-form-text">
+            {% if form.instance.pk %}Editar Cliente{% else %}Nuevo Cliente{% endif %}
+          </h2>
         </div>
-        <div class="card-body">
-            <form method="post" novalidate>
-            {% csrf_token %}
-
-                       
-            <div class="row">
-            {% for field in form %}
-            <div class="col-md-6 mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field.errors }}
-                {{ field|add_class:"form-control" }}
-                {% if field.help_text %}
-                <div class="form-text">{{ field.help_text }}</div>
-                {% endif %}
+      </div>
+      <div class="card-body px-4 py-4 bg-white">
+        <form method="post" novalidate autocomplete="off" id="form">
+          {% csrf_token %}
+          <div class="row g-3 justify-content-center">
+            {% for field in form.visible_fields %}
+            <div class="col-12 col-md-6 campo-animado" style="--anim-delay: {{ forloop.counter0|add:"1" }}00ms;">
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-secondary text-center w-100">
+                {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ field|add_class:"form-control form-control-lg text-center" }}
+              {% if field.errors %}
+                <div class="invalid-feedback d-block animate__animated animate__shakeX animate__fast">
+                  {{ field.errors|striptags }}
+                </div>
+              {% endif %}
+              {% if field.help_text %}
+                <div class="form-text text-secondary text-center w-100">{{ field.help_text }}</div>
+              {% endif %}
             </div>
             {% endfor %}
-        </div>
-            
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                
-                <a href="{% url 'cliente_list' %}" class="btn btn-secondary">Cancelar</a>
-            </div>
-
-            </form>
-        
+          </div>
+          <div class="d-flex justify-content-center gap-2 mt-4 action-buttons">
+            <button type="submit" class="btn btn-primary shadow-sm guardar-btn-efecto" id="guardar-btn">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar
+            </button>
+            <a href="{% url 'cliente_list' %}" class="btn btn-blanco shadow-sm">
+              <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </a>
+          </div>
         </form>
-
+      </div>
     </div>
+  </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
+<script src="{% static 'js/formulario.js' %}"></script>
 <script>
-
-function calcularEdad(fecha_nacimiento) {
-    let hoy = new Date();
-    let cumpleanos = new Date(fecha_nacimiento);
-    let edad = hoy.getFullYear() - cumpleanos.getFullYear();
-    let m = hoy.getMonth() - cumpleanos.getMonth();
-    if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
-        edad--;
+document.addEventListener('DOMContentLoaded', function() {
+   
+   
+    // Icon bounce infinito
+    const icon = document.querySelector('.cliente-form-icon');
+    if(icon){
+      icon.classList.add('icon-bounce');
     }
-    return edad;
-}
-
-let edad = calcularEdad("2007/08/10");
-if(edad >= 18){
-    console.log(`Eres mayor de edad, tienes ${edad}`);
-}else{
-    console.log(`Eres menor de edad, tienes ${edad}`);
-}
-
+    // Campos animados en cascada
+    const campos = document.querySelectorAll('.campo-animado');
+    campos.forEach((campo, idx) => {
+      setTimeout(() => campo.classList.add('mostrar-campo'), 120 * idx);
+    });
+   
+});
 </script>
 {% endblock %}

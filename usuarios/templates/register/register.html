@@ -1,19 +1,22 @@
+{% extends 'layout/layout.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registro</title>
-    <link rel="stylesheet" href="{% static 'login/css/login.css' %}" />
-  </head>
-  <body>
-    <div class="container">
-      <div class="container-form">
-        <div class="comeback-button">
-          <a href="{% url 'index' %}">Ir a inicio</a>
-        </div>
+{% block title %}
+Registro de usuario
+{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'login/css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-main">
+    <div class="login-container">
+        <!-- Lado izquierdo: formulario de registro -->
+        <div class="login-form-side">
+            <div class="comeback-button">
+                <a href="{% url 'index' %}">← Ir a inicio</a>
+            </div>
 
         <!-- 📌 Contenedor de errores en la parte superior -->
         <div id="error-container"></div>
@@ -28,85 +31,57 @@
         </div>
         {% endif %}
 
-        <!-- 📌 Formulario -->
-        <form
-          class="sign-up"
-          action="{% url 'register' %}"
-          method="post"
-          onsubmit="return validar_formulario()">
-          {% csrf_token %}
 
-          <h2>Registrarse</h2>
-          <span>Complete los campos para crear su cuenta</span>
+            <form class="login-form" action="{% url 'register' %}" method="post" autocomplete="on" onsubmit="return validar_formulario()">
+                {% csrf_token %}
+                <h1 class="login-title">Crear cuenta</h1>
+                <p class="login-desc">Completa los campos para registrarte</p>
 
-          <!-- Usuario -->
-          <div class="container-input">
-            <ion-icon name="person-outline"></ion-icon>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              placeholder="Nombre de usuario"
-              onkeyup="verificar_username()" />
-          </div>
+                {% if messages %}
+                    <div class="login-messages">
+                        {% for message in messages %}
+                            <p class="{% if message.tags == 'error' %}msg-error{% elif message.tags == 'success' %}msg-success{% else %}msg-info{% endif %}">
+                                {{ message }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-          <!-- Correo -->
-          <div class="container-input">
-            <ion-icon name="mail-outline"></ion-icon>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="Correo electrónico"
-              onkeyup="verificar_email()" />
-          </div>
-
-          <!-- Contraseña -->
-          <div class="container-input">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-            <input
-              type="password"
-              id="password1"
-              name="password1"
-              placeholder="Contraseña"
-              onkeyup="verificar_password()" />
-          </div>
-
-          <!-- Confirmar Contraseña -->
-          <div class="container-input">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-            <input
-              type="password"
-              id="password2"
-              name="password2"
-              placeholder="Confirmar contraseña"
-              onkeyup="verificar_password()" />
-          </div>
-
-          <div class="button-input">
-            <button type="submit">Registrarse</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- 📌 Mensaje de bienvenida -->
-      <div class="container">
-        <div class="container-shape">
-          <div class="shape-content">
-            <h3>¡Bienvenido!</h3>
-            <p>Regístrate para acceder al sitio</p>
-          </div>
+                <div class="input-group">
+                    <ion-icon name="person-outline"></ion-icon>
+                    <input type="text" id="username" name="username" placeholder="Nombre de usuario" required autofocus onkeyup="verificar_username()">
+                </div>
+                <div class="input-group">
+                    <ion-icon name="mail-outline"></ion-icon>
+                    <input type="email" id="email" name="email" placeholder="Correo electrónico" required onkeyup="verificar_email()">
+                </div>
+                <div class="input-group">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                    <input type="password" id="password1" name="password1" placeholder="Contraseña" required autocomplete="new-password"  onkeyup="verificar_password()">
+                </div>
+                <div class="input-group">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                    <input type="password" id="password2" name="password2" placeholder="Confirmar contraseña" required autocomplete="new-password"  onkeyup="verificar_password()">
+                </div>
+                <div class="login-links">
+                    <a href="{% url 'login' %}">¿Ya tienes una cuenta? Inicia sesión</a>
+                </div>
+                <button class="login-btn" type="submit">Registrarme</button>
+            </form>
         </div>
-      </div>
+        <!-- Lado derecho: mensaje de bienvenida -->
+        <div class="login-shape-side">
+            <div class="shape-content">
+                <h2>¡Bienvenido!</h2>
+                <p>Crea tu cuenta para comenzar a disfrutar de todas las funcionalidades del sitio.</p>
+            </div>
+        </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- 📌 Scripts -->
-    <script
-      type="module"
-      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script
-      nomodule
-      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="{% static 'js/validaciones_register.js' %}?v=18"></script>
-  </body>
-</html>
+{% block extra_scripts %}
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <script src="{% static 'js/validaciones_register.js' %}?v=3"></script>
+{% endblock %}

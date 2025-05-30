@@ -10,7 +10,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
 from django.forms.widgets import ClearableFileInput
-
+from django.core.validators import MinLengthValidator
 # Modelo de Usuario personalizado
 class User(AbstractUser):
    pass
@@ -18,6 +18,8 @@ class User(AbstractUser):
 
 class CustomGroup(Group):
     pass
+
+
 
 
 #Modelo de invitado
@@ -28,23 +30,32 @@ class Invitado(models.Model):
     def __str__(self):
         return f'{self.nombre} {self.telefono}'
     
+    
+
+    
 #Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
         max_length=50, 
         verbose_name=_("Nombre"),
+        validators=[MinLengthValidator(3, 'El nombre debe ser de al menos 2 caracteres')]
         
        
     )
     
+    
+    
     usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)
     
     apellido = models.CharField(
+        
         max_length=50,
         verbose_name=_("Apellido"),
        
      
     )
+    
+
     
     cedula = models.CharField(
         max_length=20,
@@ -635,7 +646,7 @@ class Fotografia(models.Model):
     
     img=models.ImageField(null=False, blank=False, upload_to="imagenes/")
     descripcion=models.TextField(max_length=34)
-    invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE, null=True)
+    invitado=models.ManyToManyField(Invitado, related_name="fotografias", null=True)
     evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
     
     def __str__(self):
