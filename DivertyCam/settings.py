@@ -37,8 +37,25 @@ FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO59aAEDXxzxYqXAfdVpOQFOLRw16EjMQJIRUUXVd1
 FACEBOOK_PAGE_ID = "612248578630248"
 
 
+# Permitir credenciales
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Métodos permitidos
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+
 
 
 
@@ -48,6 +65,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 INSTALLED_APPS = [
     'usuarios',
     'jazzmin',
+    'corsheaders',
     'multiselectfield',
     'widget_tweaks',
     'requests',
@@ -60,11 +78,13 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     
+    
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -220,3 +240,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Aumentar el límite de tamaño para cargas de datos (20MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
+
+# También ajustar el tamaño máximo de archivos si es necesario
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
