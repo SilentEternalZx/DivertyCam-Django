@@ -643,14 +643,14 @@ class CollageResult(models.Model):
         verbose_name_plural = "Resultados de Collage"
 #Modelo de fotografia
 class Fotografia(models.Model):
-    
-    img=models.ImageField(null=False, blank=False, upload_to="imagenes/")
-    descripcion=models.TextField(max_length=34)
-    invitado=models.ManyToManyField(Invitado, related_name="fotografias", null=True)
-    evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
-    
+    img = models.ImageField(null=False, blank=False, upload_to="imagenes/")
+    descripcion = models.TextField(max_length=34)
+    invitados = models.ManyToManyField('Invitado', related_name="fotografias", blank=True)
+    evento = models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
+
     def __str__(self):
-        return f'{self.descripcion} {self.invitado}'
+        invitados_str = ", ".join([str(inv) for inv in self.invitados.all()])
+        return f'{self.descripcion} | Invitados: {invitados_str}'
 
 
 

@@ -22,7 +22,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
 from .models import Evento, PhotoboothConfig, CollageTemplate, CollageSession, SessionPhoto, CollageResult, Cliente
-from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
+from .forms import ClienteForm, RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
 import json
 import uuid
 import base64
@@ -318,25 +318,23 @@ def subir_foto(request):
     if not request.user.is_authenticated:
         return redirect("login")
     if request.method == "POST":
-        form = FotografiaForm(request.POST, request.FILES)
+        form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
-            foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
-            foto.usuario = request.user  # 📌 Asigna el usuario autenticado
-
-            # 📌 Si el formulario no tiene evento, asignar un evento por defecto
+            foto = form.save(commit=False)
+            foto.usuario = request.user
             if not foto.evento:
-                foto.evento = Evento.objects.first()  # O elegir un evento válido
-
-            foto.save()  # 📌 Ahora sí guarda la foto
+                foto.evento = Evento.objects.first()
+            foto.save()
+            # Asociar los invitados seleccionados a la fotografía
+            invitados = form.cleaned_data.get('invitados')
+            if invitados:
+                foto.invitados.set(invitados)
             return redirect("lista_fotos")
         else:
             print("Errores en el formulario:", form.errors)
-
     else:
-        form = FotografiaForm()
-
+        form = AñadirFotoForm()
     return render(request, "fotografias/subir_foto.html", {"form": form})
-
 def listar_categorias(request):
     if not request.user.is_authenticated:
         return redirect("login")
