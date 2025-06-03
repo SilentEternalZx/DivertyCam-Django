@@ -2,6 +2,7 @@ import json
 from django import forms
 import json
 from .models import *
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Div
 from django.utils.translation import gettext_lazy as _
@@ -452,9 +453,22 @@ class MultipleFileField(forms.FileField):
     
     
   #Formulario Django para añadir fotografía      
-class AñadirFotoForm(forms.Form):
-    img=MultipleFileField(label='Select files', required=False)
+
+class AñadirFotoForm(forms.ModelForm):
+    class Meta:
+        model = Fotografia
+        fields = ['img', 'descripcion', 'invitados']
+        widgets = {
+            
+            'invitados': forms.CheckboxSelectMultiple(),
+        }
+    img = MultipleFileField(label='Seleccionar archivos', required=False)
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
-    invitado=forms.ModelMultipleChoiceField(queryset=Invitado.objects.all(), widget=forms.CheckboxSelectMultiple)
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['invitados'].queryset = Invitado.objects.all()
+        self.fields['invitados'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido}" if hasattr(obj, 'nombre') and hasattr(obj, 'apellido') else str(obj)
 
 

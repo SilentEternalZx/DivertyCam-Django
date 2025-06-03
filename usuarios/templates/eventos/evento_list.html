@@ -33,7 +33,6 @@
                 <button class="btn btn-buscar" type="submit">Buscar</button>
               </div>
             </div>
-            <!-- Puedes agregar aquí, si lo necesitas, un switch para mostrar finalizados, pero por ahora lo dejamos igual que clientes -->
           </div>
         </form>
 
@@ -47,6 +46,7 @@
                 <th>Fecha y Hora</th>
                 <th>Servicios</th>
                 <th>Acciones</th>
+             
               </tr>
             </thead>
             <tbody>
@@ -76,23 +76,17 @@
                     <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Editar">
                       <i class="fa-solid fa-pen"></i>
                     </a>
-                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-outline-negro"" title="Eliminar">
+                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Eliminar">
                       <i class="fa-solid fa-trash"></i>
                     </a>
                  
-                    <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-outline-negro"" title="Ver fotografías">
+                    <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver fotografías">
                       <i class="fa-solid fa-images"></i>
                     </a>
                   </div>
                 </td>
               </tr>
-              {% empty %}
-              <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="fa-solid fa-calendar-xmark fa-lg mb-2"></i><br>
-                  No hay eventos registrados.
-                </td>
-              </tr>
+             
               {% endfor %}
             </tbody>
           </table>

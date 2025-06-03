@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import*
 from django.contrib.auth import get_user_model
-from .forms import EventoAdminForm
+from .forms import *
 
 # ModelAdmin personalizado para User
 class UserAdmin(admin.ModelAdmin):
@@ -27,7 +27,7 @@ admin.site.register(Cliente)
 
 @admin.register(Evento)
 class EventoAdmin(admin.ModelAdmin):
-    form = EventoAdminForm
+    form = EventoForm
     list_display = ('nombre', 'fecha_hora', 'cliente', 'get_servicios_display_admin')
     list_filter = ('fecha_hora', 'servicios')
     search_fields = ('nombre', 'cliente__nombre', 'cliente__apellido', 'direccion')
@@ -36,8 +36,7 @@ class EventoAdmin(admin.ModelAdmin):
     def get_servicios_display_admin(self, obj):
         return ", ".join([str(s) for s in obj.get_servicios_display()])
     get_servicios_display_admin.short_description = 'Servicios'
-admin.site.register(Invitado)
-admin.site.register(Fotografia)
+
 
 
 

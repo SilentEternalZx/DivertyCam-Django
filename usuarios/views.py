@@ -22,7 +22,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
 from .models import Evento, PhotoboothConfig, CollageTemplate, CollageSession, SessionPhoto, CollageResult, Cliente
-from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
+from .forms import ClienteForm , RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
 import json
 import uuid
 import base64
@@ -318,7 +318,7 @@ def subir_foto(request):
     if not request.user.is_authenticated:
         return redirect("login")
     if request.method == "POST":
-        form = FotografiaForm(request.POST, request.FILES)
+        form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
             foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
             foto.usuario = request.user  # 📌 Asigna el usuario autenticado
@@ -333,16 +333,11 @@ def subir_foto(request):
             print("Errores en el formulario:", form.errors)
 
     else:
-        form = FotografiaForm()
+        form = AñadirFotoForm()
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
-def listar_categorias(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Vista que muestra todas las categorías de eventos."""
-    categorias = CategoriaEvento.objects.all()
-    return render(request, "fotografias/lista_categorias.html", {"categorias": categorias})
+
 
 def listar_eventos(request, categoria_id):
     if not request.user.is_authenticated:
@@ -1981,7 +1976,8 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
             
         else: #Retornar el formulario si no fue válido mostrando el error
             return render(request,"añadir_fotos/formulario.html",{
-                "form":form
+                "form":form,
+                "evento":evento
             })
         
     

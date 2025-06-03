@@ -30,7 +30,6 @@ urlpatterns = [
     path('<int:pk>/inactivar/', views.ClienteInactivarView.as_view(), name='cliente_inactivar'),
     path("subir_foto/", views.subir_foto, name="subir_foto"),
     path("fotos/", views.lista_fotos, name="lista_fotos"),
-    path("categorias/", views.listar_categorias, name="listar_categorias"),
     path("eventos/<int:categoria_id>/", views.listar_eventos, name="listar_eventos"),
     path("fotos/<int:evento_id>/", views.listar_fotos_evento, name="listar_fotos_evento"),
     path("publicar_album/<int:evento_id>/", views.publicar_album_facebook, name="publicar_album_facebook"),
