@@ -1,0 +1,21 @@
+
+# ===========================================
+# Configuración de ADB para WhatsApp System
+# ===========================================
+
+# Ruta a ADB (Android Debug Bridge)
+ADB_PATH = r'C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+
+# Configuración USB para transferencias
+USB_TRANSFER_CONFIG = {
+    'DEVICE_FOLDER': '/sdcard/photobooth/',
+    'TEMP_FOLDER': os.path.join(MEDIA_ROOT, 'temp_usb'),
+    'CONNECTION_TIMEOUT': 10,
+    'TRANSFER_TIMEOUT': 30,
+    'MAX_RETRIES': 3,
+}
+
+# Crear directorio temporal si no existe
+import os
+TEMP_USB_DIR = os.path.join(MEDIA_ROOT, 'temp_usb')
+os.makedirs(TEMP_USB_DIR, exist_ok=True)

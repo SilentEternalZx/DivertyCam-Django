@@ -1,4 +1,5 @@
 import json
+from time import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
@@ -247,20 +248,7 @@ class Configurar_Photobooth(models.Model):
         verbose_name="Resolución de cámara"
     )
     
-    BALANCE_BLANCOS_CHOICES = [
-        ('auto', 'Automático'),
-        ('cloudy', 'Nublado'),
-        ('sunny', 'Soleado'),
-        ('fluorescent', 'Fluorescente'),
-        ('incandescent', 'Incandescente'),
-    ]
-    
-    balance_blancos = models.CharField(
-        max_length=20, 
-        choices=BALANCE_BLANCOS_CHOICES, 
-        default='auto',
-        verbose_name="Balance de blancos"
-    )
+
     
     # Opciones para el collage de fotos
     max_fotos = models.IntegerField(default=4, choices=[(1, '1 foto'), (2, '2 fotos'), (4, '4 fotos'), (5, '5 fotos')])
@@ -367,21 +355,233 @@ class PhotoboothConfig(models.Model):
         help_text="Resolución para capturar las fotos"
     )
     
-    # Configuración de balance de blancos
-    BALANCE_BLANCOS_CHOICES = [
-        ('auto', 'Automático'),
-        ('cloudy', 'Nublado'),
-        ('sunny', 'Soleado'),
-        ('fluorescent', 'Fluorescente'),
-        ('incandescent', 'Incandescente'),
-    ]
+   
+
+        # NUEVOS CAMPOS para control de iluminación y cámara
+    nivel_iluminacion = models.IntegerField(
+        default=50,
+        validators=[
+            MinValueValidator(0, message="El nivel mínimo de iluminación es 0"),
+            MaxValueValidator(100, message="El nivel máximo de iluminación es 100")
+        ],
+        verbose_name="Nivel de iluminación (%)",
+        help_text="Ajuste de brillo/iluminación de 0 a 100"
+    )
     
-    balance_blancos = models.CharField(
-        max_length=20, 
-        choices=BALANCE_BLANCOS_CHOICES, 
-        default='auto',
-        verbose_name="Balance de blancos",
-        help_text="Ajuste del balance de blancos de la cámara"
+    # Tipo de cámara
+    CAMERA_TYPE_CHOICES = [
+    ('webcam', 'Cámara Web'),
+    ('nikon_dslr', 'Nikon DSLR/Mirrorless'),
+    ('usb_ptp', 'Cámara USB (PTP)'),  # NUEVA OPCIÓN
+    ('canon_dslr', 'Canon DSLR'),      # NUEVA OPCIÓN
+    ('sony_camera', 'Sony Camera'),     # NUEVA OPCIÓN
+    ('windows_camera', 'Cámara Windows (WIA/PTP)'),
+]
+        # Información de conexión USB
+    usb_vendor_id = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name="USB Vendor ID",
+        help_text="ID del fabricante USB (ej: 04b0 para Nikon)"
+    )
+    
+    usb_product_id = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name="USB Product ID", 
+        help_text="ID del producto USB específico"
+    )
+    
+    usb_serial_number = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Número de serie USB",
+        help_text="Número de serie de la cámara USB conectada"
+    )
+    
+    # Estado de conexión USB
+    usb_session_id = models.CharField(
+        max_length=36,
+        blank=True,
+        null=True,
+        verbose_name="ID de sesión USB",
+        help_text="Identificador único de la sesión USB activa"
+    )
+    
+    usb_connection_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('disconnected', 'Desconectada'),
+            ('connecting', 'Conectando'),
+            ('connected', 'Conectada'),
+            ('error', 'Error'),
+        ],
+        default='disconnected',
+        verbose_name="Estado de conexión USB"
+    )
+    
+    # Configuraciones avanzadas USB
+    usb_use_raw_mode = models.BooleanField(
+        default=False,
+        verbose_name="Usar modo RAW",
+        help_text="Capturar en formato RAW si está disponible"
+    )
+    
+    usb_auto_download = models.BooleanField(
+        default=True,
+        verbose_name="Descarga automática",
+        help_text="Descargar automáticamente las fotos después de capturar"
+    )
+    
+    usb_delete_after_download = models.BooleanField(
+        default=False,
+        verbose_name="Eliminar después de descargar",
+        help_text="Eliminar fotos de la cámara después de descargarlas"
+    )
+    
+    # Timeouts y configuraciones de conexión
+    usb_connection_timeout = models.IntegerField(
+        default=10,
+        verbose_name="Timeout de conexión (segundos)",
+        help_text="Tiempo máximo para establecer conexión USB"
+    )
+    
+    usb_capture_timeout = models.IntegerField(
+        default=30,
+        verbose_name="Timeout de captura (segundos)",
+        help_text="Tiempo máximo para completar una captura"
+    )
+    
+    # Log de actividad USB
+    usb_last_connected = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Última conexión USB"
+    )
+    
+    usb_last_error = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Último error USB"
+    )
+    
+    usb_total_captures = models.IntegerField(
+        default=0,
+        verbose_name="Total capturas USB",
+        help_text="Contador de fotos capturadas vía USB"
+    )
+    
+    def update_usb_connection_status(self, status, error_message=None):
+        """Actualiza el estado de conexión USB"""
+        self.usb_connection_status = status
+        if error_message:
+            self.usb_last_error = error_message
+        if status == 'connected':
+            self.usb_last_connected = timezone.now()
+        self.save()
+    
+    def increment_usb_captures(self):
+        """Incrementa el contador de capturas USB"""
+        self.usb_total_captures += 1
+        self.save()
+    
+    def get_usb_camera_info(self):
+        """Retorna información de la cámara USB conectada"""
+        if self.usb_vendor_id and self.usb_product_id:
+            return {
+                'vendor_id': self.usb_vendor_id,
+                'product_id': self.usb_product_id,
+                'serial_number': self.usb_serial_number,
+                'session_id': self.usb_session_id,
+                'status': self.usb_connection_status,
+                'last_connected': self.usb_last_connected,
+                'total_captures': self.usb_total_captures
+            }
+        return None
+
+    tipo_camara = models.CharField(
+        max_length=20,
+        choices=CAMERA_TYPE_CHOICES,
+        default='webcam',
+        verbose_name="Tipo de cámara",
+        help_text="Tipo de cámara a utilizar"
+    )
+    
+    # Información de la cámara Nikon conectada
+    nikon_camera_model = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Modelo de cámara Nikon",
+        help_text="Modelo detectado automáticamente"
+    )
+    
+    # Configuraciones DSLR
+    velocidad_obturacion = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        default='1/125',
+        verbose_name="Velocidad de obturación",
+        help_text="Ej: 1/125, 1/60, 1/30"
+    )
+    
+    apertura = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        default='f/5.6',
+        verbose_name="Apertura (f-stop)",
+        help_text="Ej: f/2.8, f/4, f/5.6"
+    )
+    
+    modo_disparo = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        default='M',
+        verbose_name="Modo de disparo",
+        choices=[
+            ('M', 'Manual'),
+            ('A', 'Prioridad de Apertura'),
+            ('S', 'Prioridad de Obturación'),
+            ('P', 'Programa'),
+        ]
+    )
+    
+    # Calidad de imagen
+    calidad_imagen = models.CharField(
+        max_length=20,
+        default='JPEG_FINE',
+        choices=[
+            ('RAW', 'RAW (NEF)'),
+            ('JPEG_FINE', 'JPEG Fine'),
+            ('JPEG_NORMAL', 'JPEG Normal'),
+            ('RAW_JPEG', 'RAW + JPEG'),
+        ],
+        verbose_name="Calidad de imagen"
+    )
+    
+    # Control de enfoque
+    modo_enfoque = models.CharField(
+        max_length=20,
+        default='AF-S',
+        choices=[
+            ('AF-S', 'AF Simple (AF-S)'),
+            ('AF-C', 'AF Continuo (AF-C)'),
+            ('MF', 'Manual (MF)'),
+        ],
+        verbose_name="Modo de enfoque"
+    )
+    
+    # Puerto del servidor qDslrDashboard
+    qdslr_server_port = models.IntegerField(
+        default=4757,
+        verbose_name="Puerto del servidor qDslrDashboard",
+        help_text="Puerto donde corre el servidor (default: 4757)"
     )
     
     # Configuración de ISO
@@ -525,6 +725,56 @@ class PhotoboothConfig(models.Model):
         self.total_impresiones += cantidad
         self.save()
 
+# Nuevo modelo para almacenar información detallada de cámaras USB
+class USBCameraInfo(models.Model):
+    """Modelo para almacenar información detallada de cámaras USB detectadas"""
+    
+    vendor_id = models.CharField(max_length=10, verbose_name="Vendor ID")
+    product_id = models.CharField(max_length=10, verbose_name="Product ID")
+    vendor_name = models.CharField(max_length=100, verbose_name="Fabricante")
+    product_name = models.CharField(max_length=100, verbose_name="Modelo")
+    serial_number = models.CharField(max_length=100, blank=True, null=True, verbose_name="Número de serie")
+    
+    # Capacidades detectadas
+    supports_ptp = models.BooleanField(default=False, verbose_name="Soporta PTP")
+    supports_liveview = models.BooleanField(default=False, verbose_name="Soporta LiveView")
+    supports_remote_capture = models.BooleanField(default=False, verbose_name="Soporta captura remota")
+    
+    # Configuraciones soportadas
+    supported_iso_values = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Valores ISO soportados"
+    )
+    supported_apertures = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Aperturas soportadas"
+    )
+    supported_shutter_speeds = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Velocidades de obturación soportadas"
+    )
+    
+    # Metadatos
+    first_detected = models.DateTimeField(auto_now_add=True, verbose_name="Primera detección")
+    last_seen = models.DateTimeField(auto_now=True, verbose_name="Última vez vista")
+    times_connected = models.IntegerField(default=0, verbose_name="Veces conectada")
+    
+    class Meta:
+        verbose_name = "Información de Cámara USB"
+        verbose_name_plural = "Información de Cámaras USB"
+        unique_together = ('vendor_id', 'product_id', 'serial_number')
+    
+    def __str__(self):
+        return f"{self.vendor_name} {self.product_name} ({self.vendor_id}:{self.product_id})"
+    
+    def increment_connection_count(self):
+        """Incrementa el contador de conexiones"""
+        self.times_connected += 1
+        self.save()
+
 class CollageTemplate(models.Model):
     """Modelo para almacenar plantillas de collage personalizadas"""
     template_id = models.CharField(max_length=36, primary_key=True)
@@ -581,15 +831,6 @@ class CollageSession(models.Model):
         verbose_name_plural = "Sesiones de Collage"
 
 
-# class PhotoboothSession(models.Model):
-#     """Modelo para representar una sesión de photobooth"""
-#     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='photobooth_sessions')
-#     template = models.ForeignKey(CollageTemplate, on_delete=models.SET_NULL, null=True, blank=True)
-#     session_id = models.CharField(max_length=50, unique=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-    
-#     def __str__(self):
-#         return f"Sesión {self.session_id} - {self.evento.nombre}"
 
 class SessionPhoto(models.Model):
     """Modelo para almacenar fotos tomadas durante una sesión"""
@@ -633,3 +874,166 @@ class Fotografia(models.Model):
     
     def __str__(self):
         return f'{self.descripcion} {self.invitado}'
+    
+# Agregar este modelo a tu models.py existente
+
+class WhatsAppTransfer(models.Model):
+    """Modelo para registrar transferencias de collages por WhatsApp"""
+    
+    STATUS_CHOICES = [
+        ('sent_to_device', 'Enviado al dispositivo'),
+        ('data_collected', 'Datos recopilados'),
+        ('whatsapp_sent', 'Enviado por WhatsApp'),
+        ('completed', 'Completado'),
+        ('failed', 'Fallido'),
+        ('cancelled', 'Cancelado'),
+    ]
+    
+    id = models.AutoField(primary_key=True)
+    session = models.ForeignKey(
+        CollageSession, 
+        on_delete=models.CASCADE, 
+        related_name='whatsapp_transfers'
+    )
+    collage_result = models.ForeignKey(
+        CollageResult, 
+        on_delete=models.CASCADE, 
+        related_name='whatsapp_transfers',
+        null=True,
+        blank=True
+    )
+    
+    # Datos del usuario recopilados
+    phone_number = models.CharField(
+        max_length=20, 
+        verbose_name="Número de teléfono",
+        help_text="Número de WhatsApp del usuario"
+    )
+    user_name = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        verbose_name="Nombre del usuario"
+    )
+    user_email = models.EmailField(
+        blank=True, 
+        null=True,
+        verbose_name="Email del usuario"
+    )
+    
+    # Estado y metadatos de la transferencia
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='sent_to_device',
+        verbose_name="Estado de la transferencia"
+    )
+    
+    transfer_timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Momento de la transferencia"
+    )
+    
+    completed_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        verbose_name="Completado en"
+    )
+    
+    # Metadatos adicionales
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Metadatos adicionales",
+        help_text="Información adicional sobre la transferencia"
+    )
+    
+    # Información del dispositivo usado
+    device_model = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        verbose_name="Modelo del dispositivo"
+    )
+    
+    device_id = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        verbose_name="ID del dispositivo"
+    )
+    
+    # Mensaje personalizado enviado
+    custom_message = models.TextField(
+        blank=True, 
+        null=True,
+        verbose_name="Mensaje personalizado",
+        help_text="Mensaje personalizado enviado con el collage"
+    )
+    
+    # Errores y logs
+    error_message = models.TextField(
+        blank=True, 
+        null=True,
+        verbose_name="Mensaje de error"
+    )
+    
+    retry_count = models.IntegerField(
+        default=0,
+        verbose_name="Intentos de reenvío"
+    )
+    
+    class Meta:
+        verbose_name = "Transferencia de WhatsApp"
+        verbose_name_plural = "Transferencias de WhatsApp"
+        ordering = ['-transfer_timestamp']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['transfer_timestamp']),
+            models.Index(fields=['session']),
+        ]
+    
+    def __str__(self):
+        return f"WhatsApp Transfer {self.id} - {self.session.session_id} - {self.status}"
+    
+    @property
+    def is_completed(self):
+        """Indica si la transferencia se completó exitosamente"""
+        return self.status in ['whatsapp_sent', 'completed']
+    
+    @property
+    def duration(self):
+        """Calcula la duración de la transferencia"""
+        if self.completed_at and self.transfer_timestamp:
+            return self.completed_at - self.transfer_timestamp
+        return None
+    
+    def mark_as_completed(self, custom_message=None):
+        """Marca la transferencia como completada"""
+        self.status = 'completed'
+        self.completed_at = timezone.now()
+        if custom_message:
+            self.custom_message = custom_message
+        self.save()
+    
+    def mark_as_failed(self, error_message):
+        """Marca la transferencia como fallida"""
+        self.status = 'failed'
+        self.error_message = error_message
+        self.retry_count += 1
+        self.save()
+    
+    def get_summary(self):
+        """Retorna un resumen de la transferencia"""
+        return {
+            'id': self.id,
+            'session_id': self.session.session_id,
+            'evento': self.session.evento.nombre,
+            'phone_number': self.phone_number,
+            'user_name': self.user_name,
+            'status': self.get_status_display(),
+            'transfer_timestamp': self.transfer_timestamp.isoformat(),
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'duration': str(self.duration) if self.duration else None,
+            'is_completed': self.is_completed,
+        }

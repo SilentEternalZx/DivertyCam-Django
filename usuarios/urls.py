@@ -3,11 +3,21 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import admin,views
-from .views import CustomPasswordResetView
+from .views import CustomPasswordResetView, capture_nikon_photo, configure_nikon_camera, connect_nikon_camera, detect_nikon_cameras, nikon_liveview_stream
 from .views import video_feed, index
 from .views import list_printers, print_document
+from django.urls import path, include
+from . import usb_camera_urls
+
+from . import windows_camera_urls
 
 
+try:
+    from .windows_camera_urls import windows_camera_patterns
+    CAMERA_URLS_AVAILABLE = True
+except ImportError:
+    CAMERA_URLS_AVAILABLE = False
+    windows_camera_patterns = []
 
 #Urls
 urlpatterns = [
@@ -87,7 +97,24 @@ urlpatterns = [
     path('list_printers/', views.list_printers, name='list_printers'),
     path('print_document/', views.print_document, name='print_document'),
     path('photobooth/save_collage/', views.save_collage, name='save_collage'),
+    # APIs para control de Nikon
+    path('api/nikon/detect/', detect_nikon_cameras, name='detect_nikon_cameras'),
+    path('api/nikon/connect/', connect_nikon_camera, name='connect_nikon_camera'),
+    path('api/nikon/configure/', configure_nikon_camera, name='configure_nikon_camera'),
+    path('api/nikon/capture/', capture_nikon_photo, name='capture_nikon_photo'),
+    path('api/nikon/liveview/', nikon_liveview_stream, name='nikon_liveview_stream'),
+    # URLs para cámaras USB
+    path('', include(usb_camera_urls.usb_camera_patterns)),
+    # URLs para cámaras Windows
+    path('', include(windows_camera_urls.windows_camera_patterns)),
+    # URLs para sistema de WhatsApp móvil
+    path('api/whatsapp/send-to-mobile/', views.send_to_mobile_device, name='send_to_mobile_device'),
+    path('api/whatsapp/transfer-status/', views.check_mobile_transfer_status, name='check_mobile_transfer_status'),
+    path('api/whatsapp/device-status/', views.get_device_status, name='get_device_status'),
+    path('api/whatsapp/save-data/', views.save_whatsapp_data, name='save_whatsapp_data'),
     
 ]
 
-
+# Añadir URLs de cámaras si están disponibles
+if CAMERA_URLS_AVAILABLE:
+    urlpatterns.extend(windows_camera_patterns)

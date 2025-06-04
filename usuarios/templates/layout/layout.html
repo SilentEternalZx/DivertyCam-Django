@@ -22,6 +22,7 @@
 
     <!-- Añadir html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="{% static 'js/usb_camera_integration.js' %}"></script>
    <style>
         /* Estilos generales para mejorar márgenes y espaciado */
     .content-wrapper {
@@ -83,7 +84,82 @@
     td .btn {
         margin-right: 3px;
     }
+    #usb-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.usb-camera-status {
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid;
+    font-size: 0.9rem;
+}
+
+.usb-camera-status.connected {
+    background-color: #d1edff;
+    border-color: #0084ff;
+    color: #0066cc;
+}
+
+.usb-camera-status.disconnected {
+    background-color: #f8f9fa;
+    border-color: #6c757d;
+    color: #495057;
+}
+
+#usb-activity-log {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+#usb-activity-log .mb-1 {
+    margin-bottom: 0.25rem !important;
+}
+
+.form-label-sm {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.form-select-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Efectos de transición */
+#usb-section {
+    transition: all 0.3s ease-in-out;
+}
+
+.camera-type-section {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #usb-section .row > .col-md-6 {
+        margin-bottom: 1rem;
+    }
     
+    #usb-activity-log {
+        height: 100px !important;
+    }
+}
    
 
     </style>
@@ -100,7 +176,7 @@
 </div>
 {% endif %}
 <body>
-{% include "partials/navbar.html" %}
+{% include "partials/navbar.html" %} 
 
 {%block content %}
     

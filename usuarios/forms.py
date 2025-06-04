@@ -131,162 +131,415 @@ class EventoForm(forms.ModelForm):
         self.fields['cliente'].queryset = Cliente.objects.all()
         self.fields['cliente'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido}"
 
-class Configurar_PhotoboothForm(forms.ModelForm):
-    class Meta:
-        model = Configurar_Photobooth
-        fields = ['mensaje_bienvenida', 'imagen_fondo', 'color_texto', 'tamano_texto', 
-                  'tipo_letra', 'resolucion_camara', 'balance_blancos']
-        widgets = {
-            'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
-            'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
-            'color_texto': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
-            'tamano_texto': forms.NumberInput(attrs={'class': 'form-control', 'min': '12', 'max': '72'}),
-            'tipo_letra': forms.Select(attrs={'class': 'form-select'}, choices=(
-                ('Arial', 'Arial'),
-                ('Times New Roman', 'Times New Roman'),
-                ('Courier New', 'Courier New'),
-                ('Georgia', 'Georgia'),
-                ('Verdana', 'Verdana'),
-                ('Open Sans', 'Open Sans')
-            )),
-            'resolucion_camara': forms.Select(attrs={'class': 'form-select', 'id': 'camera-resolution'}),
-            'balance_blancos': forms.Select(attrs={'class': 'form-select', 'id': 'white-balance'}),
-            'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'})
-        }
+# class Configurar_PhotoboothForm(forms.ModelForm):
+#     class Meta:
+#         model = Configurar_Photobooth
+#         fields = ['mensaje_bienvenida', 'imagen_fondo', 'color_texto', 'tamano_texto', 
+#                   'tipo_letra', 'resolucion_camara',]
+#         widgets = {
+#             'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
+#             'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
+#             'color_texto': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
+#             'tamano_texto': forms.NumberInput(attrs={'class': 'form-control', 'min': '12', 'max': '72'}),
+#             'tipo_letra': forms.Select(attrs={'class': 'form-select'}, choices=[
+#                 ('Arial', 'Arial'),
+#                 ('Times New Roman', 'Times New Roman'),
+#                 ('Courier New', 'Courier New'),
+#                 ('Georgia', 'Georgia'),
+#                 ('Verdana', 'Verdana'),
+#                 ('Open Sans', 'Open Sans')
+#             ]),
+#             'resolucion_camara': forms.Select(attrs={'class': 'form-select', 'id': 'camera-resolution'}),
+#             'balance_blancos': forms.Select(attrs={'class': 'form-select', 'id': 'white-balance'}),
+#             'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'})
+#         }
+
+# Actualizaciones para forms.py - PhotoboothConfigForm
 
 class PhotoboothConfigForm(forms.ModelForm):
-    """Formulario para configurar el photobooth"""
+    """Formulario actualizado para configurar el photobooth con soporte USB"""
+    
     class Meta:
         model = PhotoboothConfig
         fields = [
-            # Campos básicos
+            # Campos básicos existentes
             'mensaje_bienvenida', 
             'imagen_fondo', 
             'color_texto', 
             'tamano_texto', 
             'tipo_letra',
             'plantilla_collage',
-            # Nuevos campos de tiempo
+            
+            # Campos de tiempo existentes
             'tiempo_entre_fotos',
             'tiempo_cuenta_regresiva',
             'tiempo_visualizacion_foto',
-            # Configuración de cámara
+            
+            # Campos de cámara existentes
+            'nivel_iluminacion',
+            'tipo_camara',
             'camera_id',
             'resolucion_camara',
-            'balance_blancos',
             'iso_valor',
-            # Configuración de impresora
+            
+            # NUEVOS CAMPOS USB
+            'usb_vendor_id',
+            'usb_product_id', 
+            'usb_serial_number',
+            'usb_use_raw_mode',
+            'usb_auto_download',
+            'usb_delete_after_download',
+            'usb_connection_timeout',
+            'usb_capture_timeout',
+            
+            # Campos DSLR existentes
+            'velocidad_obturacion',
+            'apertura',
+            'modo_disparo',
+            'calidad_imagen',
+            'modo_enfoque',
+            
+            # Campos de impresora existentes
             'printer_name',
             'paper_size',
             'copias_impresion',
             'calidad_impresion',
             'imprimir_automaticamente',
         ]
+        
         widgets = {
-            # Widgets para campos existentes
+            # Widgets existentes...
             'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
             'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
             'color_texto': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'tamano_texto': forms.NumberInput(attrs={'class': 'form-control', 'min': '12', 'max': '72'}),
             'tipo_letra': forms.Select(attrs={'class': 'form-select'}, choices=[
                 ('Arial', 'Arial'),
-                ('Helvetica', 'Helvetica'),
                 ('Times New Roman', 'Times New Roman'),
                 ('Courier New', 'Courier New'),
+                ('Georgia', 'Georgia'),
                 ('Verdana', 'Verdana'),
-                ('Open Sans', 'Open Sans'),
-                ('Roboto', 'Roboto'),
-                ('Montserrat', 'Montserrat'),
+                ('Open Sans', 'Open Sans')
             ]),
             'plantilla_collage': forms.Select(attrs={'class': 'form-select'}),
             
-            # Widgets para nuevos campos de tiempo
+            # Widgets para campos de tiempo
             'tiempo_entre_fotos': forms.NumberInput(attrs={
                 'class': 'form-control', 
                 'min': '1', 
-                'max': '20', 
-                'id': 'tiempo-entre-fotos'
+                'max': '20'
             }),
             'tiempo_cuenta_regresiva': forms.NumberInput(attrs={
                 'class': 'form-control', 
                 'min': '1', 
-                'max': '10', 
-                'id': 'tiempo-cuenta-regresiva'
+                'max': '10'
             }),
             'tiempo_visualizacion_foto': forms.NumberInput(attrs={
                 'class': 'form-control', 
                 'min': '1', 
-                'max': '10', 
-                'id': 'tiempo-visualizacion-foto'
+                'max': '10'
             }),
             
-            # Widgets para configuración de cámara
+            # Widgets para cámara
+            'nivel_iluminacion': forms.NumberInput(attrs={
+                'type': 'range',
+                'class': 'form-range',
+                'min': '0',
+                'max': '100',
+                'step': '5'
+            }),
+            'tipo_camara': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'tipo-camara',
+                'onchange': 'updateCameraTypeSection()'
+            }),
             'camera_id': forms.HiddenInput(attrs={'id': 'selected-camera-id'}),
-            'resolucion_camara': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'camera-resolution'
-            }),
-            'balance_blancos': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'white-balance'
-            }),
+            'resolucion_camara': forms.Select(attrs={'class': 'form-select'}),
             'iso_valor': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': '100',
-                'max': '3200',
-                'id': 'iso-valor'
+                'max': '3200'
             }),
             
-            # Widgets para configuración de impresora
-            'printer_name': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'printer-select'
+            # NUEVOS WIDGETS USB
+            'usb_vendor_id': forms.TextInput(attrs={
+                'class': 'form-control',
+                'readonly': True,
+                'placeholder': 'Se detecta automáticamente'
             }),
-            'paper_size': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'paper-size'
+            'usb_product_id': forms.TextInput(attrs={
+                'class': 'form-control',
+                'readonly': True,
+                'placeholder': 'Se detecta automáticamente'
             }),
+            'usb_serial_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'readonly': True,
+                'placeholder': 'Se detecta automáticamente'
+            }),
+            'usb_use_raw_mode': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'usb-raw-mode'
+            }),
+            'usb_auto_download': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'usb-auto-download'
+            }),
+            'usb_delete_after_download': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'usb-delete-after-download'
+            }),
+            'usb_connection_timeout': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '5',
+                'max': '60',
+                'step': '5'
+            }),
+            'usb_capture_timeout': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '10',
+                'max': '120',
+                'step': '5'
+            }),
+            
+            # Widgets DSLR existentes
+            'velocidad_obturacion': forms.Select(attrs={'class': 'form-select'}),
+            'apertura': forms.Select(attrs={'class': 'form-select'}),
+            'modo_disparo': forms.Select(attrs={'class': 'form-select'}),
+            'calidad_imagen': forms.Select(attrs={'class': 'form-select'}),
+            'modo_enfoque': forms.Select(attrs={'class': 'form-select'}),
+            
+            # Widgets impresora existentes
+            'printer_name': forms.Select(attrs={'class': 'form-select'}),
+            'paper_size': forms.Select(attrs={'class': 'form-select'}),
             'copias_impresion': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': '1',
-                'max': '10',
-                'id': 'copias-impresion'
+                'max': '10'
             }),
-            'calidad_impresion': forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'calidad-impresion'
-            }),
-            'imprimir_automaticamente': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
-                'id': 'imprimir-automaticamente'
-            }),
+            'calidad_impresion': forms.Select(attrs={'class': 'form-select'}),
+            'imprimir_automaticamente': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         evento = kwargs.pop('evento', None)
         super().__init__(*args, **kwargs)
 
-        # Filtrar plantillas por evento si se proporciona
+        # Configurar plantillas por evento
         if evento:
             self.fields['plantilla_collage'].queryset = CollageTemplate.objects.filter(evento=evento)
         else:
             self.fields['plantilla_collage'].queryset = CollageTemplate.objects.all()
         
-        # Añadir opción vacía para el selector de plantillas
         self.fields['plantilla_collage'].empty_label = "-- Seleccionar plantilla --"
         
-        # Para la selección de impresora, necesitamos obtener la lista de impresoras
-        # Este valor se llenará con JavaScript cuando se cargue la página
+        # Configurar opciones del tipo de cámara
+        self.fields['tipo_camara'].choices = [
+            ('webcam', 'Cámara Web'),
+            ('nikon_dslr', 'Nikon DSLR/Mirrorless'),
+            ('usb_ptp', 'Cámara USB (PTP)'),
+            ('canon_dslr', 'Canon DSLR'),
+            ('sony_camera', 'Sony Camera'),
+        ]
+        
+        # Configurar lista de impresoras (se llenará con JavaScript)
         self.fields['printer_name'].choices = [('', '-- Seleccionar impresora --')]
         
-        # Poner campos en grupos lógicos para una mejor organización en la plantilla
+        # Organizar campos en grupos lógicos
         self.field_groups = {
-            'basicos': ['mensaje_bienvenida', 'imagen_fondo', 'color_texto', 'tamano_texto', 'tipo_letra'],
+            'basicos': [
+                'mensaje_bienvenida', 'imagen_fondo', 'color_texto', 
+                'tamano_texto', 'tipo_letra'
+            ],
             'plantilla': ['plantilla_collage'],
-            'tiempos': ['tiempo_entre_fotos', 'tiempo_cuenta_regresiva', 'tiempo_visualizacion_foto'],
-            'camara': ['camera_id', 'resolucion_camara', 'balance_blancos', 'iso_valor'],
-            'impresora': ['printer_name', 'paper_size', 'copias_impresion', 'calidad_impresion', 'imprimir_automaticamente'],
+            'tiempos': [
+                'tiempo_entre_fotos', 'tiempo_cuenta_regresiva', 
+                'tiempo_visualizacion_foto'
+            ],
+            'camara_basica': [
+                'tipo_camara', 'camera_id', 'resolucion_camara', 
+                'nivel_iluminacion', 'iso_valor'
+            ],
+            'usb_config': [
+                'usb_vendor_id', 'usb_product_id', 'usb_serial_number',
+                'usb_use_raw_mode', 'usb_auto_download', 'usb_delete_after_download',
+                'usb_connection_timeout', 'usb_capture_timeout'
+            ],
+            'dslr_config': [
+                'velocidad_obturacion', 'apertura', 'modo_disparo', 
+                'calidad_imagen', 'modo_enfoque'
+            ],
+            'impresora': [
+                'printer_name', 'paper_size', 'copias_impresion', 
+                'calidad_impresion', 'imprimir_automaticamente'
+            ],
         }
+        
+        # Añadir clases CSS condicionales
+        self._add_conditional_classes()
+    
+    def _add_conditional_classes(self):
+        """Añade clases CSS condicionales según el tipo de cámara"""
+        # Los campos USB solo son visibles cuando tipo_camara es usb_ptp, canon_dslr o sony_camera
+        usb_fields = [
+            'usb_vendor_id', 'usb_product_id', 'usb_serial_number',
+            'usb_use_raw_mode', 'usb_auto_download', 'usb_delete_after_download',
+            'usb_connection_timeout', 'usb_capture_timeout'
+        ]
+        
+        for field_name in usb_fields:
+            if field_name in self.fields:
+                widget_attrs = self.fields[field_name].widget.attrs
+                widget_attrs['data-camera-types'] = 'usb_ptp,canon_dslr,sony_camera'
+                widget_attrs['style'] = 'display: none;'  # Oculto por defecto
+    
+    def clean(self):
+        """Validación personalizada del formulario"""
+        cleaned_data = super().clean()
+        tipo_camara = cleaned_data.get('tipo_camara')
+        
+        # Validaciones específicas para cámaras USB
+        if tipo_camara in ['usb_ptp', 'canon_dslr', 'sony_camera']:
+            connection_timeout = cleaned_data.get('usb_connection_timeout')
+            capture_timeout = cleaned_data.get('usb_capture_timeout')
+            
+            if connection_timeout and capture_timeout:
+                if connection_timeout >= capture_timeout:
+                    raise forms.ValidationError(
+                        "El timeout de captura debe ser mayor al timeout de conexión"
+                    )
+        
+        # Validación de configuración DSLR
+        if tipo_camara in ['nikon_dslr', 'canon_dslr']:
+            required_dslr_fields = ['velocidad_obturacion', 'apertura', 'modo_disparo']
+            for field in required_dslr_fields:
+                if not cleaned_data.get(field):
+                    self.add_error(field, f"Este campo es requerido para cámaras DSLR")
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        """Guardado personalizado del formulario"""
+        instance = super().save(commit=False)
+        
+        # Lógica especial para cámaras USB
+        if instance.tipo_camara in ['usb_ptp', 'canon_dslr', 'sony_camera']:
+            # Si no hay información USB y el tipo es USB, limpiar campos
+            if not instance.usb_vendor_id and not instance.usb_product_id:
+                instance.usb_connection_status = 'disconnected'
+        
+        if commit:
+            instance.save()
+        
+        return instance
+
+# Formulario adicional para selección rápida de cámara USB
+class USBCameraSelectionForm(forms.Form):
+    """Formulario para selección rápida de cámara USB detectada"""
+    
+    camera_selection = forms.ChoiceField(
+        choices=[],
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label="Seleccionar cámara USB",
+        required=True
+    )
+    
+    auto_connect = forms.BooleanField(
+        initial=True,
+        required=False,
+        label="Conectar automáticamente",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
+    def __init__(self, available_cameras=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if available_cameras:
+            choices = []
+            for camera in available_cameras:
+                camera_id = f"{camera['vendor_id']:04x}:{camera['product_id']:04x}"
+                camera_label = f"{camera['model']}"
+                if camera.get('serial_number'):
+                    camera_label += f" (S/N: {camera['serial_number']})"
+                choices.append((camera_id, camera_label))
+            
+            self.fields['camera_selection'].choices = choices
+        else:
+            self.fields['camera_selection'].choices = [
+                ('', 'No se detectaron cámaras USB')
+            ]
+            self.fields['camera_selection'].widget.attrs['disabled'] = True
+            self.fields['auto_connect'].widget.attrs['disabled'] = True
+
+# Formulario para configuración avanzada USB
+class USBCameraAdvancedForm(forms.Form):
+    """Formulario para configuración avanzada de cámaras USB"""
+    
+    capture_format = forms.ChoiceField(
+        choices=[
+            ('jpeg_fine', 'JPEG Fine'),
+            ('jpeg_normal', 'JPEG Normal'),
+            ('raw', 'RAW'),
+            ('raw_jpeg', 'RAW + JPEG'),
+        ],
+        initial='jpeg_fine',
+        label="Formato de captura",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    auto_focus_before_capture = forms.BooleanField(
+        initial=True,
+        required=False,
+        label="Enfoque automático antes de capturar",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
+    bracketing_enabled = forms.BooleanField(
+        initial=False,
+        required=False,
+        label="Habilitar bracketing",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
+    bracketing_steps = forms.IntegerField(
+        initial=3,
+        min_value=3,
+        max_value=9,
+        label="Pasos de bracketing",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'min': '3',
+            'max': '9',
+            'step': '2'
+        }),
+        help_text="Número de fotos en la secuencia de bracketing (impar)"
+    )
+    
+    mirror_lockup = forms.BooleanField(
+        initial=False,
+        required=False,
+        label="Bloqueo de espejo",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        help_text="Reduce vibraciones en cámaras DSLR"
+    )
+    
+    custom_white_balance = forms.IntegerField(
+        required=False,
+        min_value=2000,
+        max_value=10000,
+        label="Balance de blancos personalizado (K)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'ej: 5500'
+        })
+    )
+
+    def clean_bracketing_steps(self):
+        """Validar que los pasos de bracketing sean impares"""
+        steps = self.cleaned_data.get('bracketing_steps')
+        if steps and steps % 2 == 0:
+            raise forms.ValidationError("Los pasos de bracketing deben ser un número impar")
+        return steps
 
 class CollageTemplateForm(forms.ModelForm):
     """Formulario para crear/editar plantillas de collage"""

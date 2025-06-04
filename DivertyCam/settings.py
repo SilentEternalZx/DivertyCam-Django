@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['e8ee-191-156-33-165.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['e8ee-191-156-33-165.ngrok-free.app', '127.0.0.1', 'localhost',]  
 
 FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOxxbkZBZBMHxdQWb670Ph3EAQQnXMYBxliZBYpcmAtNfZCASV96VxnfMoOznIQA4O7HxMMubPSIdhGOuqjeFyys7rfPG80RYQSMGZBMTP4czndCKOULzW8MgptYzRQ90ekoEWMusornIBp54dfetbTRuBWfWaw3MFW5Hk210sHWabhgF2dI6ZBNAkT1SaTXwdGz3uS1E08ovvF"
 FACEBOOK_PAGE_ID = "612248578630248"
@@ -109,7 +109,7 @@ DATABASES = {
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
         'PASSWORD': '123456',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
-        'PORT': '5433',  # El puerto por defecto de PostgreSQL
+        'PORT': '5432',  # El puerto por defecto de PostgreSQL
        
     }
 }
@@ -153,6 +153,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Para archivos globales
+]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
@@ -180,3 +183,64 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
 
 # También ajustar el tamaño máximo de archivos si es necesario
 FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
+
+# Crear directorio temp_usb si no existe
+TEMP_USB_DIR = os.path.join(MEDIA_ROOT, 'temp_usb')
+if not os.path.exists(TEMP_USB_DIR):
+    os.makedirs(TEMP_USB_DIR, exist_ok=True)
+
+# ===========================================
+# Configuración de ADB para WhatsApp System
+# ===========================================
+
+# Ruta a ADB (Android Debug Bridge)
+ADB_PATH = r'C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+
+# Configuración USB para transferencias
+USB_TRANSFER_CONFIG = {
+    'DEVICE_FOLDER': '/sdcard/photobooth/',
+    'TEMP_FOLDER': os.path.join(MEDIA_ROOT, 'temp_usb'),
+    'CONNECTION_TIMEOUT': 10,
+    'TRANSFER_TIMEOUT': 30,
+    'MAX_RETRIES': 3,
+}
+
+# Crear directorio temporal si no existe
+TEMP_USB_DIR = os.path.join(MEDIA_ROOT, 'temp_usb')
+os.makedirs(TEMP_USB_DIR, exist_ok=True)
+
+# Logging para el sistema de transferencia
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'usb_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'whatsapp_transfer.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'usuarios.utils.usb_communication': {
+            'handlers': ['usb_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+# Crear directorio de logs si no existe
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)

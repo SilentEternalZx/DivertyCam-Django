@@ -678,8 +678,7 @@ function startSession() {
         });
     }
     
-    // Finalizar sesión
-    
+       
     // Finalizar sesión
     function finishSession() {
         // Mostrar pantalla de resultado
@@ -1077,20 +1076,59 @@ function showPrintNotification(success, message) {
         updatePrintCount('{{ session_id }}');
     }
     
-    // Reiniciar el proceso
-    function restart() {
-        resultScreen.style.display = 'none';
-        welcomeScreen.style.opacity = 1;
-        welcomeScreen.style.display = 'flex';
-        
-        // Resetear variables
-        photosTaken = 0;
-        currentPhotoIndex = 0;
-        framePhotos = [];
-        
-        // Actualizar indicadores de progreso
-        updateProgressIndicators();
+    // Reiniciar el proceso - VERSIÓN CORREGIDA
+async function restart() {
+    console.log("Iniciando reinicio de sesión...");
+    
+    // Ocultar pantalla de resultado
+    resultScreen.style.display = 'none';
+    
+    // Resetear variables de estado
+    photosTaken = 0;
+    currentPhotoIndex = 0;
+    framePhotos = [];
+    isSessionActive = false;
+    
+    // Resetear el botón de iniciar sesión
+    startSessionBtn.disabled = false;
+    startSessionBtn.innerHTML = '<i class="fas fa-camera fa-lg me-2"></i> ¡TOMAR FOTOS!';
+    
+    // Actualizar contador de fotos
+    if (photosTakenElement) {
+        photosTakenElement.textContent = 0;
     }
+    
+    // Limpiar el collage
+    collageResult.innerHTML = '';
+    
+    // Actualizar indicadores de progreso
+    updateProgressIndicators();
+    
+    // IMPORTANTE: Reinicializar la cámara
+    try {
+        console.log("Reinicializando cámara...");
+        const cameraSuccess = await initCamera();
+        
+        if (cameraSuccess) {
+            console.log("Cámara reinicializada correctamente");
+            
+            // Mostrar pantalla de cámara directamente (sin volver a bienvenida)
+            cameraScreen.style.display = 'flex';
+            
+            // Opcional: Si quieres volver a la pantalla de bienvenida, usa esto en su lugar:
+            // welcomeScreen.style.opacity = 1;
+            // welcomeScreen.style.display = 'flex';
+            // cameraScreen.style.display = 'none';
+            
+        } else {
+            console.error("Error al reinicializar la cámara");
+            alert("Error al reinicializar la cámara. Por favor, recarga la página.");
+        }
+    } catch (error) {
+        console.error("Error durante el reinicio:", error);
+        alert("Error durante el reinicio: " + error.message);
+    }
+}
     
     // Función para entrar y salir de pantalla completa
     function toggleFullScreen() {
@@ -1155,47 +1193,431 @@ function showPrintNotification(success, message) {
         printCollage();
     });
     
-    // Configurar botón de WhatsApp
-    if (document.getElementById('share-whatsapp-btn')) {
-        const whatsappModal = new bootstrap.Modal(document.getElementById('whatsappModal'));
+    // Configurar botón de WhatsApp para envío a dispositivo móvil
+if (document.getElementById('share-whatsapp-btn')) {
+    document.getElementById('share-whatsapp-btn').addEventListener('click', function() {
+        console.log("Iniciando envío a dispositivo móvil...");
         
-        document.getElementById('share-whatsapp-btn').addEventListener('click', function() {
-            whatsappModal.show();
-        });
+        // Mostrar indicador de carga
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'loading-indicator';
+        loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando al dispositivo móvil...';
+        loadingIndicator.style.position = 'fixed';
+        loadingIndicator.style.top = '50%';
+        loadingIndicator.style.left = '50%';
+        loadingIndicator.style.transform = 'translate(-50%, -50%)';
+        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        loadingIndicator.style.color = 'white';
+        loadingIndicator.style.padding = '20px';
+        loadingIndicator.style.borderRadius = '10px';
+        loadingIndicator.style.zIndex = '10000';
+        loadingIndicator.style.textAlign = 'center';
         
-        document.getElementById('send-whatsapp-btn').addEventListener('click', function() {
-            const phoneNumber = document.getElementById('phone-number').value.trim();
-            const messageText = document.getElementById('message-text').value.trim();
+        document.body.appendChild(loadingIndicator);
+        
+        // Deshabilitar el botón temporalmente
+        this.disabled = true;
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        // Enviar al dispositivo móvil
+        fetch('{% url "send_to_mobile_device" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                session_id: '{{ session_id }}',
+                // Si tienes el collage_id disponible, inclúyelo aquí
+                // collage_id: 'ID_DEL_COLLAGE'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remover indicador de carga
+            document.body.removeChild(loadingIndicator);
             
-            if (!phoneNumber) {
-                alert('Por favor, introduce un número de teléfono válido');
-                return;
+            // Restaurar botón
+            this.disabled = false;
+            this.innerHTML = originalText;
+            
+            if (data.success) {
+                // Mostrar mensaje de éxito
+                showTransferNotification(true, data.message);
+                
+                // Mostrar instrucciones para el usuario
+                showMobileInstructions();
+                
+                // Iniciar monitoreo del estado de transferencia
+                startTransferStatusMonitoring(data.session_id);
+                
+            } else {
+                showTransferNotification(false, 'Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error enviando a dispositivo móvil:', error);
+            
+            // Limpiar UI en caso de error
+            if (document.body.contains(loadingIndicator)) {
+                document.body.removeChild(loadingIndicator);
             }
             
-            try {
-                // Limpiar número de teléfono (solo dígitos y signo +)
-                const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
-                
-                // Verificar formato
-                if (!cleanPhone.startsWith('+') && !cleanPhone.startsWith('00')) {
-                    alert('Por favor, introduce un número con código de país (ej: +34612345678)');
-                    return;
+            this.disabled = false;
+            this.innerHTML = originalText;
+            
+            showTransferNotification(false, 'Error de comunicación: ' + error.message);
+        });
+    });
+}
+
+// Función para mostrar notificaciones de transferencia
+function showTransferNotification(success, message) {
+    // Eliminar notificaciones anteriores
+    const oldNotifications = document.querySelectorAll('.transfer-notification');
+    oldNotifications.forEach(notification => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    });
+    
+    // Crear nueva notificación
+    const notification = document.createElement('div');
+    notification.className = `transfer-notification alert alert-${success ? 'success' : 'danger'}`;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.minWidth = '350px';
+    notification.style.maxWidth = '500px';
+    notification.style.padding = '15px';
+    notification.style.borderRadius = '8px';
+    notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateY(-20px)';
+    notification.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <i class="fas fa-${success ? 'check-circle' : 'exclamation-triangle'}" style="margin-right: 10px; font-size: 1.2em;"></i>
+            <div>
+                <strong>${success ? 'Éxito' : 'Error'}</strong><br>
+                <span>${message}</span>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Auto-remover después de 8 segundos (más tiempo para leer el mensaje)
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
                 }
+            }, 300);
+        }
+    }, 8000);
+}
+
+// Función para mostrar instrucciones para el usuario
+function showMobileInstructions() {
+    const modal = document.createElement('div');
+    modal.className = 'mobile-instructions-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    modal.style.zIndex = '10001';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; text-align: center;">
+            <h3 style="color: #28a745; margin-bottom: 20px;">
+                <i class="fas fa-mobile-alt"></i> ¡Collage Enviado!
+            </h3>
+            <p style="font-size: 1.1em; margin-bottom: 20px;">
+                Tu collage ha sido enviado al dispositivo móvil.
+            </p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: #495057; margin-bottom: 15px;">Próximos pasos:</h4>
+                <ol style="text-align: left; color: #6c757d;">
+                    <li>Dirígete al dispositivo móvil</li>
+                    <li>Completa tus datos (nombre, teléfono)</li>
+                    <li>Revisa tu collage</li>
+                    <li>Envía por WhatsApp</li>
+                </ol>
+            </div>
+            <button onclick="closeMobileInstructions()" 
+                    style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 1em;">
+                <i class="fas fa-check"></i> Entendido
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeMobileInstructions();
+        }
+    });
+}
+
+// Función para cerrar las instrucciones
+function closeMobileInstructions() {
+    const modal = document.querySelector('.mobile-instructions-modal');
+    if (modal && document.body.contains(modal)) {
+        document.body.removeChild(modal);
+    }
+}
+
+// Función para monitorear el estado de la transferencia
+function startTransferStatusMonitoring(sessionId) {
+    console.log(`Iniciando monitoreo para sesión: ${sessionId}`);
+    
+    let statusCheckInterval;
+    let checkCount = 0;
+    const maxChecks = 120; // 10 minutos máximo (cada 5 segundos)
+    
+    statusCheckInterval = setInterval(() => {
+        checkCount++;
+        
+        fetch(`{% url "check_mobile_transfer_status" %}?session_id=${sessionId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(`Estado check #${checkCount}:`, data);
+            
+            if (data.success && data.status) {
+                const status = data.status.status;
                 
-                // Usar el método de apertura directa de WhatsApp Web
-                const encodedMessage = encodeURIComponent(messageText || '¡Mira mi collage del evento!');
-                const whatsappUrl = `https://wa.me/${cleanPhone.startsWith('+') ? cleanPhone.substring(1) : cleanPhone}?text=${encodedMessage}`;
+                // Actualizar indicador visual del estado
+                updateTransferStatusIndicator(status, data.status);
                 
-                window.open(whatsappUrl, '_blank');
-                
-                // Cerrar modal
-                whatsappModal.hide();
-            } catch (error) {
-                console.error('Error al abrir WhatsApp:', error);
-                alert('Ocurrió un error al intentar abrir WhatsApp. Por favor intenta de nuevo.');
+                // Si se completó o falló, detener el monitoreo
+                if (status === 'completed' || status === 'whatsapp_sent') {
+                    clearInterval(statusCheckInterval);
+                    showTransferNotification(true, '¡Collage enviado por WhatsApp exitosamente!');
+                    showCompletionCelebration();
+                } else if (status === 'failed' || status === 'cancelled') {
+                    clearInterval(statusCheckInterval);
+                    showTransferNotification(false, 'El envío fue cancelado o falló.');
+                }
+            }
+            
+            // Detener después del número máximo de checks
+            if (checkCount >= maxChecks) {
+                clearInterval(statusCheckInterval);
+                console.log('Monitoreo detenido: tiempo máximo alcanzado');
+            }
+        })
+        .catch(error => {
+            console.error('Error verificando estado:', error);
+            
+            // Si hay muchos errores consecutivos, detener el monitoreo
+            if (checkCount > 10) {
+                clearInterval(statusCheckInterval);
             }
         });
+    }, 5000); // Verificar cada 5 segundos
+}
+
+// Función para actualizar el indicador visual del estado
+function updateTransferStatusIndicator(status, statusData) {
+    // Remover indicador anterior si existe
+    const oldIndicator = document.querySelector('.transfer-status-indicator');
+    if (oldIndicator && document.body.contains(oldIndicator)) {
+        document.body.removeChild(oldIndicator);
     }
+    
+    // Solo mostrar para estados intermedios
+    if (status === 'completed' || status === 'failed' || status === 'cancelled') {
+        return;
+    }
+    
+    const indicator = document.createElement('div');
+    indicator.className = 'transfer-status-indicator';
+    indicator.style.position = 'fixed';
+    indicator.style.bottom = '20px';
+    indicator.style.left = '20px';
+    indicator.style.backgroundColor = '#007bff';
+    indicator.style.color = 'white';
+    indicator.style.padding = '10px 15px';
+    indicator.style.borderRadius = '25px';
+    indicator.style.zIndex = '9998';
+    indicator.style.fontSize = '0.9em';
+    indicator.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+    
+    let statusText = '';
+    let iconClass = 'fas fa-clock';
+    
+    switch (status) {
+        case 'sent_to_device':
+            statusText = 'Enviado al móvil';
+            iconClass = 'fas fa-mobile-alt';
+            break;
+        case 'data_collected':
+            statusText = 'Datos recopilados';
+            iconClass = 'fas fa-user-check';
+            break;
+        case 'whatsapp_sent':
+            statusText = 'Enviado por WhatsApp';
+            iconClass = 'fab fa-whatsapp';
+            break;
+        default:
+            statusText = 'Procesando...';
+            iconClass = 'fas fa-spinner fa-spin';
+    }
+    
+    indicator.innerHTML = `<i class="${iconClass}"></i> ${statusText}`;
+    document.body.appendChild(indicator);
+}
+
+// Función para mostrar celebración de completación
+function showCompletionCelebration() {
+    const celebration = document.createElement('div');
+    celebration.style.position = 'fixed';
+    celebration.style.top = '0';
+    celebration.style.left = '0';
+    celebration.style.width = '100%';
+    celebration.style.height = '100%';
+    celebration.style.backgroundColor = 'rgba(40, 167, 69, 0.9)';
+    celebration.style.zIndex = '10002';
+    celebration.style.display = 'flex';
+    celebration.style.justifyContent = 'center';
+    celebration.style.alignItems = 'center';
+    celebration.style.opacity = '0';
+    celebration.style.transition = 'opacity 0.5s ease';
+    
+    celebration.innerHTML = `
+        <div style="text-align: center; color: white;">
+            <div style="font-size: 4em; margin-bottom: 20px; animation: bounce 2s infinite;">
+                🎉
+            </div>
+            <h2 style="margin-bottom: 10px;">¡Éxito!</h2>
+            <p style="font-size: 1.2em;">Collage enviado por WhatsApp</p>
+        </div>
+    `;
+    
+    // Agregar animación CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-30px);
+            }
+            60% {
+                transform: translateY(-15px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(celebration);
+    
+    // Mostrar celebración
+    setTimeout(() => {
+        celebration.style.opacity = '1';
+    }, 10);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        celebration.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(celebration)) {
+                document.body.removeChild(celebration);
+            }
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
+        }, 500);
+    }, 3000);
+    
+    // Remover indicador de estado si existe
+    const statusIndicator = document.querySelector('.transfer-status-indicator');
+    if (statusIndicator && document.body.contains(statusIndicator)) {
+        document.body.removeChild(statusIndicator);
+    }
+}
+
+// Función para verificar estado del dispositivo al cargar la página
+function checkDeviceStatus() {
+    fetch('{% url "get_device_status" %}')
+    .then(response => response.json())
+    .then(data => {
+        const whatsappBtn = document.getElementById('share-whatsapp-btn');
+        
+        if (data.success && data.connected) {
+            // Dispositivo conectado
+            console.log('Dispositivo móvil conectado:', data.device_info);
+            
+            if (whatsappBtn) {
+                whatsappBtn.disabled = false;
+                whatsappBtn.title = `Dispositivo conectado: ${data.device_info.manufacturer} ${data.device_info.model}`;
+                
+                // Agregar indicador visual de dispositivo conectado
+                const deviceIndicator = document.createElement('span');
+                deviceIndicator.style.color = '#28a745';
+                deviceIndicator.style.fontSize = '0.8em';
+                deviceIndicator.style.display = 'block';
+                deviceIndicator.innerHTML = '<i class="fas fa-mobile-alt"></i> Dispositivo conectado';
+                
+                whatsappBtn.parentNode.insertBefore(deviceIndicator, whatsappBtn.nextSibling);
+            }
+        } else {
+            // Dispositivo no conectado
+            console.log('Dispositivo móvil no conectado');
+            
+            if (whatsappBtn) {
+                whatsappBtn.disabled = true;
+                whatsappBtn.title = 'Conecta un dispositivo móvil por USB para enviar por WhatsApp';
+                whatsappBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conectar Dispositivo';
+                
+                // Agregar indicador visual de dispositivo no conectado
+                const deviceWarning = document.createElement('span');
+                deviceWarning.style.color = '#dc3545';
+                deviceWarning.style.fontSize = '0.8em';
+                deviceWarning.style.display = 'block';
+                deviceWarning.innerHTML = '<i class="fas fa-unlink"></i> Dispositivo no conectado';
+                
+                whatsappBtn.parentNode.insertBefore(deviceWarning, whatsappBtn.nextSibling);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error verificando estado del dispositivo:', error);
+    });
+}
+
+// Ejecutar verificación de dispositivo al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Esperar un poco antes de verificar para asegurar que la página esté completamente cargada
+    setTimeout(() => {
+        checkDeviceStatus();
+    }, 1000);
+});
+
+// Verificar dispositivo periódicamente (cada 30 segundos)
+setInterval(checkDeviceStatus, 30000);
     
     // Configurar botón de impresión manual
     // Configurar botón de impresión manual

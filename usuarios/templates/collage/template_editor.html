@@ -105,11 +105,11 @@
         
         <div class="editor-workspace">
             <div class="canvas-container">
-                <div class="canvas-zoom">
+                {% comment %} <div class="canvas-zoom">
                     <span class="me-2">Zoom:</span>
                     <input type="range" id="zoom-slider" class="form-range" min="50" max="200" value="100" style="width: 150px;">
                     <span id="zoom-value" class="ms-2">100%</span>
-                </div>
+                </div> {% endcomment %}
                 
                 <div class="canvas-wrapper">
                     <div id="template-canvas" class="template-canvas">
@@ -488,11 +488,11 @@
         {% endif %}
         
         // Zoom del canvas
-        zoomSlider.addEventListener('input', function() {
-            const zoom = this.value;
-            zoomValue.textContent = `${zoom}%`;
-            canvas.style.transform = `scale(${zoom / 100})`;
-        });
+     //   zoomSlider.addEventListener('input', function() {
+     //       const zoom = this.value;
+     //       zoomValue.textContent = `${zoom}%`;
+     //       canvas.style.transform = `scale(${zoom / 100})`;
+     //   });
         
         // Añadir nuevo marco
         document.getElementById('add-frame-btn').addEventListener('click', function() {
@@ -682,12 +682,12 @@
 </script>
 {% endblock %}
         
-        // Zoom del canvas
+        {% comment %} // Zoom del canvas
         zoomSlider.addEventListener('input', function() {
             const zoom = this.value;
             zoomValue.textContent = `${zoom}%`;
             canvas.style.transform = `scale(${zoom / 100})`;
-        });
+        }); {% endcomment %}
         
         // Añadir nuevo marco
         document.getElementById('add-frame-btn').addEventListener('click', function() {
@@ -862,41 +862,4 @@
             e.stopPropagation();
         }
         
-        // Función de redimensionamiento
-        function resize(e) {
-            if (!resizeHandle || !selectedFrame) return;
-            
-            const position = resizeHandle.getAttribute('data-position');
-            const deltaX = e.clientX - offsetX;
-            const deltaY = e.clientY - offsetY;
-            
-            let newWidth = resizeHandle.initialWidth;
-            let newHeight = resizeHandle.initialHeight;
-            let newLeft = resizeHandle.initialLeft;
-            let newTop = resizeHandle.initialTop;
-            
-            // Ajustar dimensiones según la esquina que se está arrastrando
-            if (position.includes('e')) {
-                newWidth = Math.max(30, resizeHandle.initialWidth + deltaX);
-            }
-            if (position.includes('w')) {
-                newWidth = Math.max(30, resizeHandle.initialWidth - deltaX);
-                newLeft = resizeHandle.initialLeft + resizeHandle.initialWidth - newWidth;
-            }
-            if (position.includes('s')) {
-                newHeight = Math.max(30, resizeHandle.initialHeight + deltaY);
-            }
-            if (position.includes('n')) {
-                newHeight = Math.max(30, resizeHandle.initialHeight - deltaY);
-                newTop = resizeHandle.initialTop + resizeHandle.initialHeight - newHeight;
-            }
-            
-            // Aplicar nuevas dimensiones
-            selectedFrame.style.width = `${newWidth}px`;
-            selectedFrame.style.height = `${newHeight}px`;
-            selectedFrame.style.left = `${newLeft}px`;
-            selectedFrame.style.top = `${newTop}px`;
-            
-            // Actualizar campos con nuevos valores
-            document.getElementById('frame-width').value = Math.round(newWidth / cmToPixel * 15); // Convertir a mm
-            document.getElementById('frame-height').value = Math.round(newHeight / cmToPixel * 10); // Convertir a mm
+        
