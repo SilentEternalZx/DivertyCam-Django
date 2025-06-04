@@ -59,35 +59,3 @@
 </tbody>
           </table>
 
-{% block extra_scripts %}
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script>
-  $(document).ready(function() {
-      $('#evento-table').DataTable({
-          pageLength:5,
-          pagingType: "simple_numbers",
-          ordering: true,
-          language: {
-              search: "Buscar:",
-              lengthMenu: "Mostrar _MENU_ registros",
-              zeroRecords: "No se encontraron resultados",
-              info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-              infoEmpty: "No hay registros",
-              infoFiltered: "(filtrado de _MAX_ registros)",
-              paginate: {
-                  first:    "Primera",
-                  last:     "Última",
-                  next:     "Siguiente",
-                  previous: "Anterior"
-              }
-          },
-          lengthChange: false,
-          searching: false,
-          columnDefs: [
-              { orderable: false, targets: 5 }
-          ]
-      });
-  });
-</script>
-{% endblock %}
