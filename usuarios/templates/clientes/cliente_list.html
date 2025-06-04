@@ -41,6 +41,13 @@
             </div>
           </div>
         </form>
+        {% if request.GET.q %}
+  <div class="mb-3">
+    <a href="{% url 'cliente_list' %}{% if request.GET.mostrar_inactivos %}?mostrar_inactivos=1{% endif %}" class="btn btn-secondary" id="btn-morado">
+      <i class="fa-solid fa-arrow-left"></i> Ver todo
+    </a>
+  </div>
+{% endif %}
 
         <div class="table-responsive">
           <table id="cliente-table" class="table table-hover align-middle">
@@ -66,7 +73,7 @@
                   </div>
                 </td>
                 <td>{{ cliente.cedula }}</td>
-                <td>{{ cliente.usuario.useremail }}</td>
+                <td>{{ cliente.usuario.email }}</td>
                 <td>{{ cliente.telefono }}</td>
                 <td>
                   <span class="badge rounded-pill {% if cliente.activo %}badge-morado{% else %}badge-secondary{% endif %}">
@@ -114,6 +121,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
@@ -142,6 +150,23 @@
               { orderable: false, targets: 5 }
           ]
       });
+
+      // SweetAlert para mensaje de éxito
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.tags == 'success' %}
+            Swal.fire({
+              icon: 'success',
+              title: '¡Éxito!',
+              text: '{{ message|escapejs }}',
+              confirmButtonColor: '#6f42c1',
+              timer: 2200,
+              timerProgressBar: true,
+              showConfirmButton: false
+            });
+          {% endif %}
+        {% endfor %}
+      {% endif %}
   });
 </script>
 {% endblock %}

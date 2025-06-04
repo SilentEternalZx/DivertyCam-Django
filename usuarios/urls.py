@@ -58,6 +58,7 @@ urlpatterns = [
     path('api/collage/save-photo/', views.save_session_photo, name='save_session_photo'),
     path('collage/session/<str:session_id>/result/', views.session_result, name='session_result'),
     
+    
     # APIs para collage final
     path('api/collage/update-print-count/', views.update_print_count, name='update_print_count'),
     path('api/collage/send-whatsapp/', views.send_whatsapp, name='send_whatsapp'),

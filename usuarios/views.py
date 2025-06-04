@@ -7,11 +7,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from urllib import request
 from django.utils import timezone
 from django import forms
-
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse, StreamingHttpResponse, HttpResponseBadRequest
-from django.contrib import messages
 from .models import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.decorators.csrf import csrf_exempt
@@ -84,6 +83,7 @@ def vista_logout(request): #Función para cerrar sesión
    
     
     logout(request)
+    messages.success(request, "Has cerrado sesión correctamente.")
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
@@ -156,38 +156,20 @@ def eventos_cliente(request):
         cliente = Cliente.objects.get(usuario=request.user)  #Intentar obtener un cliente relacionado al usuario
     except ObjectDoesNotExist:  #De lo contrario 
         mensaje = "El usuario no tiene un cliente asignado"  #Retornar mensaje
-        return render(request, "eventos/partials/table.html", {
-            "mensaje": mensaje
+        return render(request, "eventos/error.html", {
+            "mensaje": mensaje,
+            
+            
         })
     
     eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
 
     if not eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
-        return render(request, "eventos/partials/table.html", {
+        return render(request, "eventos/evento_list.html", {
             "mensaje": "No tiene eventos actualmente"
         })
     
-    # --- FILTRO POR BÚSQUEDA ---
-    query = request.GET.get('q')
-    if query:
-        eventos = eventos.filter(
-            Q(nombre__icontains=query)
-        )
-
-    # --- ORDENAMIENTO ---
-    orden = request.GET.get('orden')
-    if orden == 'nombre':
-        eventos = eventos.order_by('nombre')
-    elif orden == 'nombre_desc':
-        eventos = eventos.order_by('-nombre')
-    elif orden == 'cliente':
-        eventos = eventos.order_by('cliente__nombre')
-    elif orden == 'cliente_desc':
-        eventos = eventos.order_by('-cliente__nombre')
-    elif orden == 'fecha_hora':
-        eventos = eventos.order_by('fecha_hora')
-    elif orden == 'fecha_hora_desc':
-        eventos = eventos.order_by('-fecha_hora')
+  
 
     # Evento e imágenes para vista previa (por ejemplo, el primero)
     evento = eventos.first()
@@ -195,7 +177,7 @@ def eventos_cliente(request):
     
     #Retornar vista con respectivos contextos
 
-    return render(request, "eventos/eventos_cliente.html", {
+    return render(request, "eventos/evento_list.html", {
         "evento": evento,
         "imagenes": imagenes,
         "eventos": eventos
@@ -269,7 +251,7 @@ class ClienteCreateView(LoginRequiredMixin, CreateView):  #LoginRequiredMixin,
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Cliente creado exitosamente")
+        messages.success(self.request, "¡Cliente creado exitosamente!")
         return response
     
      
@@ -295,7 +277,6 @@ class ClienteActivarView(ListView):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = True
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido reactivado.")
         return redirect('cliente_list')
 
 class ClienteInactivarView(ListView):
@@ -303,7 +284,6 @@ class ClienteInactivarView(ListView):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = False
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido marcado como inactivo.")
         return redirect('cliente_list')
 
 #Mostrar las fotos guardadas
@@ -508,7 +488,6 @@ class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
    
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Evento creado exitosamente")
         return response
 
 class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
@@ -530,7 +509,7 @@ class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
     
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Evento eliminado exitosamente")
+
         return response
 
 
@@ -1969,19 +1948,19 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
             
             for imagen in archivos:
                
-                
+                 
                  fotografia=Fotografia.objects.create(descripcion=descripcion, img=imagen, evento=evento)#Crear un objeto de Fotografia
                  fotografia.save() #Guardar objeto
             return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
+            return render(request,"eventos/formulario_foto.html",{
                 "form":form,
                 "evento":evento
             })
         
     
-    return render(request,"añadir_fotos/formulario.html",{
+    return render(request,"eventos/formulario_foto.html",{
         "evento":evento,
         "form":AñadirFotoForm()
     })

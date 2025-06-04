@@ -1,88 +1,99 @@
 document.addEventListener('DOMContentLoaded', function() {
   const formulario = document.getElementById('form');
-  const inputDescripcion = document.querySelector('textarea[name="descripcion"]');
-  const inputImagen = document.querySelector('input[name="img"]');
-  const errorDivDescripcion = document.getElementById('error-descripcion');
-  const errorDivImagen = document.getElementById('error-img');
-  const maxFileSize = 2 * 1024 * 1024; // 2MB
+  const inputs = document.querySelectorAll('#form textarea');
+  const fileInput = document.querySelector('#form input[type="file"][name="img"]'); // ← CAMBIO AQUÍ
+  const checkboxes = document.querySelectorAll('#form input[type="checkbox"][name="invitados"]');
 
-  // Regex y mensajes
   const expresiones = {
-    descripcion: /^[a-zA-ZÀ-ÿ0-9\s]{5,50}$/
+    descripcion: /^[a-zA-ZÀ-ÿ0-9\s]{5,50}$/,
   };
 
   const mensajes = {
-    descripcion: "La descripción debe contener entre 5 y 50 caracteres.",
-    img: "Debes seleccionar una imagen.",
-    img_tipo: "Solo se permiten archivos de imagen.",
-  
+    descripcion: "La descripción debe contener entre 5 y 50 caracteres",
+    img: "Debes subir al menos una imagen.", 
+    invitados: "Selecciona al menos un invitado.",
   };
 
-  // Estado de validación de los campos
   const campos = {
-    img: false,
-    descripcion: false
+    descripcion: false,
+    img: false,  // ← CAMBIO AQUÍ
+    invitados: false,
   };
 
-  // Validación de la descripción
-  function validarDescripcion() {
-    const value = inputDescripcion.value.trim();
+  function validarFormulario(e) {
+    const field = e.target.name;
+    const value = e.target.value.trim();
+    const errorDiv = document.getElementById(`error-${field}`);
+
+    // Validación de campo vacío
     if (value === "") {
-      errorDivDescripcion.textContent = "Este campo no puede estar vacío.";
-      inputDescripcion.classList.add('is-invalid');
-      inputDescripcion.classList.remove('is-valid');
-      campos.descripcion = false;
+      errorDiv.textContent = "Este campo no puede estar vacío.";
+      e.target.classList.add('is-invalid');
+      e.target.classList.remove('is-valid');
+      campos[field] = false;
       return;
     }
-    if (!expresiones.descripcion.test(value)) {
-      errorDivDescripcion.textContent = mensajes.descripcion;
-      inputDescripcion.classList.add('is-invalid');
-      inputDescripcion.classList.remove('is-valid');
-      campos.descripcion = false;
+
+    // Validación por expresión regular
+    if (expresiones[field] && !expresiones[field].test(value)) {
+      errorDiv.textContent = mensajes[field];
+      e.target.classList.add('is-invalid');
+      e.target.classList.remove('is-valid');
+      campos[field] = false;
       return;
     }
-    errorDivDescripcion.textContent = "";
-    inputDescripcion.classList.remove('is-invalid');
-    inputDescripcion.classList.add('is-valid');
-    campos.descripcion = true;
+
+    // Si pasa todas las validaciones
+    errorDiv.textContent = "";
+    e.target.classList.remove('is-invalid');
+    e.target.classList.add('is-valid');
+    campos[field] = true;
   }
 
-  // Validación de la imagen
+  inputs.forEach((input) => {
+    input.addEventListener('keyup', validarFormulario);
+    input.addEventListener('blur', validarFormulario);
+  });
+
+  // Validación de imagen
   function validarImagen() {
-    const files = inputImagen.files;
-    if (!files || files.length === 0) {
-      errorDivImagen.textContent = mensajes.img;
-      inputImagen.classList.add('is-invalid');
-      inputImagen.classList.remove('is-valid');
+    const errorDiv = document.getElementById('error-img'); // ← CAMBIO AQUÍ
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      errorDiv.textContent = mensajes.img;
+      fileInput?.classList.add('is-invalid');
+      fileInput?.classList.remove('is-valid');
       campos.img = false;
-      return;
+    } else {
+      errorDiv.textContent = "";
+      fileInput.classList.remove('is-invalid');
+      fileInput.classList.add('is-valid');
+      campos.img = true;
     }
-    const file = files[0];
-    if (!file.type.startsWith('image/')) {
-      errorDivImagen.textContent = mensajes.img_tipo;
-      inputImagen.classList.add('is-invalid');
-      inputImagen.classList.remove('is-valid');
-      campos.img = false;
-      return;
-    }
-   
-    errorDivImagen.textContent = "";
-    inputImagen.classList.remove('is-invalid');
-    inputImagen.classList.add('is-valid');
-    campos.img = true;
   }
+  fileInput?.addEventListener('change', validarImagen);
 
-  // Eventos individuales
-  inputDescripcion.addEventListener('keyup', validarDescripcion);
-  inputDescripcion.addEventListener('blur', validarDescripcion);
-  inputImagen.addEventListener('change', validarImagen);
+  // Validación de invitados
+  function validarInvitados() {
+    const errorDiv = document.getElementById('error-invitados');
+    const checked = Array.from(checkboxes).some(cb => cb.checked);
+    if (!checked) {
+      errorDiv.textContent = mensajes.invitados;
+      campos.invitados = false;
+    } else {
+      errorDiv.textContent = "";
+      campos.invitados = true;
+    }
+  }
+  checkboxes.forEach(cb => cb.addEventListener('change', validarInvitados));
 
- // Validación al enviar
+  // Validación al enviar
   formulario.addEventListener('submit', function(e) {
     // Disparar validación para todos los campos por si no los tocaron
     inputs.forEach(input => {
       input.dispatchEvent(new Event('blur'));
     });
+    validarImagen();
+    validarInvitados();
 
     // Si algún campo es false, evitar submit
     if (Object.values(campos).includes(false)) {
@@ -90,5 +101,4 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Por favor, completa todos los campos correctamente.');
     }
   });
-
 });

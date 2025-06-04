@@ -80,16 +80,21 @@
     margin-right: 6px;
 }
 
-#guardar-btn{
+#btn-morado{
     background: #2b2278;
     color: #fff;
     border:none;
 }
 
-#guardar-btn:hover{
+#btn-morado:hover{
     background-color: #222;
 }
-
+#btn-error{
+    background: #2b2278 !important;
+    color: #fff !important;
+    border:none;
+    
+}
 .btn-outline-info i,
 .btn-outline-warning i,
 .btn-outline-danger i,

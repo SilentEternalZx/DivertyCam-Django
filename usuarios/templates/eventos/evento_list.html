@@ -1,9 +1,14 @@
 {% extends 'eventos/base.html' %}
 
+
+
 {% block title %}Listado de Eventos{% endblock %}
 
 {% block body %}
 {% include 'partials/navbar.html' %}
+
+
+
 
 <div class="d-flex justify-content-center align-items-center min-vh-100">
   <div class="main-content w-100" style="max-width: 1050px;">
@@ -11,7 +16,10 @@
       <div class="title-container d-flex align-items-center">
         <i class="fa-solid fa-calendar-days fa-2x me-2"></i>
         <h2 class="section-title mb-0">Listado de Eventos</h2>
+       
+    
       </div>
+      {% if request.user.is_superuser %}
       <div class="action-buttons">
         <a href="{% url 'evento_create' %}" class="btn btn-blanco shadow-sm">
           <i class="fa-solid fa-calendar-plus"></i> Nuevo Evento
@@ -20,6 +28,7 @@
           <i class="fa-solid fa-user-gear"></i> Clientes
         </a>
       </div>
+      {% endif %}
     </div>
 
     <div class="card mb-4 shadow-sm">
@@ -35,97 +44,23 @@
             </div>
           </div>
         </form>
+           {% if request.GET.q %}
+  <div class="mb-3">
+    <a href="{% url 'evento_list' %}{% if request.GET.mostrar_inactivos %}?mostrar_inactivos=1{% endif %}" class="btn btn-secondary" id="btn-morado">
+      <i class="fa-solid fa-arrow-left"></i> Ver todo
+    </a>
+  </div>
+{% endif %}
 
         <div class="table-responsive">
-          <table id="evento-table" class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>Categoría</th>
-                <th>Nombre</th>
-                <th>Cliente</th>
-                <th>Fecha y Hora</th>
-                <th>Servicios</th>
-                <th>Acciones</th>
-             
-              </tr>
-            </thead>
-            <tbody>
-              {% for evento in eventos %}
-              <tr>
-                <td>{{ evento.categoria }}</td>
-                <td><strong>{{ evento.nombre }}</strong></td>
-                <td class="d-flex align-items-center gap-2">
-                  <div class="avatar-circle" title="{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}">
-                    {{ evento.cliente.nombre|slice:":1" }}{{ evento.cliente.apellido|slice:":1" }}
-                  </div>
-                  <div>
-                    {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
-                  </div>
-                </td>
-                <td>{{ evento.fecha_hora|date:"d/m/Y H:i" }}</td>
-                <td>
-                  {% for servicio in evento.servicios %}
-                  <span class="badge bg-primary">{{ servicio }}</span>
-                  {% endfor %}
-                </td>
-                <td>
-                  <div class="btn-group" role="group">
-                    <a href="{% url 'evento_detail' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver">
-                      <i class="fa-solid fa-eye"></i>
-                    </a>
-                    <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Editar">
-                      <i class="fa-solid fa-pen"></i>
-                    </a>
-                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Eliminar">
-                      <i class="fa-solid fa-trash"></i>
-                    </a>
-                 
-                    <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver fotografías">
-                      <i class="fa-solid fa-images"></i>
-                    </a>
-                  </div>
-                </td>
-              </tr>
-             
-              {% endfor %}
-            </tbody>
-          </table>
+          {% include 'eventos/partials/table.html' %}
+          
         </div>
       </div>
     </div>
   </div>
 </div>
+
 {% endblock %}
 
-{% block extra_scripts %}
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script>
-  $(document).ready(function() {
-      $('#evento-table').DataTable({
-          pageLength:5,
-          pagingType: "simple_numbers",
-          ordering: true,
-          language: {
-              search: "Buscar:",
-              lengthMenu: "Mostrar _MENU_ registros",
-              zeroRecords: "No se encontraron resultados",
-              info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-              infoEmpty: "No hay registros",
-              infoFiltered: "(filtrado de _MAX_ registros)",
-              paginate: {
-                  first:    "Primera",
-                  last:     "Última",
-                  next:     "Siguiente",
-                  previous: "Anterior"
-              }
-          },
-          lengthChange: false,
-          searching: false,
-          columnDefs: [
-              { orderable: false, targets: 5 }
-          ]
-      });
-  });
-</script>
-{% endblock %}
+

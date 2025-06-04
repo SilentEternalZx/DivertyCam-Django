@@ -6,12 +6,13 @@
 {% block extra_head %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'clientes/css/clientes-form.css' %}">
+    
 {% endblock %}
 
 {% block body %}
 {% include 'partials/navbar.html' %}
 
-<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light animate__animated animate__fadeIn">
+<div class="d-flex justify-content-center align-items-center min-vh-100 animate__animated animate__fadeIn">
   <div class="main-content w-100" style="max-width: 600px;">
     <div class="card shadow-lg border-0 cliente-card-efecto">
       <div class="card-header cliente-form-header justify-content-center">
@@ -42,7 +43,7 @@
             {% endfor %}
           </div>
           <div class="d-flex justify-content-center gap-2 mt-4 action-buttons">
-            <button type="submit" class="btn btn-primary shadow-sm guardar-btn-efecto" id="guardar-btn">
+            <button type="submit" class="btn btn-primary shadow-sm guardar-btn-efecto" id="btn-morado">
               <i class="fa-solid fa-floppy-disk"></i> Guardar
             </button>
             <a href="{% url 'cliente_list' %}" class="btn btn-blanco shadow-sm">

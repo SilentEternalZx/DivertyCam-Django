@@ -27,16 +27,19 @@ Fotografías de {{evento.nombre}}
       <div class="text-center mb-5">
 
             <!-- Botón añadir fotografía -->
-   <div class="container mt-3 d-flex justify-content-start">
+             {% if request.user.is_superuser %}
+   <div class="container mt-3 d-flex justify-content-start" id="añadir_fotografia">
       <a href="{% url 'añadir_foto' evento.id %}" class="btn btn-dark btn-lg shadow-sm d-flex align-items-center gap-2" style="font-size: 1.1rem;">
          <i class="fa-solid fa-plus fa-lg"></i>
-         <span class="d-none d-sm-inline">Añadir fotografía</span>
+         <span class="añadir_fotografia">Añadir fotografía</span>
       </a>
    </div>
+   {% endif %}
+   <div class="section-headings">
          <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
          <h3 class="section-subheading text-muted">Puedes descargarlas, visualizarlas en vista previa, imprimirlas o compartirlas.</h3>
       </div>
-
+</div>
       <div class="row g-4">
          {% if imagenes %}
             {% for imagen in imagenes %}
