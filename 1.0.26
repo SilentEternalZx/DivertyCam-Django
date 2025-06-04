@@ -1,0 +1,9 @@
+Collecting libusb-package
+  Downloading libusb_package-1.0.26.3-cp313-cp313-win_amd64.whl.metadata (6.4 kB)
+Collecting importlib_resources (from libusb-package)
+  Downloading importlib_resources-6.5.2-py3-none-any.whl.metadata (3.9 kB)
+Downloading libusb_package-1.0.26.3-cp313-cp313-win_amd64.whl (90 kB)
+Downloading importlib_resources-6.5.2-py3-none-any.whl (37 kB)
+Installing collected packages: importlib_resources, libusb-package
+
+Successfully installed importlib_resources-6.5.2 libusb-package-1.0.26.3
