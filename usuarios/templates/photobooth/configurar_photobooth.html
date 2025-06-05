@@ -1,100 +1,403 @@
-{# templates/photobooth/configurar_photobooth.html #}
+
+    {# templates/photobooth/configurar_photobooth.html - VERSIÓN MEJORADA #}
 {% extends 'layout/layout.html' %}
 
 {% block title %}Configurar Photobooth - {{ evento.nombre }}{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Estilos personalizados para mejorar la apariencia */
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .main-card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+        padding: 1.5rem;
+    }
+    
+    .nav-tabs {
+        border-bottom: 2px solid #e9ecef;
+        background-color: #fff;
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 0.5rem 1rem 0;
+        margin: 0 -1.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        margin-bottom: -2px;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        background-color: #f8f9fa;
+        color: #495057;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background-color: #fff;
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+        font-weight: 600;
+    }
+    
+    .tab-content {
+        background-color: #fff;
+        min-height: 500px;
+        padding: 2rem !important;
+    }
+    
+    .config-section {
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .config-section .card-header {
+        background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #495057;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .config-section .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn {
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0.25rem 0.5rem rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-outline-primary {
+        border-color: #667eea;
+        color: #667eea;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .preview-container {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .preview-container:hover {
+        border-color: #667eea;
+        background-color: #f8f9fb;
+    }
+    
+    .camera-preview-container {
+        background: #000;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .alert {
+        border: none;
+        border-radius: 0.5rem;
+        padding: 1rem 1.5rem;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #b8daff 100%);
+        color: #0c5460;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    .range-slider {
+        position: relative;
+    }
+    
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .camera-type-section {
+        border-left: 4px solid #667eea;
+        padding-left: 1rem;
+        margin-left: 1rem;
+    }
+    
+    .list-group-item {
+        border: 1px solid #e9ecef;
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    
+    .status-connected {
+        background-color: #28a745;
+        box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+    }
+    
+    .status-disconnected {
+        background-color: #dc3545;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3);
+    }
+    
+    .compact-row {
+        margin-bottom: 1rem;
+    }
+    
+    .compact-row .col-md-6 {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .sticky-footer {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        border-top: 1px solid #dee2e6;
+        padding: 1.5rem;
+        margin: 0 -1.5rem -1.5rem;
+        border-radius: 0 0 0.5rem 0.5rem;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .nav-tabs {
+            padding: 0.25rem 0.5rem 0;
+        }
+        
+        .nav-tabs .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .tab-content {
+            padding: 1rem !important;
+        }
+        
+        .config-section .card-body {
+            padding: 1rem;
+        }
+        
+        .compact-row .col-md-6 {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="card mb-4">
+<div class="container-fluid mt-4">
+    <div class="card main-card">
         <div class="card-header">
-            <h2>Configurar Photobooth para "{{ evento.nombre }}"</h2>
-            <p class="text-muted">Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Configurar Photobooth
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">
+                        <strong>{{ evento.nombre }}</strong> • {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-eye"></i> Vista Previa
+                        </a>
+                        <a href="{% url 'evento_detail' evento.id %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             
-            <div class="card-body">
+            <div class="card-body p-0">
                 <ul class="nav nav-tabs" id="configTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
-                            <i class="fas fa-cog"></i> General
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                            <i class="fas fa-home"></i> General
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="plantilla-tab" data-bs-toggle="tab" data-bs-target="#plantilla" type="button" role="tab" aria-controls="plantilla" aria-selected="false">
+                        <button class="nav-link" id="plantilla-tab" data-bs-toggle="tab" data-bs-target="#plantilla" type="button">
                             <i class="fas fa-th-large"></i> Plantilla
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="camara-tab" data-bs-toggle="tab" data-bs-target="#camara" type="button" role="tab" aria-controls="camara" aria-selected="false">
+                        <button class="nav-link" id="camara-tab" data-bs-toggle="tab" data-bs-target="#camara" type="button">
                             <i class="fas fa-camera"></i> Cámara
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tiempos-tab" data-bs-toggle="tab" data-bs-target="#tiempos" type="button" role="tab" aria-controls="tiempos" aria-selected="false">
+                        <button class="nav-link" id="tiempos-tab" data-bs-toggle="tab" data-bs-target="#tiempos" type="button">
                             <i class="fas fa-clock"></i> Tiempos
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="impresora-tab" data-bs-toggle="tab" data-bs-target="#impresora" type="button" role="tab" aria-controls="impresora" aria-selected="false">
+                        <button class="nav-link" id="impresora-tab" data-bs-toggle="tab" data-bs-target="#impresora" type="button">
                             <i class="fas fa-print"></i> Impresora
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab" aria-controls="preview" aria-selected="false">
+                        <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button">
                             <i class="fas fa-eye"></i> Vista Previa
                         </button>
                     </li>
                 </ul>
                 
-                <div class="tab-content p-3" id="configTabsContent">
-                    <!-- Pestaña General -->
-                    <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                <div class="tab-content" id="configTabsContent">
+                    <!-- ========== PESTAÑA GENERAL ========== -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
+                            <div class="col-lg-6">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Mensaje de Bienvenida</h5>
+                                        <i class="fas fa-comment-dots me-2"></i>Mensaje de Bienvenida
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-3">
-                                            <label for="{{ form.mensaje_bienvenida.id_for_label }}" class="form-label">Mensaje de bienvenida:</label>
+                                            <label for="{{ form.mensaje_bienvenida.id_for_label }}" class="form-label">
+                                                Mensaje principal
+                                            </label>
                                             {{ form.mensaje_bienvenida.errors }}
                                             {{ form.mensaje_bienvenida }}
-                                            <div class="form-text">Este mensaje se mostrará en la pantalla de bienvenida del photobooth.</div>
+                                            <div class="form-text">Este mensaje aparecerá en la pantalla inicial del photobooth</div>
                                         </div>
                                         
                                         <div class="mb-3">
-                                            <label for="{{ form.imagen_fondo.id_for_label }}" class="form-label">Imagen de fondo:</label>
+                                            <label for="{{ form.imagen_fondo.id_for_label }}" class="form-label">
+                                                Imagen de fondo
+                                            </label>
                                             {{ form.imagen_fondo.errors }}
                                             {{ form.imagen_fondo }}
-                                            <div class="form-text">Imagen de fondo para la pantalla de bienvenida.</div>
+                                            <div class="form-text">Imagen para el fondo de la pantalla de bienvenida</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <div class="card">
+                            <div class="col-lg-6">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Estilo de Texto</h5>
+                                        <i class="fas fa-palette me-2"></i>Estilo de Texto
                                     </div>
                                     <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="{{ form.color_texto.id_for_label }}" class="form-label">Color del texto:</label>
-                                            {{ form.color_texto.errors }}
-                                            {{ form.color_texto }}
+                                        <div class="compact-row row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.color_texto.id_for_label }}" class="form-label">
+                                                        Color del texto
+                                                    </label>
+                                                    {{ form.color_texto.errors }}
+                                                    {{ form.color_texto }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.tamano_texto.id_for_label }}" class="form-label">
+                                                        Tamaño (px)
+                                                    </label>
+                                                    {{ form.tamano_texto.errors }}
+                                                    {{ form.tamano_texto }}
+                                                </div>
+                                            </div>
                                         </div>
                                         
                                         <div class="mb-3">
-                                            <label for="{{ form.tamano_texto.id_for_label }}" class="form-label">Tamaño del texto:</label>
-                                            {{ form.tamano_texto.errors }}
-                                            {{ form.tamano_texto }}
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="{{ form.tipo_letra.id_for_label }}" class="form-label">Tipo de letra:</label>
+                                            <label for="{{ form.tipo_letra.id_for_label }}" class="form-label">
+                                                Tipo de letra
+                                            </label>
                                             {{ form.tipo_letra.errors }}
                                             {{ form.tipo_letra }}
                                         </div>
@@ -104,61 +407,68 @@
                         </div>
                     </div>
                     
-                    <!-- Pestaña Plantilla -->
-                    <div class="tab-pane fade" id="plantilla" role="tabpanel" aria-labelledby="plantilla-tab">
+                    <!-- ========== PESTAÑA PLANTILLA ========== -->
+                    <div class="tab-pane fade" id="plantilla" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
+                            <div class="col-lg-5">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Selección de Plantilla</h5>
+                                        <i class="fas fa-th-large me-2"></i>Selección de Plantilla
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-3">
-                                            <label for="{{ form.plantilla_collage.id_for_label }}" class="form-label">Plantilla de collage:</label>
+                                            <label for="{{ form.plantilla_collage.id_for_label }}" class="form-label">
+                                                Plantilla de collage
+                                            </label>
                                             {{ form.plantilla_collage.errors }}
                                             {{ form.plantilla_collage }}
-                                            <div class="form-text">Selecciona una plantilla personalizada para el collage.</div>
+                                            <div class="form-text">Selecciona la distribución de fotos para el collage</div>
                                         </div>
                                         
-                                        <div class="mb-3">
+                                        <div class="d-grid gap-2">
                                             <a href="{% url 'template_list' evento.id %}" class="btn btn-outline-primary">
-                                                <i class="fas fa-th-large"></i> Gestionar plantillas
+                                                <i class="fas fa-list me-2"></i>Gestionar plantillas
                                             </a>
-                                            <a href="{% url 'template_editor' evento.id %}" class="btn btn-outline-success">
-                                                <i class="fas fa-plus"></i> Crear nueva plantilla
+                                            <a href="{% url 'template_editor' evento.id %}" class="btn btn-primary">
+                                                <i class="fas fa-plus me-2"></i>Crear nueva plantilla
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <!-- Vista previa de la plantilla seleccionada -->
-                                <div class="card">
+                            <div class="col-lg-7">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Vista previa de la plantilla</h5>
+                                        <i class="fas fa-eye me-2"></i>Vista Previa de la Plantilla
                                     </div>
-                                    <div class="card-body text-center">
+                                    <div class="card-body">
                                         {% if selected_template %}
-                                        <div class="d-flex justify-content-center">
-                                            <div id="collage-preview" style="width: 600px; height: 380px; position: relative; border: 1px solid #ddd; overflow: hidden; background-color: {{ selected_template.background_color|default:'white' }}; display: inline-block;">
+                                        <div class="preview-container">
+                                            <div id="collage-preview" style="width: 100%; max-width: 500px; height: 320px; position: relative; border: 1px solid #ddd; overflow: hidden; background-color: {{ selected_template.background_color|default:'white' }};">
                                                 {% if selected_template.background_image %}
-                                                    <img src="{{ selected_template.background_image.url }}" style="position: contain; width: 100%; height: 100%; object-fit: contain;">
+                                                    <img src="{{ selected_template.background_image.url }}" style="position: absolute; width: 100%; height: 100%; object-fit: cover;">
                                                 {% endif %}
                                                 
-                                                <!-- Marcos de fotos -->
                                                 {% for frame in frames %}
-                                                    <div class="photo-frame" style="position: absolute; width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2px {{ frame.borderStyle|default:'dashed' }} #FF6B6B; background-color: rgba(255,107,107,0.2);"></div>
+                                                    <div class="photo-frame" style="position: absolute; width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2px {{ frame.borderStyle|default:'dashed' }} #667eea; background-color: rgba(102, 126, 234, 0.1); display: flex; align-items: center; justify-content: center; color: #667eea; font-weight: bold; font-size: 0.8rem;">
+                                                        Foto {{ forloop.counter }}
+                                                    </div>
                                                 {% endfor %}
                                             </div>
                                         </div>
-                                        <p class="mt-2">{{ selected_template.nombre }}</p>
-                                        <p class="text-muted small">{{ selected_template.descripcion }}</p>
+                                        <div class="text-center mt-3">
+                                            <h6 class="mb-1">{{ selected_template.nombre }}</h6>
+                                            <p class="text-muted small mb-0">{{ selected_template.descripcion }}</p>
+                                        </div>
                                         {% else %}
-                                            <div class="alert alert-info">
-                                                <p><i class="fas fa-info-circle"></i> No hay plantilla de collage seleccionada</p>
-                                                <p>Selecciona una plantilla existente o crea una nueva para personalizar la disposición de las fotos en el collage.</p>
+                                        <div class="preview-container">
+                                            <div class="text-center">
+                                                <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                                <h5 class="text-muted">Sin plantilla seleccionada</h5>
+                                                <p class="text-muted">Selecciona una plantilla para ver la vista previa</p>
                                             </div>
+                                        </div>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -166,75 +476,137 @@
                         </div>
                     </div>
                     
-                    <!-- Pestaña Cámara -->
-                    <div class="tab-pane fade" id="camara" role="tabpanel" aria-labelledby="camara-tab">
+                    <!-- ========== PESTAÑA CÁMARA ========== -->
+                    <div class="tab-pane fade" id="camara" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
+                            <!-- Panel izquierdo: Configuración -->
+                            <div class="col-lg-6">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Selección de Cámara</h5>
+                                        <i class="fas fa-camera me-2"></i>Configuración de Cámara
                                     </div>
                                     <div class="card-body">
-                                        <div id="camera-alert" class="alert alert-warning" style="display: none;"></div>
+                                        <div id="camera-alert" class="alert alert-info" style="display: none;"></div>
                                         
-                                        <div class="mb-3">
-                                            <label for="camera-select" class="form-label">Seleccionar cámara:</label>
-                                            <select id="camera-select" class="form-select">
-                                                <option value="" disabled selected>Seleccionar cámara...</option>
-                                                <!-- Las opciones se cargarán con JavaScript -->
+                                        <!-- Selector de tipo de cámara -->
+                                        <div class="mb-4">
+                                            <label for="tipo-camara" class="form-label">Tipo de cámara</label>
+                                            <select id="tipo-camara" name="tipo_camara" class="form-select">
+                                                <option value="webcam">Cámara Web</option>
+                                                <option value="windows_camera">Cámara Windows (WIA/PTP)</option>
+                                                <option value="usb_ptp">Cámara USB (PTP Directo)</option>
+                                                <option value="nikon_dslr">Cámara Nikon DSLR</option>
                                             </select>
-                                            <input type="hidden" id="selected-camera-id" name="camera_id" value="{{ config.camera_id }}">
-                                            <button type="button" id="refresh-cameras-btn" class="btn btn-outline-secondary btn-sm mt-2">
-                                                <i class="fas fa-sync-alt"></i> Refrescar lista de cámaras
-                                            </button>
                                         </div>
                                         
-                                        <div class="mb-3">
-                                            <label for="{{ form.resolucion_camara.id_for_label }}" class="form-label">Resolución:</label>
-                                            {{ form.resolucion_camara.errors }}
-                                            {{ form.resolucion_camara }}
+                                        <!-- Sección para Cámara Web -->
+                                        <div id="webcam-section" class="camera-type-section">
+                                            <h6 class="mb-3"><i class="fas fa-video me-2"></i>Configuración Webcam</h6>
+                                            
+                                            <div class="compact-row row">
+                                                <div class="col-md-8">
+                                                    <div class="mb-3">
+                                                        <label for="camera-select" class="form-label">Seleccionar cámara</label>
+                                                        <select id="camera-select" class="form-select">
+                                                            <option value="" disabled selected>Detectando cámaras...</option>
+                                                        </select>
+                                                        <input type="hidden" id="selected-camera-id" name="camera_id" value="{{ config.camera_id }}">
+                                                        <input type="hidden" id="hidden_usb_connection_timeout" name="usb_connection_timeout" value="10">
+                                                        <input type="hidden" id="hidden_usb_capture_timeout" name="usb_capture_timeout" value="30">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">&nbsp;</label>
+                                                        <button type="button" id="refresh-cameras-btn" class="btn btn-outline-secondary d-block w-100">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="{{ form.resolucion_camara.id_for_label }}" class="form-label">Resolución</label>
+                                                {{ form.resolucion_camara.errors }}
+                                                {{ form.resolucion_camara }}
+                                            </div>
                                         </div>
                                         
-                                        <div class="mb-3">
-                                            <label for="{{ form.balance_blancos.id_for_label }}" class="form-label">Balance de blancos:</label>
-                                            {{ form.balance_blancos.errors }}
-                                            {{ form.balance_blancos }}
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="{{ form.iso_valor.id_for_label }}" class="form-label">Valor ISO:</label>
-                                            {{ form.iso_valor.errors }}
-                                            {{ form.iso_valor }}
-                                            <div class="form-text">Valores más altos son mejores para condiciones de poca luz.</div>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <button type="button" id="start-preview-btn" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-play"></i> Iniciar vista previa
-                                            </button>
-                                            <button type="button" id="stop-preview-btn" class="btn btn-danger btn-sm" disabled>
-                                                <i class="fas fa-stop"></i> Detener
-                                            </button>
-                                            <button type="button" id="capture-test-btn" class="btn btn-success btn-sm" disabled>
-                                                <i class="fas fa-camera"></i> Prueba
-                                            </button>
+                                        <!-- Configuración común -->
+                                        <div class="mt-4">
+                                            <h6 class="mb-3"><i class="fas fa-sliders-h me-2"></i>Ajustes de Imagen</h6>
+                                            
+                                            <div class="compact-row row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ form.nivel_iluminacion.id_for_label }}" class="form-label">
+                                                            Iluminación: <span id="iluminacion-value">{{ config.nivel_iluminacion|default:50 }}%</span>
+                                                        </label>
+                                                        {{ form.nivel_iluminacion.errors }}
+                                                        {{ form.nivel_iluminacion }}
+                                                        <div class="range-labels">
+                                                            <small>Oscuro</small>
+                                                            <small>Normal</small>
+                                                            <small>Brillante</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ form.iso_valor.id_for_label }}" class="form-label">ISO</label>
+                                                        {{ form.iso_valor.errors }}
+                                                        {{ form.iso_valor }}
+                                                        <div class="form-text">Para condiciones de poca luz</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="compact-row row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ form.calidad_imagen.id_for_label }}" class="form-label">Calidad</label>
+                                                        {{ form.calidad_imagen.errors }}
+                                                        {{ form.calidad_imagen }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="{{ form.modo_enfoque.id_for_label }}" class="form-label">Enfoque</label>
+                                                        {{ form.modo_enfoque.errors }}
+                                                        {{ form.modo_enfoque }}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5>Vista Previa de Cámara</h5>
+                            <!-- Panel derecho: Vista previa -->
+                            <div class="col-lg-6">
+                                <div class="config-section">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-eye me-2"></i>Vista Previa</span>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" id="start-preview-btn" class="btn btn-success">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                            <button type="button" id="stop-preview-btn" class="btn btn-danger" disabled>
+                                                <i class="fas fa-stop"></i>
+                                            </button>
+                                            <button type="button" id="capture-test-btn" class="btn btn-primary" disabled>
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="card-body p-0">
-                                        <div id="camera-preview-container" class="position-relative" style="width: 100%; height: 300px; background-color: #000;">
+                                        <div id="camera-preview-container" class="camera-preview-container" style="width: 100%; height: 350px;">
                                             <video id="camera-preview" style="width: 100%; height: 100%; object-fit: cover; display: none;" autoplay playsinline></video>
+                                            
                                             <div id="no-camera-message" class="d-flex justify-content-center align-items-center h-100 text-light">
                                                 <div class="text-center">
-                                                    <i class="fas fa-camera fa-3x mb-3"></i>
-                                                    <p>Selecciona una cámara y haz clic en "Iniciar vista previa"</p>
+                                                    <i class="fas fa-camera fa-3x mb-3 opacity-50"></i>
+                                                    <p class="mb-0 opacity-75">Selecciona una cámara para iniciar</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -242,95 +614,162 @@
                                 </div>
                                 
                                 <!-- Vista previa de imagen capturada -->
-                                <div class="card mt-3" id="captured-image-preview" style="display: none;">
-                                    <div class="card-header">
-                                        <h5>Imagen de Prueba</h5>
+                                <div class="config-section mt-3" id="captured-image-preview" style="display: none;">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-image me-2"></i>Imagen de Prueba</span>
+                                        <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('captured-image-preview').style.display='none'"></button>
                                     </div>
                                     <div class="card-body p-0">
                                         <img id="test-image" src="" alt="Imagen de prueba" class="img-fluid">
+                                    </div>
+                                    <div class="card-body">
+                                        <small id="capture-info" class="text-muted"></small>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Pestaña Tiempos -->
-                    <div class="tab-pane fade" id="tiempos" role="tabpanel" aria-labelledby="tiempos-tab">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
+                    <!-- ========== PESTAÑA TIEMPOS ========== -->
+                    <div class="tab-pane fade" id="tiempos" role="tabpanel">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Configuración de Tiempos</h5>
+                                        <i class="fas fa-clock me-2"></i>Configuración de Tiempos
                                     </div>
                                     <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="{{ form.tiempo_cuenta_regresiva.id_for_label }}" class="form-label">Tiempo de cuenta regresiva (segundos):</label>
-                                            {{ form.tiempo_cuenta_regresiva.errors }}
-                                            {{ form.tiempo_cuenta_regresiva }}
-                                            <div class="form-text">Cuenta atrás antes de cada foto (1-10 segundos).</div>
+                                        <div class="compact-row row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.tiempo_cuenta_regresiva.id_for_label }}" class="form-label">
+                                                        Cuenta regresiva
+                                                    </label>
+                                                    {{ form.tiempo_cuenta_regresiva.errors }}
+                                                    {{ form.tiempo_cuenta_regresiva }}
+                                                    <div class="form-text">Antes de cada foto (1-10 seg)</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.tiempo_entre_fotos.id_for_label }}" class="form-label">
+                                                        Entre fotos
+                                                    </label>
+                                                    {{ form.tiempo_entre_fotos.errors }}
+                                                    {{ form.tiempo_entre_fotos }}
+                                                    <div class="form-text">Intervalo entre fotos (1-20 seg)</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.tiempo_visualizacion_foto.id_for_label }}" class="form-label">
+                                                        Visualización
+                                                    </label>
+                                                    {{ form.tiempo_visualizacion_foto.errors }}
+                                                    {{ form.tiempo_visualizacion_foto }}
+                                                    <div class="form-text">Tiempo de muestra (1-10 seg)</div>
+                                                </div>
+                                            </div>
                                         </div>
                                         
-                                        <div class="mb-3">
-                                            <label for="{{ form.tiempo_entre_fotos.id_for_label }}" class="form-label">Tiempo entre fotos (segundos):</label>
-                                            {{ form.tiempo_entre_fotos.errors }}
-                                            {{ form.tiempo_entre_fotos }}
-                                            <div class="form-text">Intervalo entre cada foto del collage (1-20 segundos).</div>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="{{ form.tiempo_visualizacion_foto.id_for_label }}" class="form-label">Tiempo de visualización (segundos):</label>
-                                            {{ form.tiempo_visualizacion_foto.errors }}
-                                            {{ form.tiempo_visualizacion_foto }}
-                                            <div class="form-text">Tiempo de muestra de cada foto después de tomarla (1-10 segundos).</div>
+                                        <!-- Simulador visual de tiempos -->
+                                        <div class="mt-4 p-3 bg-light rounded">
+                                            <h6 class="mb-3"><i class="fas fa-play-circle me-2"></i>Simulación del Proceso</h6>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="text-center">
+                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 50px; height: 50px;">
+                                                        <i class="fas fa-hourglass-start"></i>
+                                                    </div>
+                                                    <small>Cuenta regresiva</small>
+                                                    <div class="fw-bold" id="countdown-preview">3s</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <i class="fas fa-arrow-right text-muted"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 50px; height: 50px;">
+                                                        <i class="fas fa-camera"></i>
+                                                    </div>
+                                                    <small>Captura</small>
+                                                    <div class="fw-bold">Click!</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <i class="fas fa-arrow-right text-muted"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 50px; height: 50px;">
+                                                        <i class="fas fa-eye"></i>
+                                                    </div>
+                                                    <small>Visualización</small>
+                                                    <div class="fw-bold" id="preview-time">2s</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <i class="fas fa-arrow-right text-muted"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 50px; height: 50px;">
+                                                        <i class="fas fa-clock"></i>
+                                                    </div>
+                                                    <small>Pausa</small>
+                                                    <div class="fw-bold" id="between-photos-time">3s</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
                         </div>
                     </div>
-                    <!-- Pestaña Impresora -->
-                    <div class="tab-pane fade" id="impresora" role="tabpanel" aria-labelledby="impresora-tab">
+                    
+                    <!-- ========== PESTAÑA IMPRESORA ========== -->
+                    <div class="tab-pane fade" id="impresora" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
+                            <div class="col-lg-6">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Configuración de Impresora</h5>
+                                        <i class="fas fa-print me-2"></i>Configuración de Impresora
                                     </div>
                                     <div class="card-body">
                                         <div id="printer-alert" class="alert alert-info">
-                                            <i class="fas fa-info-circle"></i> Conecte una impresora para poder seleccionarla.
+                                            <i class="fas fa-info-circle"></i> Conecta una impresora para seleccionarla
                                         </div>
                                         
                                         <div class="mb-3">
-                                            <label for="printer-select" class="form-label">Seleccionar impresora:</label>
-                                            <select id="printer-select" class="form-select" name="printer_name">
-                                                <option value="" selected>-- Seleccionar impresora --</option>
-                                                {% for printer in printers %}
-                                                <option value="{{ printer }}" {% if printer == config.printer_name %}selected{% endif %}>
-                                                    {{ printer }}
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                            <button type="button" id="refresh-printers-btn" class="btn btn-outline-secondary btn-sm mt-2">
-                                                <i class="fas fa-sync-alt"></i> Refrescar lista de impresoras
-                                            </button>
+                                            <label for="printer-select" class="form-label">Impresora</label>
+                                            <div class="input-group">
+                                                <select id="printer-select" class="form-select" name="printer_name">
+                                                    <option value="" selected>-- Seleccionar impresora --</option>
+                                                    {% for printer in printers %}
+                                                    <option value="{{ printer }}" {% if printer == config.printer_name %}selected{% endif %}>
+                                                        {{ printer }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button type="button" id="refresh-printers-btn" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="compact-row row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.paper_size.id_for_label }}" class="form-label">Tamaño de papel</label>
+                                                    {{ form.paper_size.errors }}
+                                                    {{ form.paper_size }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="{{ form.copias_impresion.id_for_label }}" class="form-label">Copias</label>
+                                                    {{ form.copias_impresion.errors }}
+                                                    {{ form.copias_impresion }}
+                                                </div>
+                                            </div>
                                         </div>
                                         
                                         <div class="mb-3">
-                                            <label for="{{ form.paper_size.id_for_label }}" class="form-label">Tamaño de papel:</label>
-                                            {{ form.paper_size.errors }}
-                                            {{ form.paper_size }}
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="{{ form.copias_impresion.id_for_label }}" class="form-label">Copias por defecto:</label>
-                                            {{ form.copias_impresion.errors }}
-                                            {{ form.copias_impresion }}
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="{{ form.calidad_impresion.id_for_label }}" class="form-label">Calidad de impresión:</label>
+                                            <label for="{{ form.calidad_impresion.id_for_label }}" class="form-label">Calidad</label>
                                             {{ form.calidad_impresion.errors }}
                                             {{ form.calidad_impresion }}
                                         </div>
@@ -338,32 +777,35 @@
                                         <div class="form-check mb-3">
                                             {{ form.imprimir_automaticamente }}
                                             <label class="form-check-label" for="{{ form.imprimir_automaticamente.id_for_label }}">
-                                                Imprimir automáticamente al finalizar
+                                                <strong>Impresión automática</strong>
                                             </label>
-                                            <div class="form-text">Si se activa, los collages se imprimirán automáticamente al finalizar.</div>
+                                            <div class="form-text">Los collages se imprimirán automáticamente al finalizar</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <div class="card">
+                            <div class="col-lg-6">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Prueba de Impresión</h5>
+                                        <i class="fas fa-vial me-2"></i>Prueba de Impresión
                                     </div>
                                     <div class="card-body">
-                                        <p>Puedes realizar una prueba de impresión con la configuración actual:</p>
-                                        
-                                        <div class="d-grid gap-2">
+                                        <div class="text-center mb-4">
+                                            <i class="fas fa-print fa-3x text-muted mb-3"></i>
+                                            <p class="mb-3">Realiza una prueba con la configuración actual</p>
                                             <button type="button" id="test-print-btn" class="btn btn-primary">
-                                                <i class="fas fa-print"></i> Imprimir página de prueba
+                                                <i class="fas fa-print me-2"></i>Imprimir página de prueba
                                             </button>
                                         </div>
                                         
                                         <div class="mt-4">
-                                            <h6>Estado de Impresora:</h6>
+                                            <h6 class="mb-3">Estado de la Impresora</h6>
                                             <div id="printer-status" class="alert alert-secondary">
-                                                <i class="fas fa-circle-notch fa-spin"></i> Verificando estado...
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-circle-notch fa-spin me-2"></i>
+                                                    <span>Verificando estado...</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -372,50 +814,63 @@
                         </div>
                     </div>
                     
-                    <!-- Pestaña Vista Previa -->
-                    <div class="tab-pane fade" id="preview" role="tabpanel" aria-labelledby="preview-tab">
+                    <!-- ========== PESTAÑA VISTA PREVIA ========== -->
+                    <div class="tab-pane fade" id="preview" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <div class="card">
+                            <div class="col-12 mb-4">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Vista Previa de Bienvenida</h5>
+                                        <i class="fas fa-desktop me-2"></i>Pantalla de Bienvenida
                                     </div>
                                     <div class="card-body">
-                                        <div id="preview-welcome" style="height: 450px; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: contain; background-repeat: no-repeat;">
-                                            <h1 id="preview-message" style="padding: 20px; background-color: rgba(255, 255, 255, 0.7); border-radius: 10px;">
-                                                {{ config.mensaje_bienvenida|default:"¡Bienvenidos a photobooth!" }}
+                                        <div id="preview-welcome" style="height: 300px; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 0.5rem; border: 1px solid #dee2e6;">
+                                            <h1 id="preview-message" style="padding: 20px; background-color: rgba(255, 255, 255, 0.9); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+                                                {{ config.mensaje_bienvenida|default:"¡Bienvenidos al photobooth!" }}
                                             </h1>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-12">
-                                <div class="card">
+                            <div class="col-12">
+                                <div class="config-section">
                                     <div class="card-header">
-                                        <h5>Vista previa de la plantilla</h5>
+                                        <i class="fas fa-th-large me-2"></i>Plantilla de Collage
                                     </div>
-                                    <div class="card-body text-center">
+                                    <div class="card-body">
                                         {% if selected_template %}
-                                        <div class="d-flex justify-content-center">
-                                            <div id="collage-preview" style="width: 560px; height: 375px; position: relative; border: 1px solid #ddd; overflow: hidden; background-color: {{ selected_template.background_color|default:'white' }}; display: inline-block;">
-                                                {% if selected_template.background_image %}
-                                                    <img src="{{ selected_template.background_image.url }}" style="position: contain; width: 100%; height: 100%; object-fit: contain;">
-                                                {% endif %}
-                                                
-                                                <!-- Marcos de fotos -->
-                                                {% for frame in frames %}
-                                                    <div class="photo-frame" style="position: absolute; width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2px {{ frame.borderStyle|default:'dashed' }} #FF6B6B; background-color: rgba(255,107,107,0.2);"></div>
-                                                {% endfor %}
+                                        <div class="text-center">
+                                            <div class="d-inline-block">
+                                                <div id="collage-preview-full" style="width: 600px; height: 400px; position: relative; border: 2px solid #667eea; border-radius: 0.5rem; overflow: hidden; background-color: {{ selected_template.background_color|default:'white' }}; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
+                                                    {% if selected_template.background_image %}
+                                                        <img src="{{ selected_template.background_image.url }}" style="position: absolute; width: 100%; height: 100%; object-fit: cover;">
+                                                    {% endif %}
+                                                    
+                                                    {% for frame in frames %}
+                                                        <div class="photo-frame" style="position: absolute; width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2px {{ frame.borderStyle|default:'dashed' }} #667eea; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); display: flex; align-items: center; justify-content: center; color: #667eea; font-weight: bold; font-size: 1rem; backdrop-filter: blur(2px);">
+                                                            <span style="background: rgba(255,255,255,0.9); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">Foto {{ forloop.counter }}</span>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <h5 class="mb-1">{{ selected_template.nombre }}</h5>
+                                                <p class="text-muted">{{ selected_template.descripcion }}</p>
+                                                <div class="d-flex justify-content-center gap-2 mt-3">
+                                                    <span class="badge bg-primary">{{ frames|length }} fotos</span>
+                                                    <span class="badge bg-info">{{ selected_template.background_color|default:'Fondo blanco' }}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <p class="mt-2">{{ selected_template.nombre }}</p>
-                                        <p class="text-muted small">{{ selected_template.descripcion }}</p>
                                         {% else %}
-                                            <div class="alert alert-info">
-                                                <p><i class="fas fa-info-circle"></i> No hay plantilla de collage seleccionada</p>
-                                                <p>Selecciona una plantilla existente o crea una nueva para personalizar la disposición de las fotos en el collage.</p>
-                                            </div>
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-image fa-4x text-muted mb-4"></i>
+                                            <h4 class="text-muted mb-3">Sin plantilla seleccionada</h4>
+                                            <p class="text-muted mb-4">Selecciona una plantilla en la pestaña "Plantilla" para ver la vista previa completa</p>
+                                            <a href="#plantilla-tab" class="btn btn-primary" data-bs-toggle="tab">
+                                                <i class="fas fa-th-large me-2"></i>Ir a Plantillas
+                                            </a>
+                                        </div>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -425,19 +880,23 @@
                 </div>
             </div>
             
-            <div class="card-footer">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Guardar Configuración
+            <!-- Footer fijo con botones de acción -->
+            <div class="sticky-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Guardar Configuración
                         </button>
-                        <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-info">
-                            <i class="fas fa-eye"></i> Vista Previa Completa
+                        <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-eye me-2"></i>Vista Previa Completa
                         </a>
+                        <button type="button" class="btn btn-outline-secondary" onclick="debugFormData()">
+                            <i class="fas fa-bug me-2"></i>Debug
+                        </button>
                     </div>
                     <div>
                         <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver al Evento
+                            <i class="fas fa-arrow-left me-2"></i>Volver al Evento
                         </a>
                     </div>
                 </div>
@@ -447,717 +906,286 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const mensajeInput = document.getElementById('{{ form.mensaje_bienvenida.id_for_label }}');
-        const colorInput = document.getElementById('{{ form.color_texto.id_for_label }}');
-        const tamanoInput = document.getElementById('{{ form.tamano_texto.id_for_label }}');
-        const tipoLetraInput = document.getElementById('{{ form.tipo_letra.id_for_label }}');
-        const imagenInput = document.getElementById('{{ form.imagen_fondo.id_for_label }}');
-        const plantillaSelect = document.getElementById('{{ form.plantilla_collage.id_for_label }}');
-        
-        const previewMessage = document.getElementById('previewMessage');
-        const preview = document.getElementById('preview');
-        
-        // Inicializar con valores actuales
-        {% if config.imagen_fondo %}
-        preview.style.backgroundImage = "url('{{ config.imagen_fondo.url }}')";
-        {% endif %}
-        
-        previewMessage.style.color = "{{ config.color_texto|default:'#000000' }}";
-        previewMessage.style.fontSize = "{{ config.tamano_texto|default:'24' }}px";
-        previewMessage.style.fontFamily = "{{ config.tipo_letra|default:'Arial' }}, sans-serif";
-        
-        // Actualizar vista previa al cambiar valores
-        mensajeInput.addEventListener('input', function() {
-            previewMessage.textContent = this.value;
-        });
-        
-        colorInput.addEventListener('input', function() {
-            previewMessage.style.color = this.value;
-        });
-        
-        tamanoInput.addEventListener('input', function() {
-            previewMessage.style.fontSize = this.value + 'px';
-        });
-        
-        tipoLetraInput.addEventListener('change', function() {
-            previewMessage.style.fontFamily = this.value + ', sans-serif';
-        });
-        
-        imagenInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.style.backgroundImage = `url('${e.target.result}')`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Actualizar la vista previa del collage al cambiar la plantilla
-        if (plantillaSelect) {
-            plantillaSelect.addEventListener('change', function() {
-                if (this.value) {
-                    window.location.href = window.location.pathname + '?template=' + this.value;
-                }
-            });
-        }
-    });
-</script>
-
-{# Añade este script al final del archivo, justo antes de cerrar el bloque extra_scripts #}
-<script>
-    // Variables para cámara
+// JavaScript mejorado y optimizado
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Iniciando configuración de photobooth...');
+    
+    // ========== VARIABLES GLOBALES ==========
+    let currentCameraType = 'webcam';
     let mediaStream = null;
+    let previewActive = false;
     let availableCameras = [];
     
-    // Elementos DOM
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicialización de elementos de cámara
-        const cameraSelect = document.getElementById('camera-select');
-        const cameraResolution = document.getElementById('camera-resolution');
-        const whiteBalance = document.getElementById('white-balance');
-        const refreshCamerasBtn = document.getElementById('refresh-cameras-btn');
-        const cameraAlert = document.getElementById('camera-alert');
-        const cameraPreview = document.getElementById('camera-preview');
-        const startPreviewBtn = document.getElementById('start-preview-btn');
-        const stopPreviewBtn = document.getElementById('stop-preview-btn');
-        const captureTestBtn = document.getElementById('capture-test-btn');
-        const selectedCameraIdInput = document.getElementById('selected-camera-id');
-        const noCameraMessage = document.getElementById('no-camera-message');
-        const capturedImagePreview = document.getElementById('captured-image-preview');
-        const testImage = document.getElementById('test-image');
-        
-        // Inicialización de elementos de impresora
-        const printerSelect = document.getElementById('printer-select');
-        const refreshPrintersBtn = document.getElementById('refresh-printers-btn');
-        const testPrintBtn = document.getElementById('test-print-btn');
-        const printerAlert = document.getElementById('printer-alert');
-        const printerStatus = document.getElementById('printer-status');
-        
-        // Inicialización de elementos de previsualización
-        const previewWelcome = document.getElementById('preview-welcome');
-        const previewMessage = document.getElementById('preview-message');
-        const simulateBtn = document.getElementById('simulate-btn');
-        
-        // Inicialización de elementos de tiempos
-        const tiempoEntreFotos = document.getElementById('tiempo-entre-fotos');
-        const tiempoCuentaRegresiva = document.getElementById('tiempo-cuenta-regresiva');
-        const tiempoVisualizacionFoto = document.getElementById('tiempo-visualizacion-foto');
-        const timelineVisualization = document.getElementById('timeline-visualization');
-        
-        // Función para mostrar alertas
-        function showAlert(element, message, type = 'warning') {
-            if (element) {
-                element.className = `alert alert-${type}`;
-                element.innerHTML = message;
-                element.style.display = 'block';
-            }
-        }
-        
-        // Función para ocultar alertas
-        function hideAlert(element) {
-            if (element) {
-                element.style.display = 'none';
-            }
-        }
-        
-        // Función para enumerar cámaras disponibles
-        async function listAvailableCameras() {
-            try {
-                // Primero necesitamos acceder a los dispositivos para pedir permiso
-                try {
-                    await navigator.mediaDevices.getUserMedia({ video: true });
-                } catch (err) {
-                    // Si hay error al acceder a la cámara, mostrar mensaje pero continuar
-                    console.warn('No se pudo acceder a la cámara:', err);
+    // ========== ELEMENTOS DOM ==========
+    const tipoCamaraSelect = document.getElementById('tipo-camara');
+    const webcamSection = document.getElementById('webcam-section');
+    const cameraAlert = document.getElementById('camera-alert');
+    const cameraSelect = document.getElementById('camera-select');
+    const refreshCamerasBtn = document.getElementById('refresh-cameras-btn');
+    const selectedCameraIdInput = document.getElementById('selected-camera-id');
+    const videoPreview = document.getElementById('camera-preview');
+    const noCameraMessage = document.getElementById('no-camera-message');
+    const startPreviewBtn = document.getElementById('start-preview-btn');
+    const stopPreviewBtn = document.getElementById('stop-preview-btn');
+    const captureTestBtn = document.getElementById('capture-test-btn');
+    const capturedImagePreview = document.getElementById('captured-image-preview');
+    const testImage = document.getElementById('test-image');
+    
+    // Elementos de tiempos para simulación
+    const countdownInput = document.getElementById('{{ form.tiempo_cuenta_regresiva.id_for_label }}');
+    const betweenPhotosInput = document.getElementById('{{ form.tiempo_entre_fotos.id_for_label }}');
+    const previewTimeInput = document.getElementById('{{ form.tiempo_visualizacion_foto.id_for_label }}');
+    
+    // ========== FUNCIONES UTILITARIAS ==========
+    function showAlert(element, message, type = 'info') {
+        if (element) {
+            element.className = `alert alert-${type}`;
+            element.innerHTML = message;
+            element.style.display = 'block';
+            
+            setTimeout(() => {
+                if (element && element.style.display !== 'none') {
+                    element.style.opacity = '0.7';
                 }
+            }, 3000);
+        }
+    }
+    
+    function hideAlert(element) {
+        if (element) {
+            element.style.display = 'none';
+        }
+    }
+    
+    // ========== FUNCIONES DE CÁMARA ==========
+    async function listAvailableCameras() {
+        console.log('Detectando cámaras...');
+        
+        try {
+            // Solicitar permisos primero
+            const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            tempStream.getTracks().forEach(track => track.stop());
+            
+            // Enumerar dispositivos
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            availableCameras = videoDevices;
+            
+            console.log('Cámaras encontradas:', videoDevices.length);
+            
+            if (cameraSelect) {
+                cameraSelect.innerHTML = '<option value="" disabled>Seleccionar cámara...</option>';
                 
-                // Luego obtenemos la lista de dispositivos
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                
-                // Filtrar solo las cámaras de video
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                availableCameras = videoDevices;
-                
-                // Limpiar el selector de cámaras
-                if (cameraSelect) {
-                    cameraSelect.innerHTML = '<option value="" disabled selected>Seleccionar cámara...</option>';
-                    
-                    if (videoDevices.length === 0) {
-                        // No se detectaron cámaras, mostrar mensaje
+                if (videoDevices.length === 0) {
+                    cameraSelect.innerHTML = '<option value="" disabled>No se detectaron cámaras</option>';
+                    showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> No se detectaron cámaras web', 'warning');
+                } else {
+                    videoDevices.forEach((device, index) => {
                         const option = document.createElement('option');
-                        option.value = "";
-                        option.text = "No se detectaron cámaras";
-                        option.disabled = true;
+                        option.value = device.deviceId;
+                        option.text = device.label || `Cámara ${index + 1}`;
                         cameraSelect.appendChild(option);
-                        
-                        showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> No se detectaron cámaras. Por favor, conecta una cámara y haz clic en "Refrescar lista de cámaras".', 'warning');
-                    } else {
-                        // Añadir cada cámara al selector
-                        videoDevices.forEach((device, index) => {
-                            const option = document.createElement('option');
-                            option.value = device.deviceId;
-                            option.text = device.label || `Cámara ${index + 1}`;
-                            cameraSelect.appendChild(option);
-                        });
-                        
-                        hideAlert(cameraAlert);
-                        
-                        // Si solo hay una cámara, seleccionarla automáticamente
-                        if (videoDevices.length === 1) {
-                            cameraSelect.value = videoDevices[0].deviceId;
-                            if (selectedCameraIdInput) {
-                                selectedCameraIdInput.value = videoDevices[0].deviceId;
-                            }
-                        }
-                        
-                        // Si ya hay una cámara guardada, seleccionarla
-                        const savedCameraId = selectedCameraIdInput ? selectedCameraIdInput.value : null;
-                        if (savedCameraId) {
-                            // Verificar si la cámara guardada está disponible
-                            const cameraExists = videoDevices.some(device => device.deviceId === savedCameraId);
-                            if (cameraExists) {
-                                cameraSelect.value = savedCameraId;
-                            }
+                    });
+                    
+                    hideAlert(cameraAlert);
+                    
+                    // Seleccionar automáticamente si hay solo una
+                    if (videoDevices.length === 1) {
+                        cameraSelect.value = videoDevices[0].deviceId;
+                        if (selectedCameraIdInput) {
+                            selectedCameraIdInput.value = videoDevices[0].deviceId;
                         }
                     }
-                }
-                
-                return videoDevices.length > 0;
-            } catch (error) {
-                console.error('Error al enumerar cámaras:', error);
-                showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> Error al enumerar cámaras: ' + error.message, 'danger');
-                return false;
-            }
-        }
-        
-        // Función para iniciar la vista previa de la cámara
-        async function startCameraPreview() {
-            try {
-                // Detener cualquier stream actual
-                stopCameraPreview();
-                
-                // Obtener el ID del dispositivo seleccionado
-                const deviceId = cameraSelect ? cameraSelect.value : null;
-                
-                if (!deviceId) {
-                    showAlert(cameraAlert, 'Por favor, selecciona una cámara antes de iniciar la vista previa.', 'warning');
-                    return false;
-                }
-                
-                // Guardar el ID de la cámara seleccionada
-                if (selectedCameraIdInput) {
-                    selectedCameraIdInput.value = deviceId;
-                }
-                
-                // Obtener la resolución seleccionada
-                let width = 1280, height = 720; // Valores predeterminados
-                if (cameraResolution && cameraResolution.value) {
-                    const [w, h] = cameraResolution.value.split('x').map(num => parseInt(num, 10));
-                    width = w || width;
-                    height = h || height;
-                    console.log(`Aplicando resolución: ${width}x${height}`);
-                }
-                
-                // Crear constraints para el video
-                const videoConstraints = {
-                    deviceId: { exact: deviceId },
-                    width: { ideal: width },
-                    height: { ideal: height }
-                };
-                
-                // Iniciar la cámara seleccionada
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: videoConstraints,
-                    audio: false
-                });
-                
-                // Aplicar el stream a la vista previa
-                if (cameraPreview) {
-                    cameraPreview.srcObject = mediaStream;
-                    cameraPreview.style.display = 'block';
-                    if (noCameraMessage) {
-                        noCameraMessage.style.display = 'none';
+                    
+                    // Restaurar selección guardada
+                    const savedCameraId = selectedCameraIdInput ? selectedCameraIdInput.value : null;
+                    if (savedCameraId && videoDevices.some(device => device.deviceId === savedCameraId)) {
+                        cameraSelect.value = savedCameraId;
                     }
                 }
-                
-                // Actualizar estado de los botones
-                if (startPreviewBtn) startPreviewBtn.disabled = true;
-                if (stopPreviewBtn) stopPreviewBtn.disabled = false;
-                if (captureTestBtn) captureTestBtn.disabled = false;
-                
-                return true;
-            } catch (error) {
-                console.error('Error al iniciar la cámara:', error);
-                showAlert(cameraAlert, `<i class="fas fa-exclamation-triangle"></i> Error al iniciar la cámara: ${error.message}. Es posible que la resolución seleccionada no sea compatible con tu cámara.`, 'danger');
-                return false;
             }
+            
+            return videoDevices.length > 0;
+            
+        } catch (error) {
+            console.error('Error al enumerar cámaras:', error);
+            
+            let errorType = 'danger';
+            let errorMessage = '';
+            
+            if (error.name === 'NotAllowedError') {
+                errorMessage = '<i class="fas fa-shield-alt"></i> Permiso denegado. Permite el acceso a la cámara para continuar.';
+            } else if (error.name === 'NotFoundError') {
+                errorMessage = '<i class="fas fa-search"></i> No se encontraron cámaras en el sistema.';
+                errorType = 'warning';
+            } else {
+                errorMessage = '<i class="fas fa-exclamation-triangle"></i> Error al acceder a las cámaras: ' + error.message;
+            }
+            
+            showAlert(cameraAlert, errorMessage, errorType);
+            return false;
         }
+    }
+    
+    async function startCameraPreview() {
+        console.log('Iniciando vista previa...');
         
-        // Función para detener la vista previa de la cámara
-        function stopCameraPreview() {
+        try {
+            // Detener stream anterior
             if (mediaStream) {
                 mediaStream.getTracks().forEach(track => track.stop());
                 mediaStream = null;
             }
             
-            if (cameraPreview) {
-                cameraPreview.srcObject = null;
-                cameraPreview.style.display = 'none';
-                if (noCameraMessage) {
-                    noCameraMessage.style.display = 'flex';
-                }
+            const deviceId = cameraSelect ? cameraSelect.value : null;
+            
+            if (!deviceId) {
+                showAlert(cameraAlert, '<i class="fas fa-hand-pointer"></i> Selecciona una cámara primero', 'warning');
+                return false;
             }
             
-            // Actualizar estado de los botones
-            if (startPreviewBtn) startPreviewBtn.disabled = false;
-            if (stopPreviewBtn) stopPreviewBtn.disabled = true;
-            if (captureTestBtn) captureTestBtn.disabled = true;
-        }
-        
-        // Función para capturar una imagen de prueba
-        function captureTestImage() {
-            if (!mediaStream) {
-                showAlert(cameraAlert, 'La cámara no está activa.', 'warning');
-                return;
+            // Actualizar campo oculto
+            if (selectedCameraIdInput) {
+                selectedCameraIdInput.value = deviceId;
             }
             
-            try {
-                // Crear un canvas para capturar la imagen
-                const canvas = document.createElement('canvas');
-                canvas.width = cameraPreview.videoWidth;
-                canvas.height = cameraPreview.videoHeight;
-                
-                // Dibujar el frame actual del video en el canvas
-                const context = canvas.getContext('2d');
-                context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
-                
-                // Convertir el canvas a una URL de datos
-                const imageUrl = canvas.toDataURL('image/jpeg');
-                
-                // Mostrar la imagen capturada
-                if (testImage && capturedImagePreview) {
-                    testImage.src = imageUrl;
-                    capturedImagePreview.style.display = 'block';
-                }
-                
-                return imageUrl;
-            } catch (error) {
-                console.error('Error al capturar imagen:', error);
-                showAlert(cameraAlert, 'Error al capturar imagen: ' + error.message, 'danger');
-                return null;
-            }
-        }
-        
-        // Función para actualizar la visualización de tiempos
-        function updateTimelineVisualization() {
-            if (!timelineVisualization) return;
-            
-            // Obtener valores actuales
-            const countdownTime = parseInt(tiempoCuentaRegresiva ? tiempoCuentaRegresiva.value : 3, 10);
-            const intervalTime = parseInt(tiempoEntreFotos ? tiempoEntreFotos.value : 3, 10);
-            const previewTime = parseInt(tiempoVisualizacionFoto ? tiempoVisualizacionFoto.value : 2, 10);
-            
-            // Actualizar texto en la simulación
-            document.querySelectorAll('.countdown-time').forEach(el => el.textContent = countdownTime);
-            document.querySelectorAll('.photo-interval').forEach(el => el.textContent = intervalTime);
-            document.querySelectorAll('.preview-time').forEach(el => el.textContent = previewTime);
-            
-            // Crear visualización de línea de tiempo
-            let html = '';
-            
-            // Suponemos 4 fotos para la visualización
-            const totalFrames = document.querySelector('.total-frames');
-            const frameCount = totalFrames ? parseInt(totalFrames.textContent, 10) : 4;
-            
-            html += `<div class="timeline-item welcome">
-                        <div class="timeline-marker bg-primary">Inicio</div>
-                        <div class="timeline-label">Bienvenida</div>
-                    </div>`;
-            
-            for (let i = 0; i < frameCount; i++) {
-                // Cuenta regresiva
-                html += `<div class="timeline-item countdown">
-                            <div class="timeline-marker bg-warning">${countdownTime}s</div>
-                            <div class="timeline-label">Cuenta regresiva #${i+1}</div>
-                        </div>`;
-                
-                // Captura de foto
-                html += `<div class="timeline-item capture">
-                            <div class="timeline-marker bg-danger">Foto</div>
-                            <div class="timeline-label">Captura #${i+1}</div>
-                        </div>`;
-                
-                // Visualización de foto
-                html += `<div class="timeline-item preview">
-                            <div class="timeline-marker bg-info">${previewTime}s</div>
-                            <div class="timeline-label">Visualización #${i+1}</div>
-                        </div>`;
-                
-                // Intervalo (excepto después de la última foto)
-                if (i < frameCount - 1) {
-                    html += `<div class="timeline-item interval">
-                                <div class="timeline-marker bg-secondary">${intervalTime}s</div>
-                                <div class="timeline-label">Intervalo</div>
-                            </div>`;
-                }
-            }
-            
-            // Finalización
-            html += `<div class="timeline-item result">
-                        <div class="timeline-marker bg-success">Fin</div>
-                        <div class="timeline-label">Resultado</div>
-                    </div>`;
-            
-            timelineVisualization.innerHTML = html;
-        }
-        
-        // Función para refrescar la lista de impresoras
-        function refreshPrinters() {
-            fetch('{% url "list_printers" %}')
-                .then(response => response.json())
-                .then(data => {
-                    if (printerSelect) {
-                        // Guardar la selección actual
-                        const currentSelection = printerSelect.value;
-                        
-                        // Limpiar opciones actuales
-                        printerSelect.innerHTML = '<option value="">-- Seleccionar impresora --</option>';
-                        
-                        // Añadir las impresoras disponibles
-                        if (data.printers && data.printers.length > 0) {
-                            data.printers.forEach(printer => {
-                                const option = document.createElement('option');
-                                option.value = printer;
-                                option.text = printer;
-                                printerSelect.appendChild(option);
-                            });
-                            
-                            // Restaurar selección anterior si sigue disponible
-                            if (currentSelection && data.printers.includes(currentSelection)) {
-                                printerSelect.value = currentSelection;
-                            }
-                            
-                            hideAlert(printerAlert);
-                            updatePrinterStatus();
-                        } else {
-                            showAlert(printerAlert, '<i class="fas fa-exclamation-triangle"></i> No se encontraron impresoras disponibles. Por favor, conecte una impresora y haga clic en "Refrescar lista de impresoras".', 'warning');
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al obtener impresoras:', error);
-                    showAlert(printerAlert, '<i class="fas fa-exclamation-triangle"></i> Error al obtener impresoras: ' + error.message, 'danger');
-                });
-        }
-        
-        // Función para actualizar el estado de la impresora
-        function updatePrinterStatus() {
-            const selectedPrinter = printerSelect ? printerSelect.value : null;
-            
-            if (!selectedPrinter) {
-                if (printerStatus) {
-                    printerStatus.className = 'alert alert-secondary';
-                    printerStatus.innerHTML = '<i class="fas fa-info-circle"></i> No hay impresora seleccionada';
-                }
-                return;
-            }
-            
-            if (printerStatus) {
-                printerStatus.className = 'alert alert-info';
-                printerStatus.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verificando estado...';
-            }
-            
-            // Aquí podrías implementar una llamada a un endpoint para verificar el estado de la impresora
-            // Por simplicidad, simulamos un estado OK después de un breve retraso
-            setTimeout(() => {
-                if (printerStatus) {
-                    printerStatus.className = 'alert alert-success';
-                    printerStatus.innerHTML = '<i class="fas fa-check-circle"></i> Impresora lista';
-                }
-            }, 1000);
-        }
-        
-        // Función para imprimir página de prueba
-        function printTestPage() {
-            const selectedPrinter = printerSelect ? printerSelect.value : null;
-            
-            if (!selectedPrinter) {
-                showAlert(printerAlert, 'Por favor, seleccione una impresora primero.', 'warning');
-                return;
-            }
-            
-            const paperSize = document.getElementById('id_paper_size') ? document.getElementById('id_paper_size').value : '10x15';
-            
-            // Datos de prueba (texto simple)
-            const testDocument = `Photobooth - Página de prueba\n\nImpresora: ${selectedPrinter}\nTamaño: ${paperSize}\nFecha: ${new Date().toLocaleString()}\n\nSi puede leer este texto, la impresora está funcionando correctamente.`;
-            
-            // Enviar solicitud al servidor
-            fetch('{% url "print_document" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+            // Configurar stream
+            const constraints = {
+                video: {
+                    deviceId: { exact: deviceId },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
                 },
-                body: JSON.stringify({
-                    printer_name: selectedPrinter,
-                    document_content: testDocument,
-                    paper_size: paperSize
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    showAlert(printerAlert, '<i class="fas fa-check-circle"></i> ' + data.message, 'success');
-                } else if (data.error) {
-                    showAlert(printerAlert, '<i class="fas fa-exclamation-triangle"></i> ' + data.error, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error al imprimir:', error);
-                showAlert(printerAlert, '<i class="fas fa-exclamation-triangle"></i> Error al imprimir: ' + error.message, 'danger');
-            });
+                audio: false
+            };
+            
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+            
+            if (videoPreview) {
+                videoPreview.srcObject = mediaStream;
+                videoPreview.style.display = 'block';
+                if (noCameraMessage) noCameraMessage.style.display = 'none';
+            }
+            
+            // Actualizar botones
+            if (startPreviewBtn) startPreviewBtn.disabled = true;
+            if (stopPreviewBtn) stopPreviewBtn.disabled = false;
+            if (captureTestBtn) captureTestBtn.disabled = false;
+            
+            previewActive = true;
+            showAlert(cameraAlert, '<i class="fas fa-check-circle"></i> Vista previa iniciada correctamente', 'success');
+            
+            return true;
+            
+        } catch (error) {
+            console.error('Error al iniciar vista previa:', error);
+            showAlert(cameraAlert, `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`, 'danger');
+            return false;
+        }
+    }
+    
+    function stopCameraPreview() {
+        console.log('Deteniendo vista previa...');
+        
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
         }
         
-        // Función para actualizar la vista previa
-        function updateWelcomePreview() {
-            // Actualizar mensaje
-            const mensajeInput = document.getElementById('id_mensaje_bienvenida');
-            if (mensajeInput && previewMessage) {
-                previewMessage.textContent = mensajeInput.value || '¡Bienvenidos a photobooth!';
-            }
-            
-            // Actualizar color de texto
-            const colorInput = document.getElementById('id_color_texto');
-            if (colorInput && previewMessage) {
-                previewMessage.style.color = colorInput.value || '#000000';
-            }
-            
-            // Actualizar tamaño de texto
-            const tamanoInput = document.getElementById('id_tamano_texto');
-            if (tamanoInput && previewMessage) {
-                previewMessage.style.fontSize = (tamanoInput.value || '24') + 'px';
-            }
-            
-            // Actualizar tipo de letra
-            const tipoLetraInput = document.getElementById('id_tipo_letra');
-            if (tipoLetraInput && previewMessage) {
-                previewMessage.style.fontFamily = (tipoLetraInput.value || 'Arial') + ', sans-serif';
-            }
-            
-            // Actualizar imagen de fondo (si hay un archivo seleccionado)
-            const imagenInput = document.getElementById('id_imagen_fondo');
-            if (imagenInput && imagenInput.files && imagenInput.files[0] && previewWelcome) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewWelcome.style.backgroundImage = `url('${e.target.result}')`;
-                };
-                reader.readAsDataURL(imagenInput.files[0]);
-            }
+        if (videoPreview) {
+            videoPreview.srcObject = null;
+            videoPreview.style.display = 'none';
         }
         
-        // Función para simular flujo completo
-        function simulatePhotoboothFlow() {
-            // Obtener elementos del flujo
-            const flowItems = document.querySelectorAll('#photobooth-flow li');
+        if (noCameraMessage) noCameraMessage.style.display = 'flex';
+        
+        // Actualizar botones
+        if (startPreviewBtn) startPreviewBtn.disabled = false;
+        if (stopPreviewBtn) stopPreviewBtn.disabled = true;
+        if (captureTestBtn) captureTestBtn.disabled = true;
+        
+        previewActive = false;
+        hideAlert(cameraAlert);
+    }
+    
+    function captureTestImage() {
+        if (!mediaStream || !videoPreview) {
+            showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> La vista previa no está activa', 'warning');
+            return;
+        }
+        
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoPreview.videoWidth;
+            canvas.height = videoPreview.videoHeight;
             
-            // Reiniciar estado
-            flowItems.forEach(item => {
-                item.classList.remove('text-primary', 'fw-bold');
-            });
+            const context = canvas.getContext('2d');
+            context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
             
-            // Simular proceso paso a paso
-            let currentStep = 0;
+            const imageUrl = canvas.toDataURL('image/jpeg', 0.95);
             
-            function highlightNextStep() {
-                if (currentStep < flowItems.length) {
-                    // Resaltar paso actual
-                    flowItems[currentStep].classList.add('text-primary', 'fw-bold');
-                    
-                    // Avanzar al siguiente paso después de un retraso
-                    currentStep++;
-                    setTimeout(highlightNextStep, 1000);
+            if (testImage && capturedImagePreview) {
+                testImage.src = imageUrl;
+                capturedImagePreview.style.display = 'block';
+                
+                const captureInfo = document.getElementById('capture-info');
+                if (captureInfo) {
+                    captureInfo.textContent = `Capturada - ${new Date().toLocaleString()} - ${canvas.width}x${canvas.height}px`;
                 }
             }
             
-            // Iniciar simulación
-            highlightNextStep();
+            showAlert(cameraAlert, '<i class="fas fa-camera"></i> Imagen capturada exitosamente', 'success');
+            
+        } catch (error) {
+            console.error('Error al capturar:', error);
+            showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> Error al capturar: ' + error.message, 'danger');
         }
-        
-        // Evento para selector de cámara
-        if (cameraSelect) {
-            cameraSelect.addEventListener('change', function() {
-                if (selectedCameraIdInput) {
-                    selectedCameraIdInput.value = this.value;
-                }
-            });
-        }
-        
-        // Eventos para botones de cámara
-        if (refreshCamerasBtn) {
-            refreshCamerasBtn.addEventListener('click', listAvailableCameras);
-        }
-        
-        if (startPreviewBtn) {
-            startPreviewBtn.addEventListener('click', startCameraPreview);
-        }
-        
-        if (stopPreviewBtn) {
-            stopPreviewBtn.addEventListener('click', stopCameraPreview);
-        }
-        
-        if (captureTestBtn) {
-            captureTestBtn.addEventListener('click', captureTestImage);
-        }
-        
-        // Eventos para impresora
-        if (refreshPrintersBtn) {
-            refreshPrintersBtn.addEventListener('click', refreshPrinters);
-        }
-        
-        if (printerSelect) {
-            printerSelect.addEventListener('change', updatePrinterStatus);
-        }
-        
-        if (testPrintBtn) {
-            testPrintBtn.addEventListener('click', printTestPage);
-        }
-        
-        // Eventos para campos de tiempo
-        if (tiempoEntreFotos) {
-            tiempoEntreFotos.addEventListener('input', updateTimelineVisualization);
-        }
-        
-        if (tiempoCuentaRegresiva) {
-            tiempoCuentaRegresiva.addEventListener('input', updateTimelineVisualization);
-        }
-        
-        if (tiempoVisualizacionFoto) {
-            tiempoVisualizacionFoto.addEventListener('input', updateTimelineVisualization);
-        }
-        
-        // Eventos para previsualización
-        const mensajeInput = document.getElementById('id_mensaje_bienvenida');
-        if (mensajeInput) {
-            mensajeInput.addEventListener('input', updateWelcomePreview);
-        }
-        
-        const colorInput = document.getElementById('id_color_texto');
-        if (colorInput) {
-            colorInput.addEventListener('input', updateWelcomePreview);
-        }
-        
-        const tamanoInput = document.getElementById('id_tamano_texto');
-        if (tamanoInput) {
-            tamanoInput.addEventListener('input', updateWelcomePreview);
-        }
-        
-        const tipoLetraInput = document.getElementById('id_tipo_letra');
-        if (tipoLetraInput) {
-            tipoLetraInput.addEventListener('change', updateWelcomePreview);
-        }
-        
-        const imagenInput = document.getElementById('id_imagen_fondo');
-        if (imagenInput) {
-            imagenInput.addEventListener('change', updateWelcomePreview);
-        }
-        
-        // Eventos para simulación
-        if (simulateBtn) {
-            simulateBtn.addEventListener('click', simulatePhotoboothFlow);
-        }
-        
-        // Inicializar la página
-        listAvailableCameras(); // Listar cámaras disponibles
-        refreshPrinters(); // Obtener impresoras disponibles
-        updateTimelineVisualization(); // Inicializar visualización de tiempos
-        
-        // Inicializar vista previa de bienvenida con imagen de fondo existente
-        if (previewWelcome) {
-            {% if config.imagen_fondo %}
-            previewWelcome.style.backgroundImage = "url('{{ config.imagen_fondo.url }}')";
-            {% endif %}
-        }
-        
-        // Detener la cámara cuando se envía el formulario o se cierra la página
-        window.addEventListener('beforeunload', stopCameraPreview);
-        
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function() {
-                stopCameraPreview();
-            });
-        }
-    });
+    }
     
-    // Estilos CSS adicionales para la visualización de tiempos
-    document.addEventListener('DOMContentLoaded', function() {
-        const style = document.createElement('style');
-        style.textContent = `
-            .timeline-item {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-                position: relative;
-            }
-            
-            .timeline-item:not(:last-child):after {
-                content: '';
-                position: absolute;
-                left: 15px;
-                bottom: -10px;
-                height: 10px;
-                border-left: 2px dashed #dee2e6;
-            }
-            
-            .timeline-marker {
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: white;
-                font-weight: bold;
-                font-size: 0.8rem;
-                margin-right: 15px;
-                flex-shrink: 0;
-            }
-            
-            .timeline-label {
-                font-size: 0.9rem;
-            }
-            
-            #photobooth-flow li {
-                padding: 5px 0;
-                transition: all 0.3s ease;
-            }
-            
-            #photobooth-flow li.text-primary {
-                background-color: rgba(13, 110, 253, 0.1);
-                padding-left: 10px;
-                border-radius: 4px;
-            }
-        `;
-        document.head.appendChild(style);
-    });
-
-// Inicializar eventos cuando se carga el documento
-document.addEventListener('DOMContentLoaded', function() {
-    // Obtener referencias a los elementos
-    const cameraSelect = document.getElementById('camera-select');
-    const cameraResolution = document.getElementById('camera-resolution');
-    const whiteBalance = document.getElementById('white-balance');
-    const refreshCamerasBtn = document.getElementById('refresh-cameras-btn');
-    const startPreviewBtn = document.getElementById('start-preview-btn');
-    const stopPreviewBtn = document.getElementById('stop-preview-btn');
+    // ========== FUNCIONES DE SIMULACIÓN DE TIEMPOS ==========
+    function updateTimeSimulation() {
+        const countdownTime = countdownInput ? countdownInput.value || 3 : 3;
+        const previewTime = previewTimeInput ? previewTimeInput.value || 2 : 2;
+        const betweenTime = betweenPhotosInput ? betweenPhotosInput.value || 3 : 3;
+        
+        const countdownPreview = document.getElementById('countdown-preview');
+        const previewTimeElement = document.getElementById('preview-time');
+        const betweenPhotosTime = document.getElementById('between-photos-time');
+        
+        if (countdownPreview) countdownPreview.textContent = countdownTime + 's';
+        if (previewTimeElement) previewTimeElement.textContent = previewTime + 's';
+        if (betweenPhotosTime) betweenPhotosTime.textContent = betweenTime + 's';
+    }
     
-    // Listar cámaras disponibles al cargar la página
-    listAvailableCameras();
+    // ========== FUNCIONES DE VISTA PREVIA ==========
+    function updateWelcomePreview() {
+        const messageInput = document.getElementById('{{ form.mensaje_bienvenida.id_for_label }}');
+        const colorInput = document.getElementById('{{ form.color_texto.id_for_label }}');
+        const sizeInput = document.getElementById('{{ form.tamano_texto.id_for_label }}');
+        const fontInput = document.getElementById('{{ form.tipo_letra.id_for_label }}');
+        
+        const previewMessage = document.getElementById('preview-message');
+        
+        if (previewMessage) {
+            if (messageInput) previewMessage.textContent = messageInput.value || '¡Bienvenidos al photobooth!';
+            if (colorInput) previewMessage.style.color = colorInput.value || '#000000';
+            if (sizeInput) previewMessage.style.fontSize = (sizeInput.value || 24) + 'px';
+            if (fontInput) previewMessage.style.fontFamily = fontInput.value || 'Arial, sans-serif';
+        }
+    }
     
-    // Event listeners para los botones
+    // ========== EVENT LISTENERS ==========
+    
+    // Selector de cámara
+    if (cameraSelect) {
+        cameraSelect.addEventListener('change', function() {
+            if (selectedCameraIdInput) {
+                selectedCameraIdInput.value = this.value;
+            }
+        });
+    }
+    
+    // Botones de cámara
     if (refreshCamerasBtn) {
         refreshCamerasBtn.addEventListener('click', listAvailableCameras);
     }
@@ -1170,54 +1198,63 @@ document.addEventListener('DOMContentLoaded', function() {
         stopPreviewBtn.addEventListener('click', stopCameraPreview);
     }
     
-    // Event listener para el selector de cámara
-    if (cameraSelect) {
-        cameraSelect.addEventListener('change', function() {
-            const selectedCameraIdInput = document.getElementById('selected-camera-id');
-            if (selectedCameraIdInput) {
-                selectedCameraIdInput.value = this.value;
-            }
+    if (captureTestBtn) {
+        captureTestBtn.addEventListener('click', captureTestImage);
+    }
+    
+    // Inputs de tiempo para simulación
+    [countdownInput, betweenPhotosInput, previewTimeInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updateTimeSimulation);
+        }
+    });
+    
+    // Inputs de vista previa de mensaje
+    const previewInputs = [
+        document.getElementById('{{ form.mensaje_bienvenida.id_for_label }}'),
+        document.getElementById('{{ form.color_texto.id_for_label }}'),
+        document.getElementById('{{ form.tamano_texto.id_for_label }}'),
+        document.getElementById('{{ form.tipo_letra.id_for_label }}')
+    ];
+    
+    previewInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('input', updateWelcomePreview);
+        }
+    });
+    
+    // Slider de iluminación
+    const iluminacionSlider = document.getElementById('{{ form.nivel_iluminacion.id_for_label }}');
+    const iluminacionValue = document.getElementById('iluminacion-value');
+    
+    if (iluminacionSlider && iluminacionValue) {
+        iluminacionSlider.addEventListener('input', function() {
+            iluminacionValue.textContent = this.value + '%';
         });
     }
     
-    // Event listeners para los nuevos selectores
-    if (cameraResolution) {
-        cameraResolution.addEventListener('change', function() {
-            console.log("Resolución cambiada a:", this.value);
-            // Si la vista previa está activa, reiniciarla con la nueva configuración
-            if (mediaStream) {
-                startCameraPreview();
-            }
-        });
-    }
+    // Limpiar recursos al salir
+    window.addEventListener('beforeunload', function() {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+    });
     
-    if (whiteBalance) {
-        whiteBalance.addEventListener('change', function() {
-            console.log("Balance de blancos cambiado a:", this.value);
-            // Si la vista previa está activa, reiniciarla con la nueva configuración
-            if (mediaStream) {
-                startCameraPreview();
-            }
-        });
-    }
+    // ========== INICIALIZACIÓN ==========
+    console.log('Inicializando interfaz...');
     
-    // Función para verificar si hay cambios en los dispositivos conectados
-    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
-        navigator.mediaDevices.addEventListener('devicechange', function() {
-            console.log('Se detectó un cambio en los dispositivos conectados');
+    // Detectar cámaras al cargar
+    setTimeout(() => {
+        if (currentCameraType === 'webcam') {
             listAvailableCameras();
-        });
-    }
+        }
+    }, 500);
     
-    // Detener la cámara cuando se envía el formulario o se cierra la página
-    window.addEventListener('beforeunload', stopCameraPreview);
+    // Configurar simulaciones iniciales
+    updateTimeSimulation();
+    updateWelcomePreview();
     
-    const form = document.querySelector('form');
-    if (form) {
-        form.addEventListener('submit', function() {
-            stopCameraPreview();
-        });
-    }
+    console.log('Configuración de photobooth lista');
 });
 </script>
 {% endblock %}
