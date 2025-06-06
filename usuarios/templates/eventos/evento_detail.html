@@ -103,7 +103,7 @@
               </div>
               <div class="photobooth-action-box p-3 mb-3 text-center">
                 {% if evento.photobooth_config and evento.photobooth_config.plantilla_collage %}
-                  <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-success btn-lg ">
+                  <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-success btn-lg" id="btn-morado">
                     <i class="fas fa-play-circle fa-lg me-2"></i> INICIAR PHOTOBOOTH
                   </a>
                   <small class="text-muted mt-2 d-block">Inicia la sesión en modo pantalla completa</small>
@@ -128,16 +128,7 @@
                 </div>
               {% endif %}
             </div>
-            <!-- Sesiones realizadas -->
-            {% if evento.collage_sessions.exists %}
-              <div class="evento-info-box p-3 text-center">
-                <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-images me-2 text-primary"></i>Sesiones Realizadas</h5>
-                <p class="mb-2"><strong>{{ evento.collage_sessions.count }}</strong> sesiones realizadas</p>
-                <a href="#" class="btn btn-blanco shadow-sm">
-                  <i class="fas fa-images"></i> Ver sesiones anteriores
-                </a>
-              </div>
-            {% endif %}
+          
           </div>
         </div>
       </div>

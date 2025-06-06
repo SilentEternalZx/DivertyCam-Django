@@ -39,6 +39,9 @@
     transition: ease all 0.5s;
     margin-top: 0;
     padding: 0;
+    font-family: 'Poppins', sans-serif;
+    
+   
 
   
 }
@@ -54,7 +57,8 @@ body {
     line-height: 1.80857;
     font-weight: normal;
     overflow-x: hidden;
-    font-family: 'Poppins', sans-serif;
+    
+    
     
  
     

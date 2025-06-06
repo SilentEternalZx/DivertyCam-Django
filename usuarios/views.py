@@ -1,4 +1,6 @@
 # Importaciones necesarias para views.py
+from django.utils.text import slugify
+
 import shutil
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
@@ -1168,8 +1170,10 @@ def save_session_photo(request):
             ext = format.split('/')[-1]
             decoded_image = base64.b64decode(imgstr)
             
-            # Asegurar que existe el directorio destino
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'session_photos')
+            # Obtener el nombre del evento y crear carpeta segura
+
+            evento_nombre = slugify(session.evento.nombre)
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', evento_nombre)
             os.makedirs(upload_dir, exist_ok=True)
             
             # Generar nombre de archivo único
@@ -1189,12 +1193,12 @@ def save_session_photo(request):
                 
                 if photo:
                     # Actualizar foto existente
-                    relative_path = os.path.join('collage', 'session_photos', filename)
+                    relative_path = os.path.join('collage', evento_nombre, filename)
                     photo.image = relative_path
                     photo.save()
                 else:
                     # Crear nueva foto
-                    relative_path = os.path.join('collage', 'session_photos', filename)
+                    relative_path = os.path.join('collage', evento_nombre, filename)
                     photo = SessionPhoto(
                         session=session,
                         frame_index=frame_index,
