@@ -377,7 +377,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
+            "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
         )
 
         payload = {
@@ -415,7 +415,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", " https://55dc-191-156-43-126.ngrok-free.app"
+        "http://127.0.0.1:8000", " https://f25a-191-156-39-191.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -433,7 +433,8 @@ def publicar_foto_facebook(request, foto_id):
     data = response.json()
 
     if response.status_code == 200:
-        return JsonResponse({"success": "Foto publicada correctamente en Facebook"})
+        messages.success(request, "Foto publicada correctamente en Facebook")
+        return redirect('descargar_foto', evento_id=evento.id)
     else:
         return JsonResponse({"error": data}, status=400)
    
@@ -1985,6 +1986,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
     
     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
     evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
+    imagenes=evento.fotografias.all() #Obtener todas las fotografías
     imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
     return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
@@ -1995,7 +1997,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
 #Mostrar las fotos guardadas
 def lista_fotos(request):
     fotos = Fotografia.objects.all()
-    return render(request, "fotografias/foto_list.html", {"fotografias": fotos})
+    return render(request, "fotografias/descargar_foto.html", {"fotografias": fotos})
 
 # Subir fotos de los eventos
 def subir_foto(request):
@@ -2027,7 +2029,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
+        "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
     )
 
     # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
@@ -2054,7 +2056,7 @@ def publicar_foto_facebook(request, foto_id):
 
     if response.status_code == 200:
         print("✅ Foto publicada en la página DivertyApp correctamente.")
-        return redirect("lista_fotos")
+        return redirect("descargar_foto", evento_id=foto.evento.id)
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
