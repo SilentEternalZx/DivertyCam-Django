@@ -11,6 +11,8 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 import re
 from django.utils import timezone
+from django.db.models import Q
+
 
 
 User = get_user_model()
@@ -23,67 +25,49 @@ class CustomPasswordResetForm(PasswordResetForm):
         return email
     
 class ClienteForm(forms.ModelForm):
-       
-       class Meta:
+
+    class Meta:
         model = Cliente
-        fields = ['nombre','apellido', 'cedula', 'fechaNacimiento', 
-                  'direccion',  'telefono', 'usuario']
+        fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento',
+                  'direccion', 'telefono', 'usuario']
         widgets = {
-            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class':'fechaNacimiento'}),
-            
-            
-            
+            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'fechaNacimiento'}),
         }
-        
-        #Función para filtrar que la lista de usuarios no sea un superusuario o no ese usuario no pertenezca ya a un cliente
-        
-       def __init__(self, *args, **kwargs):
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         clientes = Cliente.objects.values_list('usuario_id', flat=True)
-        # Si estás editando, permite el usuario ya asignado
+
         if self.instance.pk and self.instance.usuario:
-            self.fields['usuario'].queryset = (
-                User.objects
-                .filter(is_superuser=False)
-                .exclude(id__in=clientes)
-                .union(User.objects.filter(pk=self.instance.usuario.pk))
+            self.fields['usuario'].queryset = User.objects.filter(
+                is_superuser=False
+            ).filter(
+                Q(~Q(id__in=clientes)) | Q(id=self.instance.usuario.pk)
             )
         else:
-            self.fields['usuario'].queryset = (
-                User.objects
-                .filter(is_superuser=False)
-                .exclude(id__in=clientes)
-            )
-        
-    
-       def clean_fechaNacimiento(self):
+            self.fields['usuario'].queryset = User.objects.filter(
+                is_superuser=False
+            ).exclude(id__in=clientes)
+
+    def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
-        
         if fechaNacimiento:
-            # Importar datetime
             import datetime
-            
-            # Calcular la edad
             hoy = datetime.date.today()
-            edad = hoy.year - fechaNacimiento.year - ((hoy.month, hoy.day) < (fechaNacimiento.month, fechaNacimiento.day))
-            
-            # Verificar si es menor de 18 años
+            edad = hoy.year - fechaNacimiento.year - (
+                (hoy.month, hoy.day) < (fechaNacimiento.month, fechaNacimiento.day)
+            )
             if edad < 18:
                 raise forms.ValidationError("El cliente debe ser mayor de edad (18 años o más).")
-        
         return fechaNacimiento
-        
-        
-        
-       def clean_cedula(self):
+
+    def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
-        # Validaciones adicionales de cédula si es necesario
         if not cedula.isdigit():
             raise forms.ValidationError("La cédula debe contener solo números.")
         if not (6 <= len(cedula) <= 10):
             raise forms.ValidationError("La cédula debe tener entre 6 y 10 dígitos.")
         return cedula
-        
       
 
 

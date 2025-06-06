@@ -16,9 +16,12 @@
         <a href="{% url 'evento_update' evento.pk %}" class="btn btn-warning shadow-sm me-2">
           <i class="fa-solid fa-pen"></i> Editar
         </a>
-        <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger shadow-sm me-2"">
-          <i class="fa-solid fa-trash"></i> Eliminar
-        </a>
+       <form method="post" action="{% url 'evento_delete' evento.pk %}" class="d-inline form-eliminar-evento">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger shadow-sm me-2">
+    <i class="fa-solid fa-trash"></i> Eliminar
+  </button>
+</form>
         <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
           <i class="fa-solid fa-arrow-left"></i> Volver
         </a>
@@ -116,4 +119,43 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('.form-eliminar-evento');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡Esta acción eliminará el evento!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
+
+  {% if messages %}
+    {% for message in messages %}
+      Swal.fire({
+        icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}",
+        title: "{{ message|escapejs }}",
+        showConfirmButton: false,
+        timer: 3000
+      });
+    {% endfor %}
+  {% endif %}
+});
+</script>
 {% endblock %}

@@ -274,12 +274,25 @@ class ClienteCreateView(LoginRequiredMixin, CreateView):  #LoginRequiredMixin,
     
      
     
-class ClienteUpdateView(LoginRequiredMixin, UpdateView):
+class ClienteUpdateView(UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
-    success_url = reverse_lazy('cliente_list')
-    login_url = 'login'
+    success_url = reverse_lazy('cliente_list')  # O donde quieras redirigir
+
+    def form_valid(self, form):
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, 'Cliente actualizado correctamente.')
+            return response
+        except Exception as e:
+            print("ERROR:", str(e))
+            print(traceback.format_exc())
+            return HttpResponseServerError("Ocurrió un error actualizando el cliente.")
+        response = super().form_valid(form)
+        messages.success(self.request, 'Cliente actualizado correctamente.')
+        return response
+
 
 class ClienteDeleteView(LoginRequiredMixin, DeleteView):   #LoginRequiredMixin,
     model = Cliente
@@ -288,6 +301,10 @@ class ClienteDeleteView(LoginRequiredMixin, DeleteView):   #LoginRequiredMixin,
     success_url = reverse_lazy('cliente_list')
     login_url = 'login'
     
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Cliente eliminado exitosamente")
+        return response
 
 
 class ClienteActivarView(ListView):
@@ -297,14 +314,19 @@ class ClienteActivarView(ListView):
         cliente.save()
         messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido reactivado.")
         return redirect('cliente_list')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Cliente activado exitosamente")
+        return response
 
 class ClienteInactivarView(ListView):
     def post(self, request, pk):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = False
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido marcado como inactivo.")
-        return redirect('cliente_list')
+        messages.success(request, f'El cliente {cliente.nombre} {cliente.apellido} fue inactivado correctamente.')
+        return redirect('cliente_list') 
 
 #Mostrar las fotos guardadas
 def lista_fotos(request):
@@ -472,6 +494,9 @@ class EventoDetailView(LoginRequiredMixin,DetailView):
     template_name = 'eventos/evento_detail.html'
     login_url = 'login'
     
+    def form_valid(self, request, *args, **kwargs):
+        messages.success(self.request, "Evento eliminado exitosamente")
+        return super().form_valid(request, *args, **kwargs)
     
 class EventoForm(LoginRequiredMixin,forms.ModelForm):
     class Meta:
@@ -519,19 +544,16 @@ class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
     login_url = 'login'
     
     def get_success_url(self):
-        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('evento_list')
 
-class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
+class EventoDeleteView(LoginRequiredMixin, DeleteView):
     model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_confirm_delete.html'
     success_url = reverse_lazy('evento_list')
     login_url = 'login'
-    
-    def form_valid(self, form):
-        response = super().form_valid(form)
+
+    def form_valid(self, request, *args, **kwargs):
         messages.success(self.request, "Evento eliminado exitosamente")
-        return response
+        return super().form_valid(request, *args, **kwargs)
 
 
 @login_required
@@ -1951,39 +1973,43 @@ def publicar_foto_facebook(request, foto_id):
         return render(request, "error.html", {"error": response.json()})
 
 
-def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
-    if not request.user.is_authenticated: #Si el usuario no está autenticado...
-        return redirect("login") #Redirigir al login
-    
-    if  not request.user.is_superuser:  #Si no es un superusuario...
-     return HttpResponse("No estás autorizado para acceder a esta página") #Retornar mensaje de error
-    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
-    
-    if request.method=="POST": #Si la petición es POST
-        form=AñadirFotoForm(request.POST, request.FILES) #Llamar al formulario
-        archivos = request.FILES.getlist('img')
-       
+def añadir_foto(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
 
-        if form.is_valid(): #Si el formulario es válido obtener los datos
-            descripcion=form.cleaned_data["descripcion"]
-            
+    if not request.user.is_superuser:
+        return HttpResponse("No estás autorizado para acceder a esta página")
+
+    evento = get_object_or_404(Evento, id=evento_id)
+
+    if request.method == "POST":
+        form = AñadirFotoForm(request.POST, request.FILES)
+        archivos = request.FILES.getlist('img')
+
+        if form.is_valid():
+            descripcion = form.cleaned_data["descripcion"]
+
             for imagen in archivos:
-               
-                
-                 fotografia=Fotografia.objects.create(descripcion=descripcion, img=imagen, evento=evento)#Crear un objeto de Fotografia
-                 fotografia.save() #Guardar objeto
-            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
-            
-        else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
-                "form":form,
-                "evento":evento
+                Fotografia.objects.create(
+                    descripcion=descripcion,
+                    img=imagen,
+                    evento=evento
+                )
+
+            # Mensaje de éxito
+            messages.success(request, "¡Fotografía(s) añadida(s) exitosamente!")
+
+            # Redirige correctamente pasando el evento_id
+            return redirect(reverse("descargar_foto", kwargs={"evento_id": evento.id}))
+        else:
+            return render(request, "añadir_fotos/formulario.html", {
+                "form": form,
+                "evento": evento
             })
-        
-    
-    return render(request,"añadir_fotos/formulario.html",{
-        "evento":evento,
-        "form":AñadirFotoForm()
+
+    return render(request, "añadir_fotos/formulario.html", {
+        "evento": evento,
+        "form": AñadirFotoForm()
     })
 
 
@@ -2499,3 +2525,4 @@ def api_session_photos(request):
         'photos': photo_urls,
         'collage': collage_url
     })
+

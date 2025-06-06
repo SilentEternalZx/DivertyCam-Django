@@ -114,7 +114,8 @@ Fotografías de {{evento.nombre}}
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>   
 function imprimirImagen(url) {
    var ventana = window.open("", "_blank");
    ventana.document.write("<html><head><title>Impresión</title></head><body style='margin:0;'>");
@@ -125,4 +126,19 @@ function imprimirImagen(url) {
    ventana.print();
 }
 </script>
+
+{% if messages %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    {% for message in messages %}
+      Swal.fire({
+        icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% else %}info{% endif %}',
+        title: '{{ message|escapejs }}',
+        showConfirmButton: false,
+        timer: 2500
+      });
+    {% endfor %}
+  });
+</script>
+{% endif %}
 {% endblock %}

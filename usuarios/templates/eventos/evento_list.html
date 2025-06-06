@@ -76,9 +76,12 @@
                     <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Editar">
                       <i class="fa-solid fa-pen"></i>
                     </a>
-                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Eliminar">
-                      <i class="fa-solid fa-trash"></i>
-                    </a>
+                  <form action="{% url 'evento_delete' evento.pk %}" method="post" class="d-inline form-eliminar-evento" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-negro" title="Eliminar" style="border:none; background:none; padding:0;">
+                    <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
                  
                     <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver fotografías">
                       <i class="fa-solid fa-images"></i>
@@ -98,6 +101,8 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
@@ -128,4 +133,47 @@
       });
   });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Confirmación con SweetAlert para eliminar eventos
+  const forms = document.querySelectorAll('.form-eliminar-evento');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault(); // Evita que el form se envíe inmediatamente
+
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡Esta acción eliminará el evento!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();  // Envía el formulario solo si confirma
+        }
+      });
+    });
+  });
+
+  // Mostrar mensajes con SweetAlert (éxito, error, info)
+  {% if messages %}
+    {% for message in messages %}
+      Swal.fire({
+        icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}",
+        title: "{{ message|escapejs }}",
+        showConfirmButton: false,
+        timer: 3000
+      });
+    {% endfor %}
+  {% endif %}
+});
+</script>
+
+     
+
+
+
 {% endblock %}
