@@ -1764,7 +1764,6 @@ def launch_photobooth(request, evento_id):
         'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/')
     })
 
-
 def session_result(request, session_id):
     """Muestra el resultado de una sesión de photobooth"""
     session = get_object_or_404(CollageSession, session_id=session_id)
@@ -2501,3 +2500,42 @@ def api_session_photos(request):
         'photos': photo_urls,
         'collage': collage_url
     })
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def descargar_foto_publico(request, evento_id):
+    """
+    Vista pública para mostrar y descargar fotografías de un evento sin requerir autenticación.
+    Pensada para acceso desde dispositivos móviles o enlaces públicos.
+    """
+    try:
+        evento = Evento.objects.get(id=evento_id)
+        imagenes = evento.fotografias.all()
+    except Evento.DoesNotExist:
+        return render(request, "fotografias/descargar_foto.html", {
+            "evento": None,
+            "imagenes": [],
+            "error": "Evento no encontrado."
+        })
+    return render(request, "fotografias/descargar_foto.html", {
+        "evento": evento,
+        "imagenes": imagenes,
+        "publico": True  # Bandera para la plantilla si se quiere mostrar info diferente
+    })
+    
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def api_fotos_publico(request, evento_id):
+    try:
+        evento = Evento.objects.get(id=evento_id)
+        imagenes = evento.fotografias.all()
+        # Usar la IP y puerto del request para URLs accesibles desde cualquier dispositivo
+        host = request.get_host()
+        scheme = 'https' if request.is_secure() else 'http'
+        fotos = [f"{scheme}://{host}{img.img.url}" for img in imagenes]
+        return JsonResponse({"success": True, "fotos": fotos})
+    except Evento.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Evento no encontrado"}, status=404)

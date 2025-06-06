@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['55dc-191-156-43-126.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['55dc-191-156-43-126.ngrok-free.app', '127.0.0.1', 'localhost', '192.168.1.4']
 
 FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BO59aAEDXxzxYqXAfdVpOQFOLRw16EjMQJIRUUXVd1E2Uv8N28dUpxqor6HDiJQJnyeZA8RaAqfYIgmHlYpBKw3VpJpn9Pso6dWWk7vfvWZAROsAy5VPHFV8GGjSPAZAhTtj72frs5Yr1QiG8BMTTKjuBpDvZAQSC2ZCZAvE4EoZCG6yhqDwmPgJkK92uGjO2yNlMEuvwSNjFT9fACaJ"
 

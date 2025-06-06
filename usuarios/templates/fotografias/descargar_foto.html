@@ -1,128 +1,167 @@
-{% extends "layout/layout.html" %}
-{% load static %}
-
-{% block title %}  
-Fotografías de {{evento.nombre}}
-{% endblock %}
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'fotografias/css/fotografias.css' %}">
-{% endblock %}
-
-{% block content %}
+{% extends "layout/layout.html" %} {% load static %} {% block title %}
+Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
+<link rel="stylesheet" href="{% static 'fotografias/css/fotografias.css' %}" />
+{% endblock %} {% block content %}
 <!-- header section -->
 <div class="header_section">
-   {% include 'partials/navbar.html' %}
-   <!-- banner -->
-   <div class="banner_section layout_padding">
-      <div class="contenido-banner">
-         <h1 id="header-banner">¡ Hola {{user.username}} !</h1>
-         <p id="parrafo-banner">Estas son tus fotografías de {{evento.nombre}}</p>
-      </div>
-   </div>
+  {% include 'partials/navbar.html' %}
+  <!-- banner -->
+  <div class="banner_section layout_padding">
+    <div class="contenido-banner">
+      {% if publico %}
+      <h1 id="header-banner">¡ Bienvenido !</h1>
+      <p id="parrafo-banner">
+        Estas son las fotografías públicas de {{evento.nombre}}
+      </p>
+      {% else %}
+      <h1 id="header-banner">¡ Hola {{user.username}} !</h1>
+      <p id="parrafo-banner">Estas son tus fotografías de {{evento.nombre}}</p>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 <!-- Sección de fotos -->
 <section class="page-section bg-light" id="portfolio">
-   <div class="container">
-      <div class="text-center mb-5">
-
-            <!-- Botón añadir fotografía -->
-   <div class="container mt-3 d-flex justify-content-start">
-      <a href="{% url 'añadir_foto' evento.id %}" class="btn btn-dark btn-lg shadow-sm d-flex align-items-center gap-2" style="font-size: 1.1rem;">
-         <i class="fa-solid fa-plus fa-lg"></i>
-         <span class="d-none d-sm-inline">Añadir fotografía</span>
-      </a>
-   </div>
-         <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
-         <h3 class="section-subheading text-muted">Puedes descargarlas, visualizarlas en vista previa, imprimirlas o compartirlas.</h3>
+  <div class="container">
+    <div class="text-center mb-5">
+      {% if not publico %}
+      <!-- Botón añadir fotografía solo para usuarios autenticados -->
+      <div class="container mt-3 d-flex justify-content-start">
+        <a
+          href="{% url 'añadir_foto' evento.id %}"
+          class="btn btn-dark btn-lg shadow-sm d-flex align-items-center gap-2"
+          style="font-size: 1.1rem">
+          <i class="fa-solid fa-plus fa-lg"></i>
+          <span class="d-none d-sm-inline">Añadir fotografía</span>
+        </a>
       </div>
+      {% endif %}
+      <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
+      <h3 class="section-subheading text-muted">
+        Puedes descargarlas, visualizarlas en vista previa, imprimirlas o
+        compartirlas.
+      </h3>
+    </div>
 
-      <div class="row g-4">
-         {% if imagenes %}
-            {% for imagen in imagenes %}
-               <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch">
-                  <div class="card shadow-sm border-0 w-100">
-                     <div class="galeria-img-container position-relative">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#modal-{{ imagen.id }}">
-                           <img src="{{ imagen.img.url }}" class="card-img-top galeria-img" alt="{{ imagen.descripcion|default:"Fotografía" }}">
-                           <div class="galeria-hover">
-                              <i class="fas fa-search-plus fa-2x"></i>
-                           </div>
-                        </a>
-                        <a href="{{ imagen.img.url }}" download class="btn btn-dark galeria-download" title="Descargar">
-                           <i class="fa fa-download"></i>
-                        </a>
-                        <button class="btn btn-dark galeria-print" onclick="imprimirImagen('{{ imagen.img.url }}')" title="Imprimir">
-                           <i class="fa fa-print"></i>
-                        </button>
-                     </div>
-                     <div class="card-body">
-                        <h5 class="card-title mb-2">{{ evento.nombre }}</h5>
-                        <p class="card-text text-muted mb-2">
-                           {{ imagen.descripcion|default:"Sin descripción" }}
-                        </p>
-                        <div class="mb-2">
-                           <span class="badge bg-primary"><i class="fa fa-calendar"></i> {{ evento.fecha_hora|date:"d/m/Y H:i" }}</span>
-                        </div>
-                        {% if request.user.is_superuser %}
-                        <a href="{% url 'publicar_foto' imagen.id %}" class="btn btn-outline-primary btn-sm mt-2">
-                           <i class="fab fa-facebook"></i> Publicar en Facebook
-                        </a>
-                        {% endif %}
-                     </div>
-                  </div>
-               </div>
-               <!-- Modal para vista previa -->
-               <div class="modal fade" id="modal-{{ imagen.id }}" tabindex="-1" aria-labelledby="modalLabel{{ imagen.id }}" aria-hidden="true">
-                  <div class="modal-dialog modal-lg modal-dialog-centered">
-                     <div class="modal-content">
-                        <div class="modal-header border-0">
-                           <h5 class="modal-title" id="modalLabel{{ imagen.id }}">{{ evento.nombre }}</h5>
-                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                           <img src="{{ imagen.img.url }}" class="img-fluid rounded mb-3" alt="{{ imagen.descripcion|default:"Fotografía" }}">
-                           <p class="lead mb-1">{{ imagen.descripcion|default:"Sin descripción" }}</p>
-                           <p class="text-muted small mb-3">
-                              <i class="fa fa-calendar"></i> {{ evento.fecha_creacion|date:"d/m/Y H:i" }}
-                           </p>
-                           <div class="d-flex justify-content-center gap-3">
-                              <a href="{{ imagen.img.url }}" download class="btn btn-success">
-                                 <i class="fa fa-download"></i> Descargar
-                              </a>
-                              <button class="btn btn-blanco shadow-sm" onclick="imprimirImagen('{{ imagen.img.url }}')">
-                                 <i class="fa fa-print"></i> Imprimir
-                              </button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            {% endfor %}
-         {% else %}
-            <div class="col-12">
-               <div class="alert alert-info text-center">
-                  No se encontraron fotografías para este evento.
-               </div>
+    <div class="row g-4">
+      {% if imagenes %} {% for imagen in imagenes %}
+      <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch">
+        <div class="card shadow-sm border-0 w-100">
+          <div class="galeria-img-container position-relative">
+            <a
+              href="#"
+              data-bs-toggle="modal"
+              data-bs-target="#modal-{{ imagen.id }}">
+              <img src="{{ imagen.img.url }}" class="card-img-top galeria-img"
+              alt="{{ imagen.descripcion|default:"Fotografía" }}">
+              <div class="galeria-hover">
+                <i class="fas fa-search-plus fa-2x"></i>
+              </div>
+            </a>
+            <a
+              href="{{ imagen.img.url }}"
+              download
+              class="btn btn-dark galeria-download"
+              title="Descargar">
+              <i class="fa fa-download"></i>
+            </a>
+            <button
+              class="btn btn-dark galeria-print"
+              onclick="imprimirImagen('{{ imagen.img.url }}')"
+              title="Imprimir">
+              <i class="fa fa-print"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title mb-2">{{ evento.nombre }}</h5>
+            <p class="card-text text-muted mb-2">
+              {{ imagen.descripcion|default:"Sin descripción" }}
+            </p>
+            <div class="mb-2">
+              <span class="badge bg-primary"
+                ><i class="fa fa-calendar"></i> {{ evento.fecha_hora|date:"d/m/Y
+                H:i" }}</span
+              >
             </div>
-         {% endif %}
+            {% if request.user.is_superuser %}
+            <a
+              href="{% url 'publicar_foto' imagen.id %}"
+              class="btn btn-outline-primary btn-sm mt-2">
+              <i class="fab fa-facebook"></i> Publicar en Facebook
+            </a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-   </div>
+      <!-- Modal para vista previa -->
+      <div
+        class="modal fade"
+        id="modal-{{ imagen.id }}"
+        tabindex="-1"
+        aria-labelledby="modalLabel{{ imagen.id }}"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header border-0">
+              <h5 class="modal-title" id="modalLabel{{ imagen.id }}">
+                {{ evento.nombre }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center">
+              <img src="{{ imagen.img.url }}" class="img-fluid rounded mb-3"
+              alt="{{ imagen.descripcion|default:"Fotografía" }}">
+              <p class="lead mb-1">
+                {{ imagen.descripcion|default:"Sin descripción" }}
+              </p>
+              <p class="text-muted small mb-3">
+                <i class="fa fa-calendar"></i> {{
+                evento.fecha_creacion|date:"d/m/Y H:i" }}
+              </p>
+              <div class="d-flex justify-content-center gap-3">
+                <a href="{{ imagen.img.url }}" download class="btn btn-success">
+                  <i class="fa fa-download"></i> Descargar
+                </a>
+                <button
+                  class="btn btn-blanco shadow-sm"
+                  onclick="imprimirImagen('{{ imagen.img.url }}')">
+                  <i class="fa fa-print"></i> Imprimir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <div class="col-12">
+        <div class="alert alert-info text-center">
+          No se encontraron fotografías para este evento.
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </section>
 
-
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-function imprimirImagen(url) {
-   var ventana = window.open("", "_blank");
-   ventana.document.write("<html><head><title>Impresión</title></head><body style='margin:0;'>");
-   ventana.document.write("<img src='" + url + "' style='width:100vw;max-width:100%;'>");
-   ventana.document.write("</body></html>");
-   ventana.document.close();
-   ventana.focus();
-   ventana.print();
-}
+  function imprimirImagen(url) {
+    var ventana = window.open("", "_blank");
+    ventana.document.write(
+      "<html><head><title>Impresión</title></head><body style='margin:0;'>"
+    );
+    ventana.document.write(
+      "<img src='" + url + "' style='width:100vw;max-width:100%;'>"
+    );
+    ventana.document.write("</body></html>");
+    ventana.document.close();
+    ventana.focus();
+    ventana.print();
+  }
 </script>
 {% endblock %}

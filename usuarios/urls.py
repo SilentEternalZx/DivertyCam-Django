@@ -94,6 +94,8 @@ urlpatterns = [
     path('latest_collage/', views.latest_collage, name='latest_collage'),
     path('session_photos/', views.api_session_photos, name='api_session_photos'),
     path('update_share_count/', views.update_share_count, name='update_share_count'),
+    path("descargar_foto_publico/<int:evento_id>", views.descargar_foto_publico, name="descargar_foto_publico"),
+    path("api/fotos_publico/<int:evento_id>/", views.api_fotos_publico, name="api_fotos_publico"),
 ]
 
 
