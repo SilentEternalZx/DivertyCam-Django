@@ -84,13 +84,13 @@
     
 }
 
-#guardar-btn{
+#btn-morado{
     background: #2b2278;
     color: #fff;
     border:none;
 }
 
-#guardar-btn:hover{
+#btn-morado:hover{
     background-color: #222;
 
 }

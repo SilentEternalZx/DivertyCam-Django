@@ -1,0 +1,20 @@
+{% extends 'eventos/base.html' %}
+
+{% block title %}Error: Sin usuario asignado{% endblock %}
+
+{% block body %}
+
+{% include 'partials/navbar.html' %}
+<div class="d-flex justify-content-center align-items-center min-vh-100 ">
+  <div class="card shadow-lg border-0 p-4" style="max-width: 400px;">
+    <div class="text-center">
+      <i class="fa-solid fa-circle-exclamation fa-3x text-danger mb-3"></i>
+      <h2 class="mb-3 text-danger">Error</h2>
+      <p class="mb-4">{{ mensaje }}</p>
+      <button class="btn btn-primary" id="btn-error" onclick="window.history.back();">
+        <i class="fa-solid fa-arrow-left"></i> Volver atrás
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

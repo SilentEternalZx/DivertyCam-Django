@@ -18,13 +18,16 @@ class UserAdmin(admin.ModelAdmin):
         super().delete_model(request, obj)
 
 #Registrar modelos
-admin.site.register(User, UserAdmin)
+
 
 admin.site.register(Invitado)
-admin.site.register(Fotografia)
 admin.site.register(CategoriaEvento)
 admin.site.register(Cliente)
 admin.site.register(Evento)
+
+
+
+
 
 
 

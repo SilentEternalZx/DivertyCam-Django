@@ -1,0 +1,14 @@
+INFO 2025-06-04 08:59:19,077 usb_communication 9484 6976 Enviando C:\Users\DELL\AppData\Local\Temp\tmpa05lv4qk.jpg a /sdcard/photobooth/images/collage_test_session_123.jpg
+INFO 2025-06-04 08:59:19,474 usb_communication 9484 6976 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 10:29:29,342 usb_communication 6432 20620 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_2eb7dbfb-0dcc-4336-bdac-3826051f8ec1.jpeg a /sdcard/photobooth/images/collage_1d9931f7-484e-4ae7-93ad-9d608348bb93.jpg
+INFO 2025-06-04 10:29:29,673 usb_communication 6432 20620 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 10:32:24,517 usb_communication 6432 23644 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_2eb7dbfb-0dcc-4336-bdac-3826051f8ec1.jpeg a /sdcard/photobooth/images/collage_1d9931f7-484e-4ae7-93ad-9d608348bb93.jpg
+INFO 2025-06-04 10:32:24,809 usb_communication 6432 23644 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 10:34:17,901 usb_communication 6432 23668 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_0568d76a-3846-41ce-9d12-356782d4138f.jpeg a /sdcard/photobooth/images/collage_269ab412-dc75-4753-898f-c4da7c63bbf7.jpg
+INFO 2025-06-04 10:34:18,170 usb_communication 6432 23668 Collage enviado exitosamente a dispositivo móvil
+ERROR 2025-06-05 09:18:11,361 usb_communication 3532 1200 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
+ERROR 2025-06-05 10:49:09,408 usb_communication 20160 17572 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
+ERROR 2025-06-05 10:49:39,414 usb_communication 20160 17572 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
+ERROR 2025-06-05 10:50:08,893 usb_communication 20160 18360 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
+ERROR 2025-06-05 10:52:30,401 usb_communication 20160 18608 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
+ERROR 2025-06-05 10:53:00,411 usb_communication 20160 18608 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe

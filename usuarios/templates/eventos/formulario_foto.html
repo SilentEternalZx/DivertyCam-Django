@@ -1,0 +1,121 @@
+{% extends 'eventos/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Añadir foto{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'eventos/css/eventos-form.css' %}">
+{% endblock %}
+
+{% block body %}
+{% include 'partials/navbar.html' %}
+
+<div class="d-flex justify-content-center align-items-center min-vh-100  animate__animated animate__fadeIn">
+  <div class="main-content w-100" style="max-width: 480px;">
+    <div class="card shadow-lg border-0 evento-card-efecto">
+      <div class="card-header evento-form-header justify-content-center">
+        <div class="header-center-content">
+          <span class="evento-form-icon">
+            <i class="fa-solid fa-image"></i>
+          </span>
+          <h2 class="section-title mb-0 animate__animated animate__fadeInDown" id="evento-form-text">
+            Añadir Foto
+          </h2>
+        </div>
+      </div>
+      <div class="card-body px-4 py-4 bg-white">
+        <form class="form" action="{% url 'añadir_foto' evento.id %}" method="POST" enctype="multipart/form-data" autocomplete="off" id="form">
+          {% csrf_token %}
+
+          <div class="mb-4 campo-animado" style="--anim-delay: 100ms;">
+            <label class="form-label fw-semibold text-secondary text-center w-100">Evento</label>
+            <input type="text" readonly value="{{ evento.nombre }}" class="form-control-plaintext ps-2 mb-0 text-center" style="font-weight:600;">
+          </div>
+
+          {% for field in form %}
+            <div class="mb-3 campo-animado" style="--anim-delay: {{ forloop.counter0|add:"2" }}00ms;">
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-secondary text-center w-100">{{ field.label }}</label>
+              {% if field.errors %}
+                <div class="invalid-feedback d-block animate__animated animate__shakeX animate__fast">
+                  {{ field.errors|striptags }}
+                </div>
+              {% endif %}
+              {% if field.name == "invitados" %}
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                  {% for checkbox in field %}
+                    <div class="form-check form-check-inline">
+                      {{ checkbox.tag }}
+                      <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                        {{ checkbox.choice_label }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                {{ field|add_class:"form-control form-control-lg text-center" }}
+              {% endif %}
+              {% if field.help_text %}
+                <div class="form-text text-secondary text-center w-100">{{ field.help_text }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+         {% for field in form %}
+  <div class="mb-3 campo-animado" style="--anim-delay: {{ forloop.counter0|add:"2" }}00ms;">
+    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-secondary text-center w-100">
+      {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if field.name == "invitados" %}
+      <div class="d-flex flex-wrap justify-content-center gap-2">
+        {% for checkbox in field %}
+          <div class="form-check form-check-inline">
+            {{ checkbox.tag }}
+            <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+              {{ checkbox.choice_label }}
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      {{ field|add_class:"form-control form-control-lg text-center" }}
+    {% endif %}
+    <div class="invalid-feedback d-block animate__animated animate__shakeX animate__fast" id="error-{{ field.name }}"></div>
+    {% if field.help_text %}
+      <div class="form-text text-secondary text-center w-100">{{ field.help_text }}</div>
+    {% endif %}
+  </div>
+{% endfor %}
+
+          <div class="d-flex justify-content-center gap-2 mt-4 action-buttons">
+            <button type="submit" class="btn btn-primary shadow-sm btn-morado-efecto" id="btn-morado">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar
+            </button>
+            <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
+              <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/formulario_fotografia.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Icon bounce infinito
+    const icon = document.querySelector('.evento-form-icon');
+    if(icon){
+      icon.classList.add('icon-bounce');
+    }
+    // Campos animados en cascada
+    const campos = document.querySelectorAll('.campo-animado');
+    campos.forEach((campo, idx) => {
+      setTimeout(() => campo.classList.add('mostrar-campo'), 120 * idx);
+    });
+});
+</script>
+
+{% endblock %}

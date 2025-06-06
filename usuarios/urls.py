@@ -3,11 +3,21 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import admin,views
-from .views import CustomPasswordResetView
+from .views import CustomPasswordResetView, capture_nikon_photo, configure_nikon_camera, connect_nikon_camera, detect_nikon_cameras, nikon_liveview_stream
 from .views import video_feed, index
 from .views import list_printers, print_document
+from django.urls import path, include
+from . import usb_camera_urls
+
+from . import windows_camera_urls
 
 
+try:
+    from .windows_camera_urls import windows_camera_patterns
+    CAMERA_URLS_AVAILABLE = True
+except ImportError:
+    CAMERA_URLS_AVAILABLE = False
+    windows_camera_patterns = []
 
 #Urls
 urlpatterns = [
@@ -30,7 +40,6 @@ urlpatterns = [
     path('<int:pk>/inactivar/', views.ClienteInactivarView.as_view(), name='cliente_inactivar'),
     path("subir_foto/", views.subir_foto, name="subir_foto"),
     path("fotos/", views.lista_fotos, name="lista_fotos"),
-    path("categorias/", views.listar_categorias, name="listar_categorias"),
     path("eventos/<int:categoria_id>/", views.listar_eventos, name="listar_eventos"),
     path("fotos/<int:evento_id>/", views.listar_fotos_evento, name="listar_fotos_evento"),
     path("publicar_album/<int:evento_id>/", views.publicar_album_facebook, name="publicar_album_facebook"),
@@ -59,6 +68,7 @@ urlpatterns = [
     path('api/collage/save-photo/', views.save_session_photo, name='save_session_photo'),
     path('collage/session/<str:session_id>/result/', views.session_result, name='session_result'),
     
+    
     # APIs para collage final
     path('api/collage/update-print-count/', views.update_print_count, name='update_print_count'),
     path('api/collage/send-whatsapp/', views.send_whatsapp, name='send_whatsapp'),
@@ -86,6 +96,21 @@ urlpatterns = [
     path('list_printers/', views.list_printers, name='list_printers'),
     path('print_document/', views.print_document, name='print_document'),
     path('photobooth/save_collage/', views.save_collage, name='save_collage'),
+    # APIs para control de Nikon
+    path('api/nikon/detect/', detect_nikon_cameras, name='detect_nikon_cameras'),
+    path('api/nikon/connect/', connect_nikon_camera, name='connect_nikon_camera'),
+    path('api/nikon/configure/', configure_nikon_camera, name='configure_nikon_camera'),
+    path('api/nikon/capture/', capture_nikon_photo, name='capture_nikon_photo'),
+    path('api/nikon/liveview/', nikon_liveview_stream, name='nikon_liveview_stream'),
+    # URLs para cámaras USB
+    path('', include(usb_camera_urls.usb_camera_patterns)),
+    # URLs para cámaras Windows
+    path('', include(windows_camera_urls.windows_camera_patterns)),
+    # URLs para sistema de WhatsApp móvil
+    path('api/whatsapp/send-to-mobile/', views.send_to_mobile_device, name='send_to_mobile_device'),
+    path('api/whatsapp/transfer-status/', views.check_mobile_transfer_status, name='check_mobile_transfer_status'),
+    path('api/whatsapp/device-status/', views.get_device_status, name='get_device_status'),
+    path('api/whatsapp/save-data/', views.save_whatsapp_data, name='save_whatsapp_data'),
     
 
     path('galeria/quinces/', views.galeria_quinces, name='galeria_quinces'),
@@ -98,4 +123,6 @@ urlpatterns = [
     path("api/fotos_publico/<int:evento_id>/", views.api_fotos_publico, name="api_fotos_publico"),
 ]
 
-
+# Añadir URLs de cámaras si están disponibles
+if CAMERA_URLS_AVAILABLE:
+    urlpatterns.extend(windows_camera_patterns)

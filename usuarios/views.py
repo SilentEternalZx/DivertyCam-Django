@@ -1,4 +1,5 @@
 # Importaciones necesarias para views.py
+import shutil
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.core.files.base import ContentFile
@@ -7,11 +8,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from urllib import request
 from django.utils import timezone
 from django import forms
-
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse, StreamingHttpResponse, HttpResponseBadRequest
-from django.contrib import messages
 from .models import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +22,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
 from .models import Evento, PhotoboothConfig, CollageTemplate, CollageSession, SessionPhoto, CollageResult, Cliente
-from .forms import ClienteForm, RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
+from .forms import ClienteForm , RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
 import json
 import uuid
 import base64
@@ -40,11 +40,37 @@ import win32con
 import cv2
 import time
 from PIL import Image, ImageDraw, ImageFont, ImageWin
+from .nikon_qdslrdashboard import NikonQDslrDashboard
+import numpy as np
+import subprocess
+# Importaciones necesarias para la comunicación USB
+from .utils.usb_communication import USBCommunication
+
+
 
 # Configuración de logging
 logger = logging.getLogger(__name__)
 
-
+# Al inicio de tu views.py, agregar:
+try:
+    from .utils.usb_communication import USBCommunication
+except ImportError:
+    # Si hay error de importación, crear una clase dummy
+    class USBCommunication:
+        def __init__(self):
+            pass
+        
+        def check_device_connected(self):
+            return False, []
+        
+        def send_collage_to_device(self, *args, **kwargs):
+            return False, "Sistema USB no configurado"
+        
+        def check_transfer_status(self, *args, **kwargs):
+            return False, "Sistema USB no configurado"
+        
+        def get_device_info(self):
+            return None
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
@@ -84,6 +110,7 @@ def vista_logout(request): #Función para cerrar sesión
    
     
     logout(request)
+    messages.success(request, "Has cerrado sesión correctamente.")
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
@@ -156,38 +183,20 @@ def eventos_cliente(request):
         cliente = Cliente.objects.get(usuario=request.user)  #Intentar obtener un cliente relacionado al usuario
     except ObjectDoesNotExist:  #De lo contrario 
         mensaje = "El usuario no tiene un cliente asignado"  #Retornar mensaje
-        return render(request, "eventos/partials/table.html", {
-            "mensaje": mensaje
+        return render(request, "eventos/error.html", {
+            "mensaje": mensaje,
+            
+            
         })
     
     eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
 
     if not eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
-        return render(request, "eventos/partials/table.html", {
+        return render(request, "eventos/evento_list.html", {
             "mensaje": "No tiene eventos actualmente"
         })
     
-    # --- FILTRO POR BÚSQUEDA ---
-    query = request.GET.get('q')
-    if query:
-        eventos = eventos.filter(
-            Q(nombre__icontains=query)
-        )
-
-    # --- ORDENAMIENTO ---
-    orden = request.GET.get('orden')
-    if orden == 'nombre':
-        eventos = eventos.order_by('nombre')
-    elif orden == 'nombre_desc':
-        eventos = eventos.order_by('-nombre')
-    elif orden == 'cliente':
-        eventos = eventos.order_by('cliente__nombre')
-    elif orden == 'cliente_desc':
-        eventos = eventos.order_by('-cliente__nombre')
-    elif orden == 'fecha_hora':
-        eventos = eventos.order_by('fecha_hora')
-    elif orden == 'fecha_hora_desc':
-        eventos = eventos.order_by('-fecha_hora')
+  
 
     # Evento e imágenes para vista previa (por ejemplo, el primero)
     evento = eventos.first()
@@ -195,7 +204,7 @@ def eventos_cliente(request):
     
     #Retornar vista con respectivos contextos
 
-    return render(request, "eventos/eventos_cliente.html", {
+    return render(request, "eventos/evento_list.html", {
         "evento": evento,
         "imagenes": imagenes,
         "eventos": eventos
@@ -269,7 +278,7 @@ class ClienteCreateView(LoginRequiredMixin, CreateView):  #LoginRequiredMixin,
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Cliente creado exitosamente")
+        messages.success(self.request, "¡Cliente creado exitosamente!")
         return response
     
      
@@ -295,7 +304,6 @@ class ClienteActivarView(ListView):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = True
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido reactivado.")
         return redirect('cliente_list')
 
 class ClienteInactivarView(ListView):
@@ -303,7 +311,6 @@ class ClienteInactivarView(ListView):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = False
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido marcado como inactivo.")
         return redirect('cliente_list')
 
 #Mostrar las fotos guardadas
@@ -334,13 +341,9 @@ def subir_foto(request):
             print("Errores en el formulario:", form.errors)
     else:
         form = AñadirFotoForm()
+
     return render(request, "fotografias/subir_foto.html", {"form": form})
-def listar_categorias(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Vista que muestra todas las categorías de eventos."""
-    categorias = CategoriaEvento.objects.all()
-    return render(request, "fotografias/lista_categorias.html", {"categorias": categorias})
+
 
 def listar_eventos(request, categoria_id):
     if not request.user.is_authenticated:
@@ -511,7 +514,6 @@ class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
    
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Evento creado exitosamente")
         return response
 
 class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
@@ -533,7 +535,7 @@ class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
     
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Evento eliminado exitosamente")
+
         return response
 
 
@@ -632,7 +634,7 @@ def configurar_photobooth(request, evento_id):
     
     # Evitar error si los campos no existen aún
     try:
-        print(f"Configuración actual: Resolución={config.resolucion_camara}, Balance={config.balance_blancos}, ISO={config.iso_valor}")
+        print(f"Configuración actual: Resolución={config.resolucion_camara}, ISO={config.iso_valor}")
     except AttributeError:
         print("Advertencia: Algunos campos no existen aún en la base de datos")
     
@@ -867,6 +869,236 @@ def get_template_data(request, template_id):
     except Exception as e:
         logger.error(f"Error al obtener datos de plantilla: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
+
+# Variable global para el controlador
+nikon_controller = None
+
+@csrf_exempt
+def detect_nikon_cameras(request):
+    try:
+        # Usar gphoto2 o SDK de Nikon
+        result = subprocess.run([
+            'gphoto2', '--auto-detect'
+        ], capture_output=True, text=True)
+        
+        cameras = []
+        for line in result.stdout.split('\n'):
+            if 'Nikon' in line:
+                parts = line.split()
+                cameras.append({
+                    'id': f"nikon_{len(cameras)}",
+                    'model': ' '.join(parts[:-1]),
+                    'port': parts[-1],
+                    'battery': 'unknown'
+                })
+        
+        return JsonResponse({'cameras': cameras})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def connect_nikon_camera(request):
+    """Conectar con una cámara Nikon específica o la primera disponible"""
+    global nikon_controller
+    
+    try:
+        if nikon_controller is None:
+            nikon_controller = NikonQDslrDashboard()
+        
+        # Obtener ID de cámara del request (opcional)
+        data = json.loads(request.body) if request.body else {}
+        camera_id = data.get('camera_id')
+        
+        if nikon_controller.connect(camera_id):
+            # Guardar modelo de cámara en la configuración
+            evento_id = data.get('evento_id')
+            if evento_id:
+                try:
+                    config = PhotoboothConfig.objects.get(evento_id=evento_id)
+                    config.nikon_camera_model = nikon_controller.camera_info['model']
+                    config.save()
+                except:
+                    pass
+            
+            return JsonResponse({
+                'success': True,
+                'camera': nikon_controller.camera_info,
+                'message': f'Conectado a {nikon_controller.camera_info["model"]}'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'No se pudo conectar con la cámara'
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@csrf_exempt
+def configure_nikon_camera(request):
+    """Configurar parámetros de la cámara Nikon"""
+    global nikon_controller
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+    if nikon_controller is None or not nikon_controller.connected:
+        return JsonResponse({'error': 'Cámara no conectada'}, status=400)
+    
+    try:
+        settings = json.loads(request.body)
+        
+        # Mapear configuraciones a nombres de qDslrDashboard
+        qdslr_settings = {}
+        
+        if 'iso' in settings:
+            qdslr_settings['iso'] = str(settings['iso'])
+        
+        if 'shutter_speed' in settings:
+            qdslr_settings['shutterspeed'] = settings['shutter_speed']
+        
+        if 'aperture' in settings:
+            qdslr_settings['aperture'] = settings['aperture']
+        
+        if 'mode' in settings:
+            qdslr_settings['exposuremode'] = settings['mode']
+        
+        if 'quality' in settings:
+            qdslr_settings['imagequality'] = settings['quality']
+        
+        if 'focus_mode' in settings:
+            qdslr_settings['focusmode'] = settings['focus_mode']
+        
+        # Aplicar configuraciones
+        success = nikon_controller.set_multiple_settings(qdslr_settings)
+        
+        if success:
+            # Obtener configuraciones actualizadas
+            current_settings = nikon_controller.get_camera_settings()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Configuración aplicada',
+                'current_settings': current_settings
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Error al aplicar configuración'
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@csrf_exempt
+def capture_nikon_photo(request):
+    """Capturar foto con obturador físico de cualquier Nikon"""
+    global nikon_controller
+    
+    if nikon_controller is None or not nikon_controller.connected:
+        return JsonResponse({'error': 'Cámara no conectada'}, status=400)
+    
+    try:
+        # Obtener configuración de enfoque
+        data = json.loads(request.body) if request.body else {}
+        use_af = data.get('use_autofocus', True)
+        
+        # Capturar foto
+        photo_path = nikon_controller.capture_photo(use_af=use_af)
+        
+        if photo_path:
+            # Mover a carpeta de medios
+            filename = os.path.basename(photo_path)
+            media_path = os.path.join(settings.MEDIA_ROOT, 'captures', 'nikon', filename)
+            os.makedirs(os.path.dirname(media_path), exist_ok=True)
+            
+            # Mover archivo
+            shutil.move(photo_path, media_path)
+            
+            # URL relativa
+            relative_url = f"{settings.MEDIA_URL}captures/nikon/{filename}"
+            
+            return JsonResponse({
+                'success': True,
+                'image_path': relative_url,
+                'filename': filename,
+                'camera_model': nikon_controller.camera_info['model']
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Error al capturar foto'
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+def nikon_liveview_stream(request):
+    """Stream de LiveView para cualquier cámara Nikon"""
+    global nikon_controller
+    
+    def generate():
+        if nikon_controller and nikon_controller.connected:
+            nikon_controller.start_liveview()
+            
+            try:
+                while True:
+                    image_data = nikon_controller.get_liveview_image()
+                    
+                    if image_data:
+                        # Aplicar ajustes de iluminación si están configurados
+                        if hasattr(request, 'session') and 'illumination' in request.session:
+                            image_data = apply_illumination_to_image(
+                                image_data, 
+                                request.session['illumination']
+                            )
+                        
+                        yield (b'--frame\r\n'
+                               b'Content-Type: image/jpeg\r\n\r\n' + image_data + b'\r\n')
+                    
+                    time.sleep(0.033)  # ~30 FPS
+            finally:
+                nikon_controller.stop_liveview()
+    
+    return StreamingHttpResponse(
+        generate(),
+        content_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
+def apply_illumination_to_image(image_data, illumination_level):
+    """Aplicar ajuste de iluminación a una imagen"""
+    try:
+        # Convertir bytes a imagen
+        image = Image.open(io.BytesIO(image_data))
+        
+        # Convertir a numpy array
+        img_array = np.array(image)
+        
+        # Calcular factor de brillo
+        brightness_factor = illumination_level / 50.0
+        
+        # Aplicar ajuste
+        adjusted = cv2.convertScaleAbs(img_array, alpha=brightness_factor, beta=0)
+        
+        # Convertir de vuelta a bytes
+        pil_image = Image.fromarray(adjusted)
+        buffer = io.BytesIO()
+        pil_image.save(buffer, format='JPEG')
+        
+        return buffer.getvalue()
+        
+    except:
+        return image_data
 
 def start_session(request, evento_id, template_id):
     if not request.user.is_authenticated:
@@ -1328,27 +1560,7 @@ def generate_collage(session, template_data, photos, frames):
                     
                 except Exception as element_error:
                     logger.error(f"Error al procesar elemento decorativo: {str(element_error)}")
-        
-        # Añadir marca de agua del evento si está configurado
-        # try:
-        #     config = PhotoboothConfig.objects.get(evento=session.evento)
-        #     if config.mostrar_marca_agua:
-        #         draw = ImageDraw.Draw(collage_img)
-        #         watermark_text = f"{session.evento.nombre} - {session.created_at.strftime('%d/%m/%Y')}"
-                
-        #         # Usar una fuente semi-transparente
-        #         font = ImageFont.load_default()
-        #         watermark_color = (128, 128, 128, 128)  # Gris semitransparente
-                
-        #         # Colocar en la esquina inferior derecha
-        #         text_width, text_height = draw.textsize(watermark_text, font=font)
-        #         position = (width_px - text_width - 10, height_px - text_height - 10)
-                
-        #         # Dibujar texto
-        #         draw.text(position, watermark_text, fill=watermark_color, font=font)
-        # except Exception as watermark_error:
-        #     logger.error(f"Error al añadir marca de agua: {str(watermark_error)}")
-        
+               
        # Al guardar el resultado, usar la ruta correcta:
         collage_id = str(uuid.uuid4())
         img_io = io.BytesIO()
@@ -1406,7 +1618,7 @@ def generate_collage(session, template_data, photos, frames):
 
 @csrf_exempt
 def print_document(request):
-    """Función mejorada para imprimir documentos con manejo correcto de excepciones"""
+    """Función de impresión simplificada sin modificar configuración de impresora"""
     print("Solicitud de impresión recibida")
     if request.method != 'POST':
         return HttpResponseBadRequest("Método no permitido.")
@@ -1416,13 +1628,8 @@ def print_document(request):
         data = json.loads(request.body)
         printer_name = data.get('printer_name')
         document_content = data.get('document_content')
-        paper_size = data.get('paper_size', 'A4')
-        copies = int(data.get('copies', 1))
-        quality = data.get('quality', 'high')
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Error al leer los datos JSON.'}, status=400)
-    except ValueError:
-        return JsonResponse({'error': 'Valor numérico inválido.'}, status=400)
 
     # Verificar que los datos esenciales estén presentes
     if not printer_name or not document_content:
@@ -1432,82 +1639,29 @@ def print_document(request):
         # Verificar si el documento es una imagen en base64
         is_image = False
         image_data = None
+        temp_file = None
         
         if document_content.startswith('data:image'):
             is_image = True
             # Extraer los datos de la imagen
             header, encoded = document_content.split(",", 1)
             image_data = base64.b64decode(encoded)
-        
-        # Abrir la impresora seleccionada
-        printer_handle = win32print.OpenPrinter(printer_name)
-        printer_info = win32print.GetPrinter(printer_handle, 2)
-
-        # Configurar tamaño de papel - USAR CONSTANTES ESTÁNDAR
-        devmode = printer_info["pDevMode"]
-        
-        # Definir códigos estándar para tamaños de papel comunes
-        # Estas constantes están definidas en win32con
-        PAPER_SIZES = {
-            '10x15': 1,    # Usar tamaño personalizado 
-            '13x18': 1,    # Usar tamaño personalizado
-            '15x20': 1,    # Usar tamaño personalizado
-            '20x25': 1,    # Usar tamaño personalizado
-            'A4': win32con.DMPAPER_A4,
-            'Letter': win32con.DMPAPER_LETTER
-        }
-        
-        # Aplicar tamaño de papel si está disponible
-        if paper_size in PAPER_SIZES:
-            devmode.PaperSize = PAPER_SIZES[paper_size]
             
-            # Si es tamaño personalizado (valor 1), también configurar dimensiones físicas
-            if PAPER_SIZES[paper_size] == 1:
-                # Extraer dimensiones del string (formato '10x15')
-                if 'x' in paper_size:
-                    try:
-                        width_cm, height_cm = paper_size.split('x')
-                        width_mm = int(float(width_cm) * 10)  # cm a mm
-                        height_mm = int(float(height_cm) * 10)  # cm a mm
-                        
-                        # Solo configurar si los campos están disponibles
-                        if hasattr(devmode, 'PaperWidth') and hasattr(devmode, 'PaperLength'):
-                            devmode.PaperWidth = width_mm * 10  # mm a 0.1mm (unidad de DEVMODE)
-                            devmode.PaperLength = height_mm * 10  # mm a 0.1mm (unidad de DEVMODE)
-                    except:
-                        pass  # Si hay error, usar los valores por defecto
-        else:
-            # Usar A4 como tamaño por defecto
-            devmode.PaperSize = win32con.DMPAPER_A4
+            # Crear archivo temporal
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+            temp_file.write(image_data)
+            temp_file.close()
         
-        # Configurar calidad de impresión
-        quality_settings = {
-            'draft': -1,    # Calidad borrador
-            'normal': 0,    # Calidad normal
-            'high': 1       # Alta calidad
-        }
+        # MÉTODO SIMPLIFICADO: Usar sólo las configuraciones por defecto de la impresora
+        # No intentar modificar SetPrinter que requiere permisos de administrador
         
-        if quality in quality_settings:
-            devmode.PrintQuality = quality_settings[quality]
-        
-        # Configurar número de copias
-        devmode.Copies = copies
-        
-        # Aplicar configuración al controlador de impresora
-        win32print.SetPrinter(printer_handle, 2, printer_info, 0)
-        
-        # Crear el contexto de impresión
+        # Crear el contexto de impresión directamente
         hdc = win32ui.CreateDC()
         hdc.CreatePrinterDC(printer_name)
         
-        if is_image:
+        if is_image and temp_file:
             # Imprimir imagen
             try:
-                # Crear un archivo temporal para la imagen
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
-                temp_file.write(image_data)
-                temp_file.close()
-                
                 # Abrir la imagen con PIL
                 img = Image.open(temp_file.name)
                 
@@ -1515,9 +1669,7 @@ def print_document(request):
                 hdc.StartDoc('Collage Photobooth')
                 hdc.StartPage()
                 
-                # Obtener dimensiones de la página
-                dpi_x = hdc.GetDeviceCaps(win32con.LOGPIXELSX)
-                dpi_y = hdc.GetDeviceCaps(win32con.LOGPIXELSY)
+                # Obtener dimensiones de la página (usar configuración por defecto)
                 page_width = hdc.GetDeviceCaps(win32con.PHYSICALWIDTH)
                 page_height = hdc.GetDeviceCaps(win32con.PHYSICALHEIGHT)
                 
@@ -1548,109 +1700,64 @@ def print_document(request):
                 hdc.EndPage()
                 hdc.EndDoc()
                 
-                # Eliminar el archivo temporal
-                os.unlink(temp_file.name)
-                
             except Exception as img_error:
-                # Si falla la impresión de imagen, intentar imprimir como texto
                 print(f"Error al imprimir imagen: {str(img_error)}")
                 
-                # Intentar limpiar recursos si ya se iniciaron
+                # Limpiar recursos en caso de error
                 try:
-                    if 'hdc' in locals() and hdc:
-                        try:
-                            if hasattr(hdc, 'AbortDoc'):
-                                hdc.AbortDoc()
-                            hdc.DeleteDC()
-                        except:
-                            pass
-                    
-                    if 'printer_handle' in locals() and printer_handle:
-                        try:
-                            win32print.ClosePrinter(printer_handle)
-                        except:
-                            pass
-                    
-                    if 'temp_file' in locals() and temp_file and os.path.exists(temp_file.name):
-                        try:
-                            os.unlink(temp_file.name)
-                        except:
-                            pass
+                    hdc.AbortDoc()
+                except:
+                    pass
+                try:
+                    hdc.DeleteDC()
                 except:
                     pass
                 
                 return JsonResponse({'error': f'Error al imprimir imagen: {str(img_error)}'}, status=500)
         else:
-            # Imprimir documento de texto
+            # Imprimir texto simple
             hdc.StartDoc('Documento Django')
             hdc.StartPage()
-            
-            # Ajustar fuente y formato para imprimir
-            hdc.SetMapMode(win32con.MM_TWIPS)  # 1/1440 pulgadas
-            
-            # Crear fuente para el texto
-            font = win32ui.CreateFont({
-                'name': 'Arial',
-                'height': 36,  # Tamaño de fuente
-                'weight': 400  # Normal
-            })
-            
-            hdc.SelectObject(font)
-            
-            # Posición inicial (1 pulgada desde borde superior e izquierdo)
-            x = 1440  # 1 pulgada en twips
-            y = 1440  # 1 pulgada en twips
-            
-            # Dividir el texto en líneas
-            lines = document_content.split('\n')
-            
-            for line in lines:
-                if line.strip():  # No imprimir líneas vacías
-                    hdc.TextOut(x, y, line)
-                    y += 300  # Espacio entre líneas
-            
+            hdc.TextOut(100, 100, "Collage Photobooth - Documento de prueba")
             hdc.EndPage()
             hdc.EndDoc()
 
         # Limpiar recursos
         hdc.DeleteDC()
-        win32print.ClosePrinter(printer_handle)
+        
+        # Eliminar archivo temporal si existe
+        if temp_file and os.path.exists(temp_file.name):
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
 
         return JsonResponse({'success': True, 'message': 'Documento enviado a impresión correctamente.'})
 
-    # Cambiar esto:
-    # except win32print.error as e:
-    #     return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
-    
-    # Por esto (manejo general de excepciones):
     except Exception as e:
         print(f"Error inesperado: {str(e)}")
         import traceback
         print(traceback.format_exc())
         
-        # Intentar limpiar recursos si ya se iniciaron
+        # Limpiar recursos en caso de error
         try:
-            if 'hdc' in locals() and hdc:
+            if 'hdc' in locals():
                 try:
-                    if hasattr(hdc, 'AbortDoc'):
-                        hdc.AbortDoc()
+                    hdc.AbortDoc()
+                except:
+                    pass
+                try:
                     hdc.DeleteDC()
-                except:
-                    pass
-            
-            if 'printer_handle' in locals() and printer_handle:
-                try:
-                    win32print.ClosePrinter(printer_handle)
-                except:
-                    pass
-            
-            if is_image and 'temp_file' in locals() and temp_file and os.path.exists(temp_file.name):
-                try:
-                    os.unlink(temp_file.name)
                 except:
                     pass
         except:
             pass
+        
+        if temp_file and os.path.exists(temp_file.name):
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
         
         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
     
@@ -1971,18 +2078,19 @@ def añadir_foto(request, evento_id): #Función que retorna el formulario para a
             
             for imagen in archivos:
                
-                
+                 
                  fotografia=Fotografia.objects.create(descripcion=descripcion, img=imagen, evento=evento)#Crear un objeto de Fotografia
                  fotografia.save() #Guardar objeto
             return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
             
         else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
-                "form":form
+            return render(request,"eventos/formulario_foto.html",{
+                "form":form,
+                "evento":evento
             })
         
     
-    return render(request,"añadir_fotos/formulario.html",{
+    return render(request,"eventos/formulario_foto.html",{
         "evento":evento,
         "form":AñadirFotoForm()
     })
@@ -2217,51 +2325,7 @@ def impresoras(request, evento_id):
     except Exception as e:
         return render(request, 'impresoras/impresoras.html', {'error': str(e)})
 
-# @csrf_exempt
-# def print_document(request):
-#     print("solicitud de impresión recibida")
-#     if request.method != 'POST':
-#         return HttpResponseBadRequest("Método no permitido.")
 
-#     # Leer datos JSON del body
-#     try:
-#         data = json.loads(request.body)
-#         printer_name = data.get('printer_name')
-#         document_content = data.get('document_content')
-#         paper_size = data.get('paper_size', 'A4')
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Error al leer los datos JSON.'}, status=400)
-
-#     # Verificar que los datos esenciales estén presentes
-#     if not printer_name or not document_content:
-#         return JsonResponse({'error': 'Nombre de impresora y contenido del documento son obligatorios.'}, status=400)
-
-#     try:
-#         # Abrir la impresora seleccionada
-#         printer_handle = win32print.OpenPrinter(printer_name)
-#         printer_info = win32print.GetPrinter(printer_handle, 2)
-
-#         # Crear el contexto de impresión
-#         hprinter = win32ui.CreateDC()
-#         hprinter.CreatePrinterDC(printer_name)
-#         hprinter.StartDoc('Documento Django')
-#         hprinter.StartPage()
-
-#         # Ajustar fuente y formato para imprimir
-#         hprinter.TextOut(100, 100, document_content)  # Ajusta las coordenadas y el contenido del texto
-#         hprinter.EndPage()
-#         hprinter.EndDoc()
-
-#         hprinter.DeleteDC()
-#         win32print.ClosePrinter(printer_handle)
-
-#         return JsonResponse({'message': 'Documento enviado a impresión correctamente.'})
-
-#     except win32print.error as e:
-#         return JsonResponse({'error': f'Error de impresión: {str(e)}'}, status=500)
-
-#     except Exception as e:
-#         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
 @csrf_exempt
 def list_printers(request):
@@ -2370,7 +2434,185 @@ def save_collage(request):
         logger.error(traceback.format_exc())
         return JsonResponse({'success': False, 'error': str(e)})
 
+@csrf_exempt
+@require_POST
+def send_to_mobile_device(request):
+    """Envía el collage al dispositivo móvil conectado por USB"""
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+        collage_id = data.get('collage_id')
+        
+        logger.info(f"Solicitud de envío a móvil - Session: {session_id}, Collage: {collage_id}")
+        
+        if not session_id:
+            return JsonResponse({'success': False, 'error': 'Session ID requerido'})
+        
+        # Obtener la sesión y el collage
+        try:
+            session = CollageSession.objects.get(session_id=session_id)
+            
+            # Si hay collage_id específico, usarlo; si no, buscar por sesión
+            if collage_id:
+                collage_result = CollageResult.objects.get(collage_id=collage_id)
+            else:
+                collage_result = CollageResult.objects.get(session=session)
+                
+        except (CollageSession.DoesNotExist, CollageResult.DoesNotExist) as e:
+            return JsonResponse({'success': False, 'error': f'No se encontró la sesión o collage: {str(e)}'})
+        
+        # Verificar que existe el archivo de imagen
+        if not collage_result.image or not os.path.exists(collage_result.image.path):
+            return JsonResponse({'success': False, 'error': 'Archivo de collage no encontrado'})
+        
+        # Preparar metadatos para el dispositivo móvil
+        metadata = {
+            'evento_nombre': session.evento.nombre,
+            'evento_fecha': session.evento.fecha_hora.strftime('%d/%m/%Y'),
+            'cliente_nombre': f"{session.evento.cliente.nombre} {session.evento.cliente.apellido}",
+            'template_nombre': session.template.nombre if session.template else 'Sin plantilla',
+            'created_at': collage_result.created_at.isoformat(),
+        }
+        
+        # Inicializar comunicación USB
+        usb_comm = USBCommunication()
+        
+        # Enviar al dispositivo móvil
+        success, message = usb_comm.send_collage_to_device(
+            collage_path=collage_result.image.path,
+            session_id=session_id,
+            metadata=metadata
+        )
+        
+        if success:
+            # Registrar la transferencia en la base de datos
+            WhatsAppTransfer.objects.create(
+                session=session,
+                collage_result=collage_result,
+                status='sent_to_device',
+                transfer_timestamp=timezone.now(),
+                metadata=metadata
+            )
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Collage enviado al dispositivo móvil. Dirígete al móvil para completar el envío por WhatsApp.',
+                'session_id': session_id
+            })
+        else:
+            return JsonResponse({'success': False, 'error': message})
+        
+    except Exception as e:
+        logger.error(f"Error enviando a dispositivo móvil: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
 
+@csrf_exempt
+def check_mobile_transfer_status(request):
+    """Verifica el estado de la transferencia en el dispositivo móvil"""
+    try:
+        session_id = request.GET.get('session_id')
+        if not session_id:
+            return JsonResponse({'success': False, 'error': 'Session ID requerido'})
+        
+        usb_comm = USBCommunication()
+        success, status_data = usb_comm.check_transfer_status(session_id)
+        
+        if success:
+            # Actualizar el registro en la base de datos si existe
+            try:
+                transfer = WhatsAppTransfer.objects.get(session__session_id=session_id)
+                transfer.status = status_data.get('status', 'unknown')
+                if 'phone_number' in status_data:
+                    transfer.phone_number = status_data['phone_number']
+                if 'user_name' in status_data:
+                    transfer.user_name = status_data['user_name']
+                if 'completed_at' in status_data:
+                    transfer.completed_at = timezone.now()
+                transfer.save()
+            except WhatsAppTransfer.DoesNotExist:
+                pass
+            
+            return JsonResponse({'success': True, 'status': status_data})
+        else:
+            return JsonResponse({'success': False, 'error': status_data})
+        
+    except Exception as e:
+        logger.error(f"Error verificando estado: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@csrf_exempt
+def get_device_status(request):
+    """Obtiene el estado del dispositivo móvil conectado"""
+    try:
+        usb_comm = USBCommunication()
+        device_info = usb_comm.get_device_info()
+        
+        if device_info:
+            return JsonResponse({
+                'success': True,
+                'connected': True,
+                'device_info': device_info
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'connected': False,
+                'message': 'No hay dispositivo Android conectado'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo estado del dispositivo: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@csrf_exempt
+def save_whatsapp_data(request):
+    """Guarda los datos del usuario cuando completa el formulario en el móvil"""
+    try:
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+        phone_number = data.get('phone_number')
+        user_name = data.get('user_name', '')
+        user_email = data.get('user_email', '')
+        
+        if not session_id or not phone_number:
+            return JsonResponse({'success': False, 'error': 'Datos incompletos'})
+        
+        # Buscar o crear el registro de transferencia
+        try:
+            session = CollageSession.objects.get(session_id=session_id)
+            transfer, created = WhatsAppTransfer.objects.get_or_create(
+                session=session,
+                defaults={
+                    'phone_number': phone_number,
+                    'user_name': user_name,
+                    'user_email': user_email,
+                    'status': 'data_collected',
+                    'transfer_timestamp': timezone.now()
+                }
+            )
+            
+            if not created:
+                # Actualizar datos existentes
+                transfer.phone_number = phone_number
+                transfer.user_name = user_name
+                transfer.user_email = user_email
+                transfer.status = 'data_collected'
+                transfer.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Datos guardados exitosamente',
+                'transfer_id': transfer.id
+            })
+            
+        except CollageSession.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Sesión no encontrada'})
+        
+    except Exception as e:
+        logger.error(f"Error guardando datos de WhatsApp: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
 
     
 

@@ -172,6 +172,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Para archivos globales
+]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
@@ -245,3 +248,64 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
 
 # También ajustar el tamaño máximo de archivos si es necesario
 FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB en bytes
+
+# Crear directorio temp_usb si no existe
+TEMP_USB_DIR = os.path.join(MEDIA_ROOT, 'temp_usb')
+if not os.path.exists(TEMP_USB_DIR):
+    os.makedirs(TEMP_USB_DIR, exist_ok=True)
+
+# ===========================================
+# Configuración de ADB para WhatsApp System
+# ===========================================
+
+# Ruta a ADB (Android Debug Bridge)
+ADB_PATH = r'C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+
+# Configuración USB para transferencias
+USB_TRANSFER_CONFIG = {
+    'DEVICE_FOLDER': '/sdcard/photobooth/',
+    'TEMP_FOLDER': os.path.join(MEDIA_ROOT, 'temp_usb'),
+    'CONNECTION_TIMEOUT': 10,
+    'TRANSFER_TIMEOUT': 30,
+    'MAX_RETRIES': 3,
+}
+
+# Crear directorio temporal si no existe
+TEMP_USB_DIR = os.path.join(MEDIA_ROOT, 'temp_usb')
+os.makedirs(TEMP_USB_DIR, exist_ok=True)
+
+# Logging para el sistema de transferencia
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'usb_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'whatsapp_transfer.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'usuarios.utils.usb_communication': {
+            'handlers': ['usb_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+# Crear directorio de logs si no existe
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)

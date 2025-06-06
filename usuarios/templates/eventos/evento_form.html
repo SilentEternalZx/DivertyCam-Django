@@ -1,3 +1,4 @@
+
 {% extends 'eventos/base.html' %}
 {% load widget_tweaks %}
 {% load static %}
@@ -52,17 +53,19 @@
                     </div>
                   {% endfor %}
                 </div>
+                 <div class="invalid-feedback d-block" id="error-servicios"></div>
               {% else %}
                 {{ field|add_class:"form-control form-control-lg text-center" }}
               {% endif %}
+              <div class="invalid-feedback d-block" id="error-{{ field.name }}"></div>
               {% if field.help_text %}
-                <div class="form-text text-secondary text-center w-100">{{ field.help_text }}</div>
+                  <div class="form-text text-secondary text-center w-100">{{ field.help_text }}</div>
               {% endif %}
-            </div>
-            {% endfor %}
+              </div>
+             {% endfor %}
           </div>
           <div class="d-flex justify-content-center gap-2 mt-4 action-buttons">
-            <button type="submit" class="btn btn-primary shadow-sm guardar-btn-efecto" id="guardar-btn">
+            <button type="submit" class="btn btn-primary shadow-sm guardar-btn-efecto" id="btn-morado">
               <i class="fa-solid fa-floppy-disk"></i> Guardar
             </button>
             <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
@@ -77,8 +80,9 @@
 {% endblock %}
 
 {% block extra_scripts %}
-
+<script src="{% static 'js/formulario_evento.js' %}"></script>
 <script>
+  
 document.addEventListener('DOMContentLoaded', function() {
     // Icon bounce infinito
     const icon = document.querySelector('.evento-form-icon');

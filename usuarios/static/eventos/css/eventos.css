@@ -1,3 +1,5 @@
+
+
 /* Centrado vertical usando flexbox en el contenedor principal */
 .d-flex.justify-content-center.align-items-center.min-vh-100 {
     min-height: 100vh !important;
@@ -57,6 +59,32 @@
     color:white;
 }
 
+/* Organización extra para evento_detail */
+.evento-header {
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+.evento-info-box h5 {
+  font-size: 1.1rem;
+  color: #2b2278;
+  font-weight: 600;
+  background: none;
+  margin-bottom: 1rem;
+}
+.evento-info-box .border-bottom {
+  border-color: #e0e0e0 !important;
+}
+.evento-detail-card {
+  margin-top: 0.5rem;
+}
+.evento-info-box {
+  margin-bottom: 0 !important;
+}
+.evento-info-box + .evento-info-box {
+  margin-top: 1.2rem;
+}
+
 /* Botones */
 .action-buttons {
     display: flex;
@@ -80,16 +108,21 @@
     margin-right: 6px;
 }
 
-#guardar-btn{
+#btn-morado{
     background: #2b2278;
     color: #fff;
     border:none;
 }
 
-#guardar-btn:hover{
+#btn-morado:hover{
     background-color: #222;
 }
-
+#btn-error{
+    background: #2b2278 !important;
+    color: #fff !important;
+    border:none;
+    
+}
 .btn-outline-info i,
 .btn-outline-warning i,
 .btn-outline-danger i,
@@ -130,6 +163,11 @@
     font-size: 1rem;
     padding: 7px 16px;
 }
+.bg-success{
+    background: #2b2278 !important;
+    color: #222 !important;
+}
+
 .badge-morado {
     background: #2b2278 !important;
     color: #fff !important;
@@ -259,6 +297,40 @@
     text-align: center;
 }
 
+/* Mejoras para evento_detail */
+.evento-detail-card {
+    border-radius: 1.5rem;
+    background: #f8f9fb;
+    border: none;
+    box-shadow: 0 4px 24px rgba(43,34,120,0.07);
+}
+
+
+.evento-info-box {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(43,34,120,0.06);
+    border-left: 5px solid #2b2278;
+    margin-bottom: 1rem;
+}
+.photobooth-action-box {
+    background: #f3f6ff;
+    border-radius: 1rem;
+    border: 1.5px dashed #2b2278;
+    box-shadow: 0 1px 4px rgba(43,34,120,0.04);
+}
+.photobooth-bg-thumb {
+    max-width: 180px;
+    border-radius: 0.7rem;
+    border: 2px solid #2b2278;
+}
+.avatar-lg {
+    width: 54px;
+    height: 54px;
+    font-size: 2rem;
+}
+
+
 /* Responsive */
 @media (max-width: 767px) {
     .evento-form-header {
@@ -276,6 +348,12 @@
     }
     .evento-card-efecto {
         border-radius: 1rem !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .evento-detail-card .row.g-4 > [class^="col-"] {
+        margin-bottom: 1.5rem;
     }
 }
 

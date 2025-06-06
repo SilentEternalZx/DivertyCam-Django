@@ -75,6 +75,25 @@
    .galeria-img { height: 200px; }
 }
 
+@media (max-width: 1200px) {
+  .mt-3 { 
+      padding-top: 25px !important; 
+     
+      
+   }
+
+   .section-headings{
+
+      margin-top:1.5rem !important
+   }
+  
+
+
+}
+
+
+
+
 .banner_section::before {
    
     background-image: url('../../assets/imagenes_layout/izzy-gerosa-xniTNHp4UVE-unsplash.jpg');
