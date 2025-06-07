@@ -80,8 +80,7 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
             </p>
             <div class="mb-2">
               <span class="badge bg-primary"
-                ><i class="fa fa-calendar"></i> {{ evento.fecha_hora|date:"d/m/Y
-                H:i" }}</span
+                ><i class="fa fa-calendar"></i> {{ evento.fecha_hora|date:"d/m/Y H:i" }}</span
               >
             </div>
             {% if request.user.is_superuser %}
