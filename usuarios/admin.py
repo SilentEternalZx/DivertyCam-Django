@@ -22,8 +22,7 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(Invitado)
 admin.site.register(CategoriaEvento)
-admin.site.register(Fotografia)
-admin.site.register(Cliente)
+
 
 
 

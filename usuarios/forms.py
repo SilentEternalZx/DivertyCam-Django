@@ -48,6 +48,10 @@ class ClienteForm(forms.ModelForm):
             self.fields['usuario'].queryset = User.objects.filter(
                 is_superuser=False
             ).exclude(id__in=clientes)
+            
+              # Forzar formato YYYY-MM-DD para el campo fechaNacimiento
+        if self.instance and self.instance.pk and self.instance.fechaNacimiento:
+         self.initial['fechaNacimiento'] = self.instance.fechaNacimiento.strftime('%Y-%m-%d')
 
     def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
@@ -179,13 +183,16 @@ class EventoForm(forms.ModelForm):
                 attrs={
                     'class': 'form-control', 
                     'type': 'datetime-local'
-                }
+                },
+                
             ),
            
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+      
         
           # Elimina cualquier clase previa que pudiera venir de la definición del campo
         if 'class' in self.fields['servicios'].widget.attrs:
