@@ -75,6 +75,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{% static 'js/formulario_fotografia.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -90,5 +91,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
+{% if messages %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    {% for message in messages %}
+      Swal.fire({
+        icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% else %}info{% endif %}',
+        title: '{{ message|escapejs }}',
+        showConfirmButton: false,
+        timer: 2500
+      });
+    {% endfor %}
+  });
+</script>
+{% endif %}
 {% endblock %}

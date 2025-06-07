@@ -89,11 +89,14 @@
                       <i class="fa-solid fa-pen"></i>
                     </a>
                     {% if cliente.activo %}
-                    <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-sm btn-outline-negro"" title="Inactivar">
-                      <i class="fa-solid fa-ban"></i>
-                    </a>
+                    <form method="post" action="{% url 'cliente_inactivar' cliente.pk %}" class="form-inactivar d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-negro" title="Inactivar">
+                        <i class="fa-solid fa-ban"></i>
+                      </button>
+                    </form>
                     {% else %}
-                    <form method="post" action="{% url 'cliente_activar' cliente.pk %}" style="display:inline;">
+                    <form method="post" action="{% url 'cliente_activar' cliente.pk %}" class="form-activar d-inline">
                       {% csrf_token %}
                       <button type="submit" class="btn btn-sm btn-outline-success" title="Activar">
                         <i class="fa-solid fa-check"></i>
@@ -121,52 +124,97 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- sweetalert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script>
-  $(document).ready(function() {
-      $('#cliente-table').DataTable({
-          pageLength:5,
-          pagingType: "simple_numbers",
-          ordering: true,
-          language: {
-              search: "Buscar:",
-              lengthMenu: "Mostrar _MENU_ registros",
-              zeroRecords: "No se encontraron resultados",
-              info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-              infoEmpty: "No hay registros",
-              infoFiltered: "(filtrado de _MAX_ registros)",
-              paginate: {
-                  first:    "Primera",
-                  last:     "Última",
-                  next:     "Siguiente",
-                  previous: "Anterior"
-              }
-          },
-          lengthChange: false,
-          searching: false,
-          columnDefs: [
-              { orderable: false, targets: 5 }
-          ]
-      });
 
-      // SweetAlert para mensaje de éxito
-      {% if messages %}
-        {% for message in messages %}
-          {% if message.tags == 'success' %}
-            Swal.fire({
-              icon: 'success',
-              title: '¡Éxito!',
-              text: '{{ message|escapejs }}',
-              confirmButtonColor: '#6f42c1',
-              timer: 2200,
-              timerProgressBar: true,
-              showConfirmButton: false
-            });
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+<script>
+  $(document).ready(function () {
+    $('#cliente-table').DataTable({
+      pageLength: 5,
+      pagingType: "simple_numbers",
+      ordering: true,
+      language: {
+        search: "Buscar:",
+        lengthMenu: "Mostrar _MENU_ registros",
+        zeroRecords: "No se encontraron resultados",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+        infoEmpty: "No hay registros",
+        infoFiltered: "(filtrado de _MAX_ registros)",
+        paginate: {
+          first: "Primera",
+          last: "Última",
+          next: "Siguiente",
+          previous: "Anterior"
+        }
+      },
+      lengthChange: false,
+      searching: false,
+      columnDefs: [
+        { orderable: false, targets: 5 }
+      ]
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // SweetAlert confirmación para inactivar
+    document.querySelectorAll('.form-inactivar').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        Swal.fire({
+          title: '¿Estás seguro?',
+          text: 'El cliente será marcado como inactivo.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Sí, inactivar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
+
+    // SweetAlert confirmación para activar
+    document.querySelectorAll('.form-activar').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        Swal.fire({
+          title: '¿Activar cliente?',
+          text: 'El cliente será marcado como activo nuevamente.',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#198754',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, activar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      });
+    });
   });
 </script>
+
+{% if messages %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    {% for message in messages %}
+      Swal.fire({
+        icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% else %}info{% endif %}',
+        title: '{{ message|escapejs }}',
+        showConfirmButton: false,
+        timer: 2500
+      });
+    {% endfor %}
+  });
+</script>
+{% endif %}
 {% endblock %}

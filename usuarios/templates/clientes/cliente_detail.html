@@ -1,7 +1,5 @@
 {% extends 'clientes/base.html' %}
-
 {% block title %}{{ cliente.nombre }} {{ cliente.apellido }}{% endblock %}
-
 {% block body %}
 {% include 'partials/navbar.html' %}
 
@@ -16,7 +14,7 @@
         <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-warning shadow-sm me-2">
           <i class="fa-solid fa-pen"></i> Editar
         </a>
-        <a href="{% url 'cliente_delete' cliente.pk %}" class="btn btn-danger shadow-sm me-2">
+        <a href="{% url 'cliente_detail' cliente.pk %}" class="btn btn-danger shadow-sm me-2">
           <i class="fa-solid fa-ban"></i> Inactivar
         </a>
         <a href="{% url 'cliente_list' %}" class="btn btn-blanco shadow-sm">
@@ -133,3 +131,57 @@
   </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if mensaje %}
+<script>
+  Swal.fire({
+    icon: '{{ mensaje.tipo }}',  // 'success', 'error', 'warning', 'info'
+    title: '{{ mensaje.titulo }}',
+    text: '{{ mensaje.texto }}',
+    timer: 3000,
+    timerProgressBar: true,
+    showConfirmButton: false
+  });
+</script>
+{% endif %}
+
+<script>
+  // Confirmación SweetAlert para botón "Inactivar"
+  document.querySelectorAll('.btn-danger').forEach(btn => {
+    btn.addEventListener('click', function(event) {
+      event.preventDefault();
+      const url = this.href;
+
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "El cliente será inactivado.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, inactivar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = url;  // redirige a la URL original
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
