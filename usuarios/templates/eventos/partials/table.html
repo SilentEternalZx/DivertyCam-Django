@@ -8,7 +8,6 @@
                 <th>Fecha y Hora</th>
                 <th>Servicios</th>
                 <th>Acciones</th>
-             
               </tr>
             </thead>
             <tbody>
@@ -39,9 +38,12 @@
         <a href="{% url 'evento_update' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Editar">
           <i class="fa-solid fa-pen"></i>
         </a>
-        <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Eliminar">
-          <i class="fa-solid fa-trash"></i>
-        </a>
+           <form action="{% url 'evento_delete' evento.pk %}" method="post" class="d-inline form-eliminar-evento" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-negro" title="Eliminar" style="border:none; background:none; padding:0;">
+                    <i class="fa-solid fa-trash"></i>
+                    </button>
+            </form>
         {% endif %}
          {%  if request.user.is_superuser or not request.user.is_superuser %}
         <a href="{% url 'descargar_foto' evento.pk %}" class="btn btn-sm btn-outline-negro" title="Ver fotografías">
@@ -51,10 +53,8 @@
       </div>
     </td>
   </tr>
-  {% empty %}
-  <tr>
-    <td colspan="6" class="text-center text-muted">No tiene eventos registrados</td>
-  </tr>
+  
+
   {% endfor %}
 </tbody>
           </table>

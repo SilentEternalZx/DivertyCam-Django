@@ -28,6 +28,9 @@
           <a class="nav-link active" href="{% url 'logout' %}">Cerrar sesión</a>
         </li>
         {% elif request.user.is_authenticated and not request.user.is_superuser %}
+              <li class="nav-item">
+          <a class="nav-link active" href="{% url 'index' %}">Inicio</a>
+        </li>
         <li class="nav-item">
           <a class="nav-link active" href="{% url 'eventos_cliente' %}">Mis eventos</a>
         </li>

@@ -41,9 +41,7 @@ class Cliente(models.Model):
         verbose_name=_("Nombre"),
         validators=[MinLengthValidator(3, 'El nombre debe ser de al menos 3 caracteres')]
         
-       
     )
-    
     
     
     usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)

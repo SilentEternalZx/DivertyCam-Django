@@ -543,6 +543,7 @@ class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
    
     def form_valid(self, form):
         response = super().form_valid(form)
+        messages.success(self.request, "¡Evento creado exitosamente!")
         return response
 
 class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
@@ -2118,12 +2119,12 @@ def añadir_foto(request, evento_id):
             # Redirige correctamente pasando el evento_id
             return redirect(reverse("descargar_foto", kwargs={"evento_id": evento.id}))
         else:
-            return render(request, "añadir_fotos/formulario.html", {
+            return render(request, "eventos/formulario_foto.html", {
                 "form": form,
                 "evento": evento
             })
 
-    return render(request, "añadir_fotos/formulario.html", {
+    return render(request, "eventos/formulario_foto.html", {
         "evento": evento,
         "form": AñadirFotoForm()
     })

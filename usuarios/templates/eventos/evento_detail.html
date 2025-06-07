@@ -70,7 +70,7 @@
                 <dt class="col-sm-5">Teléfono</dt>
                 <dd class="col-sm-7">{{ evento.cliente.telefono }}</dd>
                 <dt class="col-sm-5">Correo</dt>
-                <dd class="col-sm-7">{{ evento.cliente.correo }}</dd>
+                <dd class="col-sm-7">{{ evento.cliente.usuario.email}}</dd>
               </dl>
             </div>
           </div>
@@ -134,7 +134,6 @@
           
           </div>
         </div>
-        {% endif %}
       </div>
     </div>
   </div>
