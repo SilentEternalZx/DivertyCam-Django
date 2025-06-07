@@ -119,8 +119,7 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
                 {{ imagen.descripcion|default:"Sin descripción" }}
               </p>
               <p class="text-muted small mb-3">
-                <i class="fa fa-calendar"></i> {{
-                evento.fecha_creacion|date:"d/m/Y H:i" }}
+                <i class="fa fa-calendar"></i> {{evento.fecha_creacion|date:"d/m/Y H:i" }}
               </p>
               <div class="d-flex justify-content-center gap-3">
                 <a href="{{ imagen.img.url }}" download class="btn btn-success">
