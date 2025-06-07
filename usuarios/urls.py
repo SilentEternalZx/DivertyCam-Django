@@ -43,7 +43,7 @@ urlpatterns = [
     path("eventos/<int:categoria_id>/", views.listar_eventos, name="listar_eventos"),
     path("fotos/<int:evento_id>/", views.listar_fotos_evento, name="listar_fotos_evento"),
     path("publicar_album/<int:evento_id>/", views.publicar_album_facebook, name="publicar_album_facebook"),
-    path("publicar_foto/<int:foto_id>/", views.publicar_foto_facebook, name="publicar_foto"),
+    path("publicar_foto/<int:foto_id>", views.publicar_foto_facebook, name="publicar_foto"),
     path('evento_list', views.EventoListView.as_view(), name='evento_list'),
     path('evento_list/nuevo/', views.EventoCreateView.as_view(), name='evento_create'),
     path('evento_list/<int:pk>/', views.EventoDetailView.as_view(), name='evento_detail'),
@@ -119,6 +119,8 @@ urlpatterns = [
     path('latest_collage/', views.latest_collage, name='latest_collage'),
     path('session_photos/', views.api_session_photos, name='api_session_photos'),
     path('update_share_count/', views.update_share_count, name='update_share_count'),
+    path("descargar_foto_publico/<int:evento_id>", views.descargar_foto_publico, name="descargar_foto_publico"),
+    path("api/fotos_publico/<int:evento_id>/", views.api_fotos_publico, name="api_fotos_publico"),
 ]
 
 # Añadir URLs de cámaras si están disponibles

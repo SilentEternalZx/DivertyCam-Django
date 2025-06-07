@@ -352,23 +352,22 @@ def subir_foto(request):
     if request.method == "POST":
         form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
-            foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
-            foto.usuario = request.user  # 📌 Asigna el usuario autenticado
-
-            # 📌 Si el formulario no tiene evento, asignar un evento por defecto
+            foto = form.save(commit=False)
+            foto.usuario = request.user
             if not foto.evento:
-                foto.evento = Evento.objects.first()  # O elegir un evento válido
-
-            foto.save()  # 📌 Ahora sí guarda la foto
+                foto.evento = Evento.objects.first()
+            foto.save()
+            # Asociar los invitados seleccionados a la fotografía
+            invitados = form.cleaned_data.get('invitados')
+            if invitados:
+                foto.invitados.set(invitados)
             return redirect("lista_fotos")
         else:
             print("Errores en el formulario:", form.errors)
-
     else:
         form = AñadirFotoForm()
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
-
 
 
 def listar_eventos(request, categoria_id):
@@ -403,7 +402,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
+            "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
         )
 
         payload = {
@@ -441,7 +440,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", " https://55dc-191-156-43-126.ngrok-free.app"
+        "http://127.0.0.1:8000", " https://f25a-191-156-39-191.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -459,7 +458,8 @@ def publicar_foto_facebook(request, foto_id):
     data = response.json()
 
     if response.status_code == 200:
-        return JsonResponse({"success": "Foto publicada correctamente en Facebook"})
+        messages.success(request, "Foto publicada correctamente en Facebook")
+        return redirect('descargar_foto', evento_id=evento.id)
     else:
         return JsonResponse({"error": data}, status=400)
    
@@ -1900,7 +1900,6 @@ def launch_photobooth(request, evento_id):
         'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/')
     })
 
-
 def session_result(request, session_id):
     """Muestra el resultado de una sesión de photobooth"""
     session = get_object_or_404(CollageSession, session_id=session_id)
@@ -2015,6 +2014,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
     
     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
     evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
+    imagenes=evento.fotografias.all() #Obtener todas las fotografías
     imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
     return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
@@ -2025,7 +2025,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
 #Mostrar las fotos guardadas
 def lista_fotos(request):
     fotos = Fotografia.objects.all()
-    return render(request, "fotografias/foto_list.html", {"fotografias": fotos})
+    return render(request, "fotografias/descargar_foto.html", {"fotografias": fotos})
 
 # Subir fotos de los eventos
 def subir_foto(request):
@@ -2057,7 +2057,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://55dc-191-156-43-126.ngrok-free.app"
+        "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
     )
 
     # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
@@ -2084,7 +2084,7 @@ def publicar_foto_facebook(request, foto_id):
 
     if response.status_code == 200:
         print("✅ Foto publicada en la página DivertyApp correctamente.")
-        return redirect("lista_fotos")
+        return redirect("descargar_foto", evento_id=foto.evento.id)
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
@@ -2777,3 +2777,42 @@ def api_session_photos(request):
         'collage': collage_url
     })
 
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def descargar_foto_publico(request, evento_id):
+    """
+    Vista pública para mostrar y descargar fotografías de un evento sin requerir autenticación.
+    Pensada para acceso desde dispositivos móviles o enlaces públicos.
+    """
+    try:
+        evento = Evento.objects.get(id=evento_id)
+        imagenes = evento.fotografias.all()
+    except Evento.DoesNotExist:
+        return render(request, "fotografias/descargar_foto.html", {
+            "evento": None,
+            "imagenes": [],
+            "error": "Evento no encontrado."
+        })
+    return render(request, "fotografias/descargar_foto.html", {
+        "evento": evento,
+        "imagenes": imagenes,
+        "publico": True  # Bandera para la plantilla si se quiere mostrar info diferente
+    })
+    
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def api_fotos_publico(request, evento_id):
+    try:
+        evento = Evento.objects.get(id=evento_id)
+        imagenes = evento.fotografias.all()
+        # Usar la IP y puerto del request para URLs accesibles desde cualquier dispositivo
+        host = request.get_host()
+        scheme = 'https' if request.is_secure() else 'http'
+        fotos = [f"{scheme}://{host}{img.img.url}" for img in imagenes]
+        return JsonResponse({"success": True, "fotos": fotos})
+    except Evento.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Evento no encontrado"}, status=404)
