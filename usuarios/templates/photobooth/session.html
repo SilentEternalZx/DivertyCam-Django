@@ -310,7 +310,7 @@
     <div id="countdown-overlay" class="countdown-overlay">
         <div class="countdown-container">
             <div id="countdown-display" class="countdown-display">3</div>
-            <div class="countdown-text">Prepárate para la foto...</div>
+            <div class="countdown-text"></div>
         </div>
     </div>
     
@@ -736,6 +736,8 @@ function startSession() {
             .then(data => {
                 if (data.success) {
                     console.log("Collage guardado exitosamente:", data.collage_id);
+
+                    enableWhatsAppForNewCollage();
                     
                     // Actualizar la URL de la imagen en el HTML si es necesario
                     if (data.image_url) {
@@ -1103,7 +1105,7 @@ async function restart() {
     
     // Actualizar indicadores de progreso
     updateProgressIndicators();
-    
+    resetWhatsAppButton();
     // IMPORTANTE: Reinicializar la cámara
     try {
         console.log("Reinicializando cámara...");
@@ -1192,11 +1194,95 @@ async function restart() {
     printBtn.addEventListener('click', function() {
         printCollage();
     });
+
+    // ========== SOLUCIÓN PARA RESETEAR EL BOTÓN WHATSAPP ==========
+// Agregar estas funciones a tu código existente en session.html
+
+// Variable global para controlar el estado del botón
+let whatsappButtonReady = true;
+
+// Función para resetear el botón WhatsApp después del proceso
+function resetWhatsAppButton() {
+    const whatsappBtn = document.getElementById('share-whatsapp-btn');
+    if (whatsappBtn) {
+        // Restaurar estado original
+        whatsappBtn.disabled = false;
+        whatsappBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Compartir por WhatsApp';
+        whatsappBtn.className = 'btn btn-success btn-lg btn-photobooth';
+        
+        // Marcar como listo para usar
+        whatsappButtonReady = true;
+        
+        console.log('✅ Botón WhatsApp reseteado y listo para usar');
+    }
+}
+
+// Función para marcar el botón como procesando
+function setWhatsAppButtonProcessing() {
+    const whatsappBtn = document.getElementById('share-whatsapp-btn');
+    if (whatsappBtn) {
+        whatsappButtonReady = false;
+        whatsappBtn.disabled = true;
+        whatsappBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        whatsappBtn.className = 'btn btn-warning btn-lg btn-photobooth';
+    }
+}
+
+// Función para marcar el botón como enviado temporalmente
+function setWhatsAppButtonSent() {
+    const whatsappBtn = document.getElementById('share-whatsapp-btn');
+    if (whatsappBtn) {
+        whatsappBtn.disabled = true;
+        whatsappBtn.innerHTML = '<i class="fas fa-check-circle"></i> Enviado al móvil';
+        whatsappBtn.className = 'btn btn-info btn-lg btn-photobooth';
+        
+        // Auto-resetear después de 3 segundos para permitir reenvío
+        setTimeout(() => {
+            resetWhatsAppButton();
+        }, 3000);
+    }
+}
+
+// Función para marcar el botón con error y permitir reintento
+function setWhatsAppButtonError(errorMessage) {
+    const whatsappBtn = document.getElementById('share-whatsapp-btn');
+    if (whatsappBtn) {
+        whatsappBtn.disabled = false;
+        whatsappBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Reintentar';
+        whatsappBtn.className = 'btn btn-danger btn-lg btn-photobooth';
+        whatsappButtonReady = true;
+        
+        // Mostrar error
+        console.error('❌ Error WhatsApp:', errorMessage);
+        
+        // Auto-resetear después de 5 segundos
+        setTimeout(() => {
+            resetWhatsAppButton();
+        }, 5000);
+    }
+}
+
+
+    // Función para habilitar el botón cuando hay un nuevo collage
+function enableWhatsAppForNewCollage() {
+    console.log('🆕 Nuevo collage disponible, habilitando WhatsApp...');
+    resetWhatsAppButton();
+}
+
     
     // Configurar botón de WhatsApp para envío a dispositivo móvil
 if (document.getElementById('share-whatsapp-btn')) {
-    document.getElementById('share-whatsapp-btn').addEventListener('click', function() {
-        console.log("Iniciando envío a dispositivo móvil...");
+    document.getElementById('share-whatsapp-btn').addEventListener('click', function(event) {
+        // Prevenir múltiples clicks
+        if (!whatsappButtonReady) {
+            console.log('⏳ Botón WhatsApp no está listo, ignorando click');
+            return;
+        }
+        
+        console.log("📱 Iniciando envío a dispositivo móvil...");
+        
+        // Marcar como procesando
+        setWhatsAppButtonProcessing();
         
         // Mostrar indicador de carga
         const loadingIndicator = document.createElement('div');
@@ -1215,11 +1301,6 @@ if (document.getElementById('share-whatsapp-btn')) {
         
         document.body.appendChild(loadingIndicator);
         
-        // Deshabilitar el botón temporalmente
-        this.disabled = true;
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-        
         // Enviar al dispositivo móvil
         fetch('{% url "send_to_mobile_device" %}', {
             method: 'POST',
@@ -1229,8 +1310,6 @@ if (document.getElementById('share-whatsapp-btn')) {
             },
             body: JSON.stringify({
                 session_id: '{{ session_id }}',
-                // Si tienes el collage_id disponible, inclúyelo aquí
-                // collage_id: 'ID_DEL_COLLAGE'
             })
         })
         .then(response => response.json())
@@ -1238,35 +1317,33 @@ if (document.getElementById('share-whatsapp-btn')) {
             // Remover indicador de carga
             document.body.removeChild(loadingIndicator);
             
-            // Restaurar botón
-            this.disabled = false;
-            this.innerHTML = originalText;
-            
             if (data.success) {
-                // Mostrar mensaje de éxito
-                showTransferNotification(true, data.message);
+                console.log('✅ Collage enviado exitosamente al móvil');
                 
-                // Mostrar instrucciones para el usuario
+                // Marcar como enviado
+                setWhatsAppButtonSent();
+                
+                // Mostrar instrucciones
                 showMobileInstructions();
                 
-                // Iniciar monitoreo del estado de transferencia
+                // Iniciar monitoreo del estado
                 startTransferStatusMonitoring(data.session_id);
                 
             } else {
+                console.error('❌ Error del servidor:', data.error);
+                setWhatsAppButtonError(data.error);
                 showTransferNotification(false, 'Error: ' + data.error);
             }
         })
         .catch(error => {
-            console.error('Error enviando a dispositivo móvil:', error);
+            console.error('❌ Error enviando a dispositivo móvil:', error);
             
             // Limpiar UI en caso de error
             if (document.body.contains(loadingIndicator)) {
                 document.body.removeChild(loadingIndicator);
             }
             
-            this.disabled = false;
-            this.innerHTML = originalText;
-            
+            setWhatsAppButtonError('Error de comunicación: ' + error.message);
             showTransferNotification(false, 'Error de comunicación: ' + error.message);
         });
     });
@@ -1551,6 +1628,11 @@ function showCompletionCelebration() {
             }
         }, 500);
     }, 3000);
+
+    setTimeout(() => {
+        console.log('🎉 Proceso WhatsApp completado, reseteando botón...');
+        resetWhatsAppButton();
+    }, 3000);
     
     // Remover indicador de estado si existe
     const statusIndicator = document.querySelector('.transfer-status-indicator');
@@ -1575,11 +1657,11 @@ function checkDeviceStatus() {
                 whatsappBtn.title = `Dispositivo conectado: ${data.device_info.manufacturer} ${data.device_info.model}`;
                 
                 // Agregar indicador visual de dispositivo conectado
-                const deviceIndicator = document.createElement('span');
+                {% comment %} const deviceIndicator = document.createElement('span');
                 deviceIndicator.style.color = '#28a745';
                 deviceIndicator.style.fontSize = '0.8em';
                 deviceIndicator.style.display = 'block';
-                deviceIndicator.innerHTML = '<i class="fas fa-mobile-alt"></i> Dispositivo conectado';
+                deviceIndicator.innerHTML = '<i class="fas fa-mobile-alt"></i> Dispositivo conectado'; {% endcomment %}
                 
                 whatsappBtn.parentNode.insertBefore(deviceIndicator, whatsappBtn.nextSibling);
             }
@@ -1593,11 +1675,11 @@ function checkDeviceStatus() {
                 whatsappBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conectar Dispositivo';
                 
                 // Agregar indicador visual de dispositivo no conectado
-                const deviceWarning = document.createElement('span');
+                {% comment %} const deviceWarning = document.createElement('span');
                 deviceWarning.style.color = '#dc3545';
                 deviceWarning.style.fontSize = '0.8em';
                 deviceWarning.style.display = 'block';
-                deviceWarning.innerHTML = '<i class="fas fa-unlink"></i> Dispositivo no conectado';
+                deviceWarning.innerHTML = '<i class="fas fa-unlink"></i> Dispositivo no conectado'; {% endcomment %}
                 
                 whatsappBtn.parentNode.insertBefore(deviceWarning, whatsappBtn.nextSibling);
             }

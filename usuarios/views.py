@@ -23,14 +23,14 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
 from .models import Evento, PhotoboothConfig, CollageTemplate, CollageSession, SessionPhoto, CollageResult, Cliente
-from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm,AñadirFotoForm, PhotoboothConfigForm
+from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm, AñadirFotoForm, PhotoboothConfigForm
 import json
 import uuid
 import base64
 import os
 import tempfile
 import io
-import datetime
+#import datetime
 import logging
 from django.contrib.auth.views import PasswordResetView
 from django.core.exceptions import ObjectDoesNotExist
@@ -46,6 +46,8 @@ import numpy as np
 import subprocess
 # Importaciones necesarias para la comunicación USB
 from .utils.usb_communication import USBCommunication
+
+
 
 
 
@@ -499,14 +501,22 @@ class EventoForm(LoginRequiredMixin,forms.ModelForm):
             }
         login_url = 'login'
     def clean_fecha_hora(self):
+        
         fecha_hora = self.cleaned_data.get('fecha_hora')
         
         # Verificamos si la fecha es en el pasado
-        if fecha_hora < timezone.now():
-            raise forms.ValidationError("La fecha y hora no puede ser en el pasado.")
+        # if fecha_hora < timezone.now():
+        #     raise forms.ValidationError("La fecha y hora no puede ser en el pasado.")
     
         return fecha_hora
-    
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_hora = cleaned_data.get('fecha_hora')
+        #if fecha_hora:
+            # Verificamos si la fecha es en el pasado
+            # if fecha_hora < timezone.now():
+            #     self.add_error('fecha_hora', "La fecha y hora no puede ser en el pasado.")
+        return cleaned_data    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Filtra solo clientes activos
@@ -2689,6 +2699,8 @@ def save_whatsapp_data(request):
     except Exception as e:
         logger.error(f"Error guardando datos de WhatsApp: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
+
+
 
 
 

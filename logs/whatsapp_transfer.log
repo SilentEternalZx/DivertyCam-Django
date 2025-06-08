@@ -6,3 +6,83 @@ INFO 2025-06-04 10:32:24,517 usb_communication 6432 23644 Enviando C:\django\Div
 INFO 2025-06-04 10:32:24,809 usb_communication 6432 23644 Collage enviado exitosamente a dispositivo móvil
 INFO 2025-06-04 10:34:17,901 usb_communication 6432 23668 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_0568d76a-3846-41ce-9d12-356782d4138f.jpeg a /sdcard/photobooth/images/collage_269ab412-dc75-4753-898f-c4da7c63bbf7.jpg
 INFO 2025-06-04 10:34:18,170 usb_communication 6432 23668 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 21:20:18,364 usb_communication 24260 2436 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6633be4e-a50f-4ddf-a51c-f7d550014aed.jpeg a /sdcard/photobooth/images/collage_5b483358-456c-46e5-a75d-4ee7a0159d1d.jpg
+INFO 2025-06-04 21:20:18,781 usb_communication 24260 2436 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 22:01:13,464 usb_communication 27916 2560 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_15e99b0d-add6-4725-9ce0-6ca5f251bd43.jpeg a /sdcard/photobooth/images/collage_296cdd2e-1edc-476a-a1f5-5ddbec93ceb0.jpg
+INFO 2025-06-04 22:01:13,845 usb_communication 27916 2560 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 22:38:29,642 usb_communication 27916 25348 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_cbb05d16-30f6-4b59-91a6-863634138ae2.jpeg a /sdcard/photobooth/images/collage_0b453caf-a9b9-464a-94f2-c580f7afc114.jpg
+INFO 2025-06-04 22:38:30,022 usb_communication 27916 25348 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 22:41:53,560 usb_communication 27916 15836 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_cbb05d16-30f6-4b59-91a6-863634138ae2.jpeg a /sdcard/photobooth/images/collage_0b453caf-a9b9-464a-94f2-c580f7afc114.jpg
+INFO 2025-06-04 22:41:53,957 usb_communication 27916 15836 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 22:42:26,739 usb_communication 27916 15836 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_cbb05d16-30f6-4b59-91a6-863634138ae2.jpeg a /sdcard/photobooth/images/collage_0b453caf-a9b9-464a-94f2-c580f7afc114.jpg
+INFO 2025-06-04 22:42:27,022 usb_communication 27916 15836 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 23:03:49,194 usb_communication 27916 19340 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_ac7cb83f-686e-4577-bd49-733656622cdb.jpeg a /sdcard/photobooth/images/collage_1d7c4fd6-2364-4dc9-9c6c-24e9bdc28a00.jpg
+INFO 2025-06-04 23:03:49,547 usb_communication 27916 19340 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 23:04:36,239 usb_communication 27916 19340 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_ac7cb83f-686e-4577-bd49-733656622cdb.jpeg a /sdcard/photobooth/images/collage_1d7c4fd6-2364-4dc9-9c6c-24e9bdc28a00.jpg
+INFO 2025-06-04 23:04:36,573 usb_communication 27916 19340 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-04 23:42:28,082 usb_communication 27916 25568 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_a3f200fb-f361-4223-b87f-3ef05aa73a58.jpeg a /sdcard/photobooth/images/collage_90e72a35-ddfa-4c45-9449-05335fc62e1e.jpg
+INFO 2025-06-04 23:42:28,442 usb_communication 27916 25568 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 00:01:33,097 usb_communication 27916 10768 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_18d2eda6-4870-448e-8ced-ece0052e9291.jpeg a /sdcard/photobooth/images/collage_ea0c1b4f-f8b5-45c8-9f90-4917b567e43c.jpg
+INFO 2025-06-05 00:01:33,494 usb_communication 27916 10768 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 06:16:46,046 usb_communication 28596 22048 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_c7830a2f-c22a-4425-9d19-5742732861e7.jpeg a /sdcard/photobooth/images/collage_26f70916-5799-4feb-9e24-c6f6f3478914.jpg
+INFO 2025-06-05 06:16:46,421 usb_communication 28596 22048 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 06:25:41,430 usb_communication 28596 19584 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_611b9e75-4307-42b5-9a7a-2ee06e647a42.jpeg a /sdcard/photobooth/images/collage_9794ce28-21b6-4d19-a1a9-bfb29a3e5b5a.jpg
+INFO 2025-06-05 06:25:41,813 usb_communication 28596 19584 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 07:17:57,252 usb_communication 27936 22260 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_f8dc96a3-afb0-4afb-8c36-628a8ef49aad.jpeg a /sdcard/photobooth/images/collage_0f1a3302-2c55-4926-88cd-8be5947e81aa.jpg
+INFO 2025-06-05 07:17:57,648 usb_communication 27936 22260 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 07:18:55,195 usb_communication 27936 27344 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_f8dc96a3-afb0-4afb-8c36-628a8ef49aad.jpeg a /sdcard/photobooth/images/collage_0f1a3302-2c55-4926-88cd-8be5947e81aa.jpg
+INFO 2025-06-05 07:18:55,543 usb_communication 27936 27344 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 09:02:08,290 usb_communication 20716 23528 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_a6d43b27-f996-4cf9-907e-d88b889c27db.jpeg a /sdcard/photobooth/images/collage_6bf347b7-1a24-40d3-bb18-f0a92dc9ac5e.jpg
+INFO 2025-06-05 09:02:08,714 usb_communication 20716 23528 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 09:10:33,293 usb_communication 20716 20632 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_b279b1ab-eb88-4982-a22d-9120fea9d416.jpeg a /sdcard/photobooth/images/collage_a770faac-6197-496a-af3b-f837edce6d88.jpg
+INFO 2025-06-05 09:10:33,569 usb_communication 20716 20632 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 09:14:54,201 usb_communication 2976 21324 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6c5beec0-063d-400a-8cd0-a1130f01b23e.jpeg a /sdcard/photobooth/images/collage_49765bf5-ccc1-43d9-a068-a66cfa665076.jpg
+INFO 2025-06-05 09:14:54,511 usb_communication 2976 21324 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 09:17:04,746 usb_communication 2976 22892 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6c5beec0-063d-400a-8cd0-a1130f01b23e.jpeg a /sdcard/photobooth/images/collage_49765bf5-ccc1-43d9-a068-a66cfa665076.jpg
+INFO 2025-06-05 09:17:05,119 usb_communication 2976 22892 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 09:31:58,348 usb_communication 14304 18520 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6155564e-b9a1-434a-a253-ef3c8641c437.jpeg a /sdcard/photobooth/images/collage_994497d8-957f-4ed9-a069-f6bbaa6504b9.jpg
+INFO 2025-06-05 09:31:58,681 usb_communication 14304 18520 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 09:32:33,768 usb_communication 14304 21632 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6155564e-b9a1-434a-a253-ef3c8641c437.jpeg a /sdcard/photobooth/images/collage_994497d8-957f-4ed9-a069-f6bbaa6504b9.jpg
+INFO 2025-06-05 09:32:34,139 usb_communication 14304 21632 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 10:39:39,910 usb_communication 14304 8740 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_e739bc65-b30d-4bb0-9208-879277e7170c.jpeg a /sdcard/photobooth/images/collage_63f49cf7-8edd-4fe7-aa95-e62927bf4bae.jpg
+INFO 2025-06-05 10:39:40,230 usb_communication 14304 8740 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 10:53:21,718 usb_communication 14304 11256 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6d6afa66-b078-48c1-9f35-5fbce88050b2.jpeg a /sdcard/photobooth/images/collage_6a3287c6-4c73-48e2-927b-f04e352983a6.jpg
+INFO 2025-06-05 10:53:22,081 usb_communication 14304 11256 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 16:54:03,212 usb_communication 14304 22892 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_6464c938-d479-43fa-b5f9-8f143e5a24d3.jpeg a /sdcard/photobooth/images/collage_ec9e84de-308f-428a-8d83-8bf59c13527a.jpg
+INFO 2025-06-05 16:54:03,600 usb_communication 14304 22892 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 18:12:55,892 usb_communication 14304 4680 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_b8e2cb2f-d6bd-4ff7-8902-a66c3c4a6ee6.jpeg a /sdcard/photobooth/images/collage_42658143-d141-4dbd-a1a6-d804d4a2c34a.jpg
+INFO 2025-06-05 18:12:56,226 usb_communication 14304 4680 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 20:19:18,071 usb_communication 14304 21864 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_83ddba9c-1e6f-4de1-a4e1-2ddee1dce135.jpeg a /sdcard/photobooth/images/collage_914f99a9-1744-4268-b013-bfad2f5ee3ee.jpg
+INFO 2025-06-05 20:19:18,520 usb_communication 14304 21864 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 20:34:27,938 usb_communication 14304 6764 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_eac7bce4-1837-4264-b399-fb2c23335398.jpeg a /sdcard/photobooth/images/collage_9bfb6c85-5977-4edc-b40a-1bef4ca73d1d.jpg
+INFO 2025-06-05 20:34:28,308 usb_communication 14304 6764 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 20:42:47,278 usb_communication 14304 13828 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_e3726af1-ca63-473d-8ddc-6b14d939e2b3.jpeg a /sdcard/photobooth/images/collage_42c9863b-1732-4102-8082-e46229100a03.jpg
+INFO 2025-06-05 20:42:47,695 usb_communication 14304 13828 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 20:43:38,142 usb_communication 14304 4508 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_e3726af1-ca63-473d-8ddc-6b14d939e2b3.jpeg a /sdcard/photobooth/images/collage_42c9863b-1732-4102-8082-e46229100a03.jpg
+INFO 2025-06-05 20:43:38,453 usb_communication 14304 4508 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 20:46:23,768 usb_communication 14304 25364 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_7c3300ee-60c5-4ec6-9226-7cebf195b71b.jpeg a /sdcard/photobooth/images/collage_b15f5da9-4629-4f93-b9a4-dfa080fde9c9.jpg
+INFO 2025-06-05 20:46:24,144 usb_communication 14304 25364 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 21:08:42,127 usb_communication 14304 15744 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_a9f5ffac-6d65-47cc-8ef5-82d3212d21d8.jpeg a /sdcard/photobooth/images/collage_32a518c8-9aa8-4b68-9533-a8dc8e9c9afe.jpg
+INFO 2025-06-05 21:08:42,493 usb_communication 14304 15744 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 21:09:56,088 usb_communication 14304 15744 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_a9f5ffac-6d65-47cc-8ef5-82d3212d21d8.jpeg a /sdcard/photobooth/images/collage_32a518c8-9aa8-4b68-9533-a8dc8e9c9afe.jpg
+INFO 2025-06-05 21:09:56,499 usb_communication 14304 15744 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 21:11:28,208 usb_communication 14304 19512 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_7a26a282-04be-4355-887d-e7eaa080c8fb.jpeg a /sdcard/photobooth/images/collage_4d7efa57-5564-431a-8e94-3d44de4552c1.jpg
+INFO 2025-06-05 21:11:28,614 usb_communication 14304 19512 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 21:13:25,829 usb_communication 14304 3852 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_42da5f99-5832-4abd-997e-f7db5e3ef202.jpeg a /sdcard/photobooth/images/collage_b077c762-801c-470e-8ef8-6e613d3b2959.jpg
+INFO 2025-06-05 21:13:26,171 usb_communication 14304 3852 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 22:44:18,034 usb_communication 14304 24040 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_ad8666ba-a8ba-406b-8b32-61ad786a89c9.jpeg a /sdcard/photobooth/images/collage_029b4cba-973f-41b8-b73e-0cd4f2d6f154.jpg
+INFO 2025-06-05 22:44:18,546 usb_communication 14304 24040 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 22:44:50,532 usb_communication 14304 24040 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_ad8666ba-a8ba-406b-8b32-61ad786a89c9.jpeg a /sdcard/photobooth/images/collage_029b4cba-973f-41b8-b73e-0cd4f2d6f154.jpg
+INFO 2025-06-05 22:44:50,941 usb_communication 14304 24040 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-05 22:45:33,973 usb_communication 14304 24040 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_8368c86f-b0a4-4e9a-8893-ef15e4703df7.jpeg a /sdcard/photobooth/images/collage_9e92eb7d-4c8f-4fc5-826c-f9920421857f.jpg
+INFO 2025-06-05 22:45:34,371 usb_communication 14304 24040 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-06 00:12:50,657 usb_communication 3452 4624 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_0843a5ea-5061-4a1e-8ca8-0d6cf343828e.jpeg a /sdcard/photobooth/images/collage_3f692c00-cf6b-4533-8267-d8263f994238.jpg
+INFO 2025-06-06 00:12:51,065 usb_communication 3452 4624 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-06 00:14:24,066 usb_communication 3452 20944 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_0843a5ea-5061-4a1e-8ca8-0d6cf343828e.jpeg a /sdcard/photobooth/images/collage_3f692c00-cf6b-4533-8267-d8263f994238.jpg
+INFO 2025-06-06 00:14:24,459 usb_communication 3452 20944 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-06 00:15:32,456 usb_communication 3452 9152 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_0843a5ea-5061-4a1e-8ca8-0d6cf343828e.jpeg a /sdcard/photobooth/images/collage_3f692c00-cf6b-4533-8267-d8263f994238.jpg
+INFO 2025-06-06 00:15:32,840 usb_communication 3452 9152 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-06 00:38:58,917 usb_communication 26204 5672 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_76a8513e-b1eb-4f9b-8fd8-56400ea65509.jpeg a /sdcard/photobooth/images/collage_1e7aec7c-c46a-44ec-a972-db6e9aeb1d24.jpg
+INFO 2025-06-06 00:38:59,396 usb_communication 26204 5672 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-06 00:39:20,172 usb_communication 26204 5672 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_76a8513e-b1eb-4f9b-8fd8-56400ea65509.jpeg a /sdcard/photobooth/images/collage_1e7aec7c-c46a-44ec-a972-db6e9aeb1d24.jpg
+INFO 2025-06-06 00:39:20,639 usb_communication 26204 5672 Collage enviado exitosamente a dispositivo móvil

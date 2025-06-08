@@ -131,30 +131,6 @@ class EventoForm(forms.ModelForm):
         self.fields['cliente'].queryset = Cliente.objects.all()
         self.fields['cliente'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido}"
 
-# class Configurar_PhotoboothForm(forms.ModelForm):
-#     class Meta:
-#         model = Configurar_Photobooth
-#         fields = ['mensaje_bienvenida', 'imagen_fondo', 'color_texto', 'tamano_texto', 
-#                   'tipo_letra', 'resolucion_camara',]
-#         widgets = {
-#             'mensaje_bienvenida': forms.TextInput(attrs={'class': 'form-control'}),
-#             'imagen_fondo': forms.FileInput(attrs={'class': 'form-control'}),
-#             'color_texto': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
-#             'tamano_texto': forms.NumberInput(attrs={'class': 'form-control', 'min': '12', 'max': '72'}),
-#             'tipo_letra': forms.Select(attrs={'class': 'form-select'}, choices=[
-#                 ('Arial', 'Arial'),
-#                 ('Times New Roman', 'Times New Roman'),
-#                 ('Courier New', 'Courier New'),
-#                 ('Georgia', 'Georgia'),
-#                 ('Verdana', 'Verdana'),
-#                 ('Open Sans', 'Open Sans')
-#             ]),
-#             'resolucion_camara': forms.Select(attrs={'class': 'form-select', 'id': 'camera-resolution'}),
-#             'balance_blancos': forms.Select(attrs={'class': 'form-select', 'id': 'white-balance'}),
-#             'permitir_personalizar': forms.CheckboxInput(attrs={'class': 'form-check-input'})
-#         }
-
-# Actualizaciones para forms.py - PhotoboothConfigForm
 
 class PhotoboothConfigForm(forms.ModelForm):
     """Formulario actualizado para configurar el photobooth con soporte USB"""
