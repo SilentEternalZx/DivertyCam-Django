@@ -1,95 +1,213 @@
-{# templates/collage/template_list.html #}
-{% extends 'layout/layout.html' %}
-
-{% block title %}Plantillas de Collage - {{ evento.nombre }}{% endblock %}
-
-{% block content %}
-<div class="card">
-    <br>
-        <h2>Plantillas de Collage para "{{ evento.nombre }}"</h2>
-        <p class="text-muted">Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
-    
-    
-    <div class="card-body">
+{# templates/collage/template_list.html #} {% extends 'layout/layout.html' %} 
+{%block title %}Plantillas de Collage - {{ evento.nombre }}{% endblock %} 
+{% block extra_head %}
+<style>
+  .main-content {
+    max-width: 1050px;
+    margin: 0 auto;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #2b2278 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+    padding: 1.5rem;
+  }
+  .btn-morado-gradiente {
+    background: linear-gradient(135deg, #2b2278 0%, #764ba2 100%);
+    color: #fff !important;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-morado-gradiente:hover,
+  .btn-morado-gradiente:focus {
+    background: linear-gradient(135deg, #764ba2 0%, #2b2278 100%);
+    color: #fff !important;
+  }
+  .btn-outline-morado {
+    border-color: #2b2278;
+    color: #2b2278;
+  }
+  .btn-outline-morado:hover {
+    background: #2b2278;
+    color: #fff;
+  }
+  .template-preview {
+    width: 100%;
+    height: 180px;
+    border-radius: 0.5rem;
+    border: 1.5px solid #e9ecef;
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  .photo-frame {
+    position: absolute;
+    border: 2px dashed #ff6b6b;
+    background-color: rgba(255, 107, 107, 0.12);
+    border-radius: 0.25rem;
+  }
+  .badge.bg-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #232323;
+    font-weight: 600;
+  }
+  .card-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 0.5rem 0.5rem;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  .card {
+    border-radius: 0.5rem;
+  }
+  @media (max-width: 768px) {
+    .template-preview {
+      height: 120px;
+    }
+  }
+  .d-flex.justify-content-center.align-items-center.min-vh-100 {
+    min-height: 100vh !important;
+    padding-top: 80px; /* Espacio para el navbar fijo */
+  }
+  @media (max-width: 768px) {
+    .d-flex.justify-content-center.align-items-center.min-vh-100 {
+      padding-top: 100px;
+    }
+  }
+</style>
+{% endblock %} {% block content %} {% include 'partials/navbar.html' %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="main-content w-100">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h2 class="mb-0">Plantillas de Collage para "{{ evento.nombre }}"</h2>
+        <p class="text-light mb-0">
+          Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
+        </p>
+      </div>
+      <div class="card-body">
         <div class="alert alert-info mb-4">
-            <h5><i class="fas fa-info-circle"></i> Plantillas de Collage</h5>
-            <p>Selecciona una plantilla existente para iniciar una sesión de fotos o crea una nueva plantilla personalizada.</p>
+          <h5><i class="fas fa-info-circle"></i> Plantillas de Collage</h5>
+          <p>
+            Selecciona una plantilla existente para iniciar una sesión de fotos
+            o crea una nueva plantilla personalizada.
+          </p>
         </div>
-        
         <div class="mb-4 text-end">
-            <a href="{% url 'template_editor' evento.id %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Crear Nueva Plantilla
-            </a>
-            
-            <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-secondary">
-                <i class="fas fa-cog"></i> Volver a Configuración
-            </a>
+          <a
+            href="{% url 'template_editor' evento.id %}"
+            class="btn btn-morado-gradiente">
+            <i class="fas fa-plus"></i> Crear Nueva Plantilla
+          </a>
+          <a
+            href="{% url 'configurar_photobooth' evento.id %}"
+            class="btn btn-outline-morado ms-2">
+            <i class="fas fa-cog"></i> Volver a Configuración
+          </a>
         </div>
-        
         {% if templates %}
-            <div class="row row-cols-1 row-cols-md-3 g-2">
-                {% for template in templates %}
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h5 class="card-title">{{ template.nombre }}</h5>
-                                {% if template.es_predeterminada %}
-                                    <span class="badge bg-success">Predeterminada</span>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="card-body text-center position-relative">
-                                <!-- Cambié las dimensiones a una proporción más horizontal (16:9) -->
-                                <div class="d-flex justify-content-center">
-                                <div style="width: 400px; height: 225px; position: relative; border: 1px solid #ddd; overflow: hidden; background-color: {{ template.background_color|default:'white' }}">
-                                    {% if template.background_image %}
-                                    <img src="{{ template.background_image.url }}" style="position: absolute; width: 100%; height: 100%; object-fit: {{ template.bg_size|default:'contain' }}; background-position: {{ template.bg_position|default:'center' }}; background-repeat: {{ template.bg_repeat|default:'no-repeat' }};">
-                                    {% endif %}
-                                    
-                                    {% for frame in template.get_frames %}
-                                        <div class="photo-frame" style="position: absolute; width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2px {{ frame.borderStyle|default:'dashed' }} #FF6B6B; background-color: rgba(255,107,107,0.2);"></div>
-                                    {% endfor %}
-                                </div>
-                                
-                                {% if template.descripcion %}
-                                    <p class="card-text mt-3">{{ template.descripcion }}</p>
-                                {% endif %}
-                                
-                                <p class="card-text text-muted mt-2">
-                                    <small>Última actualización: {{ template.updated_at|date:"d/m/Y H:i" }}</small>
-                                </p>
-                                </div>
-                            </div>
-                            
-                            <div class="card-footer">
-                                <div class="d-flex justify-content-between">
-                                    {% comment %} <a href="{% url 'start_session' evento.id template.template_id %}" class="btn btn-success">
-                                        <i class="fas fa-camera"></i> Iniciar Sesión
-                                    </a> {% endcomment %}
-                                    
-                                    <div class="btn-group">
-                                        <a href="{% url 'template_editor_edit' evento.id template.template_id %}" class="btn btn-outline-primary">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </a>
-                                        
-                                        <button type="button" class="btn btn-outline-danger" 
-                                                onclick="if(confirm('¿Estás seguro de eliminar esta plantilla?')) 
-                                                         window.location.href='{% url 'template_delete' evento.id template.template_id %}'">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          {% for template in templates %}
+          <div class="col">
+            <div class="card h-100">
+              <div
+                class="card-header d-flex align-items-center justify-content-between">
+                <span class="card-title">{{ template.nombre }}</span>
+                {% if template.es_predeterminada %}
+                <span class="badge bg-success">Predeterminada</span>
+                {% endif %}
+              </div>
+              <div class="card-body text-center">
+                <div
+                  class="template-preview mx-auto position-relative"
+                  style="background-color: {{ template.background_color|default:'white' }};">
+                  {% if template.background_image %}
+                  <img
+                    src="{{ template.background_image.url }}"
+                    style="
+                      position: absolute;
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover;
+                      object-position: center;
+                      left: 0;
+                      top: 0;
+                      border-radius: 0.5rem;
+                      z-index: 1;
+                    " />
+                  {% endif %} {% for frame in template.get_frames %}
+                  <div
+                    class="photo-frame"
+                    style="width: {{ frame.width }}; height: {{ frame.height }}; left: {{ frame.left }}; top: {{ frame.top }}; border: 2.5px {{ frame.borderStyle|default:'dashed' }} #FF6B6B; z-index: 2; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 0.92rem; color: #FF6B6B; font-weight: bold; background: rgba(255,107,107,0.10); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);">
+                    <span
+                      style="
+                        background: rgba(255, 255, 255, 0.85);
+                        padding: 2px 7px;
+                        border-radius: 6px;
+                        box-shadow: 0 1px 3px #fff;
+                        text-shadow: 1px 1px 2px #fff;
+                        max-width: 90%;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        font-size: 0.92em;
+                      ">
+                      {{ frame.label|default:'Foto' }}
+                    </span>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% if template.descripcion %}
+                <p class="card-text mt-2">{{ template.descripcion }}</p>
+                {% endif %}
+                <p class="card-text text-muted mt-2">
+                  <small>
+                    Última actualización: {{ template.updated_at|date:"d/m/Y H:i" }}
+                  </small>
+                </p>
+              </div>
+              <div
+                class="card-footer d-flex justify-content-between align-items-center">
+                <a
+                  href="{% url 'start_session' evento.id template.template_id %}"
+                  class="btn btn-success">
+                  <i class="fas fa-camera"></i> Iniciar Sesión
+                </a>
+                <div class="btn-group">
+                  <a
+                    href="{% url 'template_editor_edit' evento.id template.template_id %}"
+                    class="btn btn-outline-morado">
+                    <i class="fas fa-edit"></i> Editar
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    onclick="if(confirm('¿Estás seguro de eliminar esta plantilla?')) window.location.href='{% url 'template_delete' evento.id template.template_id %}'">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
+          {% endfor %}
+        </div>
         {% else %}
-            <div class="alert alert-warning">
-                <h5><i class="fas fa-exclamation-triangle"></i> No hay plantillas</h5>
-                <p>No hay plantillas de collage creadas para este evento. Puedes crear una nueva haciendo clic en el botón "Crear Nueva Plantilla".</p>
-            </div>
+        <div class="alert alert-warning mt-4">
+          <h5><i class="fas fa-exclamation-triangle"></i> No hay plantillas</h5>
+          <p>
+            No hay plantillas de collage creadas para este evento. Puedes crear
+            una nueva haciendo clic en el botón "Crear Nueva Plantilla".
+          </p>
+        </div>
         {% endif %}
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

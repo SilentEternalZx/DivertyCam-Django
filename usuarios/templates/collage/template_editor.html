@@ -1,865 +1,1008 @@
-{# templates/collage/template_editor.html #}
-{% extends 'layout/layout.html' %}
-
+{# templates/collage/template_editor.html #} {% extends 'layout/layout.html' %}
 {% block title %}Editor de Plantillas - {{ evento.nombre }}{% endblock %}
-
-{% block extra_head %}
+{%block extra_head %}
 <style>
-    .editor-workspace {
-        display: flex;
-        width: 100%;
-        margin-top: 2rem;
-        gap: 2rem;
-    }
-    
-    .canvas-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .tools-panel {
-        width: 400px;
-        background-color: #f5f5f5;
-        border-radius: 10px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    .template-canvas {
-        width: 10cm;
-        height: 15cm;
-        background-color: white;
-        position: relative;
-        border: 1px solid #ddd;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        overflow: hidden;
-        transform-origin: top left;
-    }
-    
-    .canvas-wrapper {
-        margin-bottom: 1rem;
-    }
-    
-    .photo-frame {
-        position: absolute;
-        border: 2px dashed #FF6B6B;
-        background-color: rgba(255, 107, 107, 0.2);
-        cursor: move;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-    }
-    
-    .frame-label {
-        color: #FF6B6B;
-        font-weight: bold;
-        font-size: 1rem;
-        text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
-        pointer-events: none;
-    }
-    
-    .resize-handle {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background-color: #FF6B6B;
-        border-radius: 50%;
-    }
-    
-    .handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
-    .handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
-    .handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-    .handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
-    
-    .canvas-zoom {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-    }
-    
-    .tool-section {
-        margin-bottom: 1.5rem;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 1.5rem;
-    }
-</style>
-{% endblock %}
+  .editor-workspace {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2rem;
+    gap: 2rem;
+    align-items: flex-start;
+    min-height: 600px;
+    overflow-x: auto;
+    box-sizing: border-box;
+  }
 
-{% block content %}
-<br>
-<br>
-<div class="card">
-    <div class="card-header ">
-        <h2>Editor de Plantillas para "{{ evento.nombre }}"</h2>
-        <p class="text-muted">Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}</p>
-    </div>
-    <div class="card-body">
-        <div class="alert alert-info">
-            <h5><i class="fas fa-info-circle"></i> Diseña tu collage personalizado</h5>
-            <p>Crea una plantilla personalizada para el collage de 10x15 cm. Añade marcos de fotos y posiciónalos libremente sobre el lienzo.</p>
+  .main-content {
+    max-width: 1050px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .tools-panel {
+    width: 310px;
+    min-width: 260px;
+    max-width: 340px;
+    max-height: 80vh;
+    padding: 1rem 0.75rem 1rem 0.75rem;
+    box-shadow: none;
+    border: 1px solid #e0e0e0;
+    background: #faf9fd;
+    position: sticky;
+    top: 100px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .template-canvas {
+    width: 10cm;
+    height: 15cm;
+    background-color: white;
+    position: relative;
+    border: 1px solid #ddd;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transform-origin: top left;
+  }
+
+  .canvas-wrapper {
+    margin-bottom: 1rem;
+  }
+
+  .photo-frame {
+    position: absolute;
+    border: 2px dashed #ff6b6b;
+    background-color: rgba(255, 107, 107, 0.2);
+    cursor: move;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .frame-label {
+    color: #ff6b6b;
+    font-weight: bold;
+    font-size: 1rem;
+    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+  }
+
+  .resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #ff6b6b;
+    border-radius: 50%;
+  }
+
+  .handle-nw {
+    top: -5px;
+    left: -5px;
+    cursor: nw-resize;
+  }
+  .handle-ne {
+    top: -5px;
+    right: -5px;
+    cursor: ne-resize;
+  }
+  .handle-sw {
+    bottom: -5px;
+    left: -5px;
+    cursor: sw-resize;
+  }
+  .handle-se {
+    bottom: -5px;
+    right: -5px;
+    cursor: se-resize;
+  }
+
+  .canvas-zoom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .tool-section {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  .tool-section h5,
+  .tool-section h6 {
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+  }
+  .form-label,
+  .tool-section label {
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+  }
+  .form-control,
+  .form-select {
+    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+    height: 2rem;
+  }
+  .form-control-color {
+    min-width: 2.2rem;
+    min-height: 2.2rem;
+    padding: 0.1rem;
+  }
+  .mb-3,
+  .mb-2 {
+    margin-bottom: 0.6rem !important;
+  }
+  .d-grid.gap-2.mt-4 {
+    margin-top: 1.2rem !important;
+  }
+  .tools-panel .btn,
+  .tools-panel a.btn {
+    font-size: 0.97rem;
+    padding: 0.45rem 0.8rem;
+  }
+  /* Barra de botones sticky bajo el canvas */
+  .canvas-actions-bar {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0 0.2rem 0;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-top: 0.2rem;
+  }
+  @media (max-width: 1100px) {
+    .main-content {
+      max-width: 98vw;
+    }
+    .editor-workspace {
+      gap: 1rem;
+    }
+    .tools-panel {
+      max-width: 320px;
+    }
+  }
+  @media (max-width: 900px) {
+    .editor-workspace {
+      flex-direction: column;
+      gap: 1.2rem;
+      max-width: 100vw;
+    }
+    .tools-panel {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      margin-left: 0 !important;
+    }
+    .canvas-container {
+      width: 100%;
+      max-width: 100vw;
+    }
+    .canvas-actions-bar {
+      border-radius: 0 0 10px 10px;
+    }
+  }
+  @media (max-width: 600px) {
+    .template-canvas {
+      width: 100vw !important;
+      height: auto !important;
+      min-width: 0;
+      max-width: 100vw;
+    }
+    .tools-panel {
+      padding: 0.7rem 0.3rem;
+    }
+    .main-content {
+      padding: 0 0.2rem;
+    }
+  }
+  /* --- OPTIMIZACIÓN DE ESPACIO Y VISIBILIDAD --- */
+  .d-flex.justify-content-center.align-items-center.min-vh-100 {
+    min-height: 100vh !important;
+    padding-top: 80px; /* Espacio para el navbar fijo */
+  }
+  @media (max-width: 768px) {
+    .d-flex.justify-content-center.align-items-center.min-vh-100 {
+      padding-top: 100px;
+    }
+  }
+  .tools-panel {
+    width: 310px;
+    min-width: 260px;
+    max-width: 340px;
+    max-height: 80vh;
+    padding: 1rem 0.75rem 1rem 0.75rem;
+    box-shadow: none;
+    border: 1px solid #e0e0e0;
+    background: #faf9fd;
+    position: sticky;
+    top: 100px;
+  }
+  .tool-section {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  .tool-section h5,
+  .tool-section h6 {
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+  }
+  .form-label,
+  .tool-section label {
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+  }
+  .form-control,
+  .form-select {
+    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+    height: 2rem;
+  }
+  .form-control-color {
+    min-width: 2.2rem;
+    min-height: 2.2rem;
+    padding: 0.1rem;
+  }
+  .mb-3,
+  .mb-2 {
+    margin-bottom: 0.6rem !important;
+  }
+  .d-grid.gap-2.mt-4 {
+    margin-top: 1.2rem !important;
+  }
+  .tools-panel .btn,
+  .tools-panel a.btn {
+    font-size: 0.97rem;
+    padding: 0.45rem 0.8rem;
+  }
+  @media (max-width: 900px) {
+    .editor-workspace {
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .tools-panel {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      margin-left: 0 !important;
+    }
+    .canvas-container {
+      width: 100%;
+    }
+  }
+  @media (max-width: 600px) {
+    .template-canvas {
+      width: 100vw !important;
+      height: auto !important;
+      min-width: 0;
+      max-width: 100vw;
+    }
+    .tools-panel {
+      padding: 0.7rem 0.3rem;
+    }
+  }
+
+  .btn-outline-morado {
+    border-color: #2b2278;
+    color: #2b2278;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-outline-morado:hover,
+  .btn-outline-morado:focus {
+    background: #2b2278;
+    color: #fff !important;
+    border-color: #2b2278;
+  }
+  .btn-morado-gradiente {
+    background: linear-gradient(135deg, #2b2278 0%, #764ba2 100%);
+    color: #fff !important;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-morado-gradiente:hover,
+  .btn-morado-gradiente:focus {
+    background: linear-gradient(135deg, #764ba2 0%, #2b2278 100%);
+    color: #fff !important;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #2b2278 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+    padding: 1.5rem;
+  }
+</style>
+{% endblock %} {% block content %} {% include 'partials/navbar.html' %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="main-content w-100" style="max-width: 1050px">
+    <div class="card shadow-sm mb-4">
+      <div
+        class="card-header"
+        style="
+          background: linear-gradient(135deg, #2b2278 0%, #764ba2 100%);
+          color: white;
+          border-radius: 0.5rem 0.5rem 0 0 !important;
+          padding: 1.5rem;
+        ">
+        <h2 class="mb-0">Editor de Plantillas para "{{ evento.nombre }}"</h2>
+        <p class="text-light mb-0">
+          Cliente: {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
+        </p>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info mb-4">
+          <h5>
+            <i class="fas fa-info-circle"></i> Diseña tu collage personalizado
+          </h5>
+          <p>
+            Crea una plantilla personalizada para el collage de 10x15 cm. Añade
+            marcos de fotos y posiciónalos libremente sobre el lienzo.
+          </p>
         </div>
-        
         <div class="editor-workspace">
-            <div class="canvas-container">
-                {% comment %} <div class="canvas-zoom">
-                    <span class="me-2">Zoom:</span>
-                    <input type="range" id="zoom-slider" class="form-range" min="50" max="200" value="100" style="width: 150px;">
-                    <span id="zoom-value" class="ms-2">100%</span>
-                </div> {% endcomment %}
-                
-                <div class="canvas-wrapper">
-                    <div id="template-canvas" class="template-canvas">
-                        <!-- Aquí se mostrarán los marcos de fotos -->
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-center gap-2 mt-3">
-                    <button id="add-frame-btn" class="btn btn-primary">
-                        <i class="fas fa-plus-circle"></i> Añadir Marco
-                    </button>
-                    <button id="clear-canvas-btn" class="btn btn-secondary">
-                        <i class="fas fa-trash"></i> Limpiar Todo
-                    </button>
-                    <button id="save-template-btn" class="btn btn-success">
-                        <i class="fas fa-save"></i> Guardar Plantilla
-                    </button>
-                </div>
+          <div class="canvas-container">
+            <div class="canvas-wrapper">
+              <div id="template-canvas" class="template-canvas">
+                <!-- Aquí se mostrarán los marcos de fotos -->
+              </div>
             </div>
-            
-            <div class="tools-panel">
-                <form id="template-form">
-                    <div class="tool-section">
-                        <h5 class="mb-3">Detalles de la plantilla</h5>
-                        <div class="mb-3">
-                            <label for="template-name" class="form-label">Nombre:</label>
-                            <input type="text" id="template-name" class="form-control" value="{{ template.nombre|default:'Mi collage personalizado' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="template-description" class="form-label">Descripción:</label>
-                            <textarea id="template-description" class="form-control" rows="2">{{ template.descripcion|default:'' }}</textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="tool-section">
-                        <h5 class="mb-3">Fondo</h5>
-                        <div class="mb-3">
-                            <label for="background-color" class="form-label">Color de fondo:</label>
-                            <input type="color" id="background-color" class="form-control form-control-color" value="{{ template.background_color|default:'#FFFFFF' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="background-image" class="form-label">Imagen de fondo:</label>
-                            <input type="file" id="background-image" class="form-control" accept="image/*">
-                            {% if template.background_image %}
-                                <div class="mt-2">
-                                    <img id="bg-preview" src="{{ template.background_image.url }}" class="img-thumbnail" style="height: 80px;">
-                                </div>
-                            {% else %}
-                                <img id="bg-preview" class="img-thumbnail mt-2" style="height: 80px; display: none;">
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="tool-section">
-                        <h5 class="mb-3">Marco seleccionado</h5>
-                        <div id="frame-properties" style="display: none;">
-                            <div class="mb-2">
-                                <label for="frame-width" class="form-label">Ancho (mm):</label>
-                                <input type="number" id="frame-width" class="form-control" min="10" max="100" value="40">
-                            </div>
-                            <div class="mb-2">
-                                <label for="frame-height" class="form-label">Alto (mm):</label>
-                                <input type="number" id="frame-height" class="form-control" min="10" max="150" value="40">
-                            </div>
-                            <div class="mb-3">
-                                <label for="frame-style" class="form-label">Estilo de borde:</label>
-                                <select id="frame-style" class="form-select">
-                                    <option value="solid">Sólido</option>
-                                    <option value="dashed" selected>Discontinuo</option>
-                                    <option value="dotted">Punteado</option>
-                                </select>
-                            </div>
-                            <button id="delete-frame-btn" class="btn btn-sm btn-outline-danger w-100">
-                                <i class="fas fa-trash"></i> Eliminar Marco
-                            </button>
-                        </div>
-                        <div id="no-frame-selected">
-                            <p class="text-muted text-center">Ningún marco seleccionado</p>
-                            <p class="text-muted text-center small">Haz clic en un marco para editarlo</p>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <a href="{% url 'template_list' evento.id %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver a lista de plantillas
-                        </a>
-                        
-                        <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-primary">
-                            <i class="fas fa-cog"></i> Volver a configuración
-                        </a>
-                    </div>
-                </form>
+            <div class="d-flex justify-content-center gap-2 mt-3">
+              <button id="add-frame-btn" class="btn btn-morado-gradiente">
+                <i class="fas fa-plus-circle"></i> Añadir Marco
+              </button>
+              <button id="clear-canvas-btn" class="btn btn-outline-secondary">
+                <i class="fas fa-trash"></i> Limpiar Todo
+              </button>
+              <button id="save-template-btn" class="btn btn-success pulse-btn">
+                <i class="fas fa-save"></i> Guardar Plantilla
+              </button>
             </div>
+          </div>
+          <div
+            class="tools-panel bg-white shadow-sm rounded-3 p-4 ms-3"
+            style="min-width: 340px; max-width: 400px">
+            <form id="template-form">
+              <div class="tool-section mb-4 pb-3 border-bottom">
+                <h5 class="mb-3">Detalles de la plantilla</h5>
+                <div class="mb-3">
+                  <label for="template-name" class="form-label">Nombre:</label>
+                  <input
+                    type="text"
+                    id="template-name"
+                    class="form-control"
+                    value="{{ template.nombre|default:'Mi collage personalizado' }}" />
+                </div>
+                <div class="mb-3">
+                  <label for="template-description" class="form-label"
+                    >Descripción:</label
+                  >
+                  <textarea
+                    id="template-description"
+                    class="form-control"
+                    rows="2">
+{{ template.descripcion|default:'' }}</textarea
+                  >
+                </div>
+              </div>
+              <div class="tool-section mb-4 pb-3 border-bottom">
+                <h5 class="mb-3">Fondo</h5>
+                <div class="mb-3">
+                  <label for="background-color" class="form-label"
+                    >Color de fondo:</label
+                  >
+                  <input
+                    type="color"
+                    id="background-color"
+                    class="form-control form-control-color"
+                    value="{{ template.background_color|default:'#FFFFFF' }}" />
+                </div>
+                <div class="mb-3">
+                  <label for="background-image" class="form-label"
+                    >Imagen de fondo:</label
+                  >
+                  <input
+                    type="file"
+                    id="background-image"
+                    class="form-control"
+                    accept="image/*" />
+                  {% if template.background_image %}
+                  <div class="mt-2">
+                    <img
+                      id="bg-preview"
+                      src="{{ template.background_image.url }}"
+                      class="img-thumbnail"
+                      style="height: 80px" />
+                  </div>
+                  {% else %}
+                  <img
+                    id="bg-preview"
+                    class="img-thumbnail mt-2"
+                    style="height: 80px; display: none" />
+                  {% endif %}
+                </div>
+              </div>
+              <div class="tool-section mb-4 pb-3 border-bottom">
+                <h5 class="mb-3">Marco seleccionado</h5>
+                <div id="frame-properties" style="display: none">
+                  <div class="mb-2">
+                    <label for="frame-width" class="form-label"
+                      >Ancho (mm):</label
+                    >
+                    <input
+                      type="number"
+                      id="frame-width"
+                      class="form-control"
+                      min="10"
+                      max="100"
+                      value="40" />
+                  </div>
+                  <div class="mb-2">
+                    <label for="frame-height" class="form-label"
+                      >Alto (mm):</label
+                    >
+                    <input
+                      type="number"
+                      id="frame-height"
+                      class="form-control"
+                      min="10"
+                      max="150"
+                      value="40" />
+                  </div>
+                  <div class="mb-3">
+                    <label for="frame-style" class="form-label"
+                      >Estilo de borde:</label
+                    >
+                    <select id="frame-style" class="form-select">
+                      <option value="solid">Sólido</option>
+                      <option value="dashed" selected>Discontinuo</option>
+                      <option value="dotted">Punteado</option>
+                    </select>
+                  </div>
+                  <button
+                    id="delete-frame-btn"
+                    class="btn btn-sm btn-outline-danger w-100">
+                    <i class="fas fa-trash"></i> Eliminar Marco
+                  </button>
+                </div>
+                <div id="no-frame-selected">
+                  <p class="text-muted text-center">
+                    Ningún marco seleccionado
+                  </p>
+                  <p class="text-muted text-center small">
+                    Haz clic en un marco para editarlo
+                  </p>
+                </div>
+              </div>
+              <div class="d-grid gap-2 mt-4">
+                <a
+                  href="{% url 'template_list' evento.id %}"
+                  class="btn btn-outline-secondary">
+                  <i class="fas fa-arrow-left"></i> Volver a lista de plantillas
+                </a>
+                <a
+                  href="{% url 'configurar_photobooth' evento.id %}"
+                  class="btn btn-outline-morado">
+                  <i class="fas fa-cog"></i> Volver a configuración
+                </a>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Modal para guardar plantilla -->
 <div class="modal fade" id="saveTemplateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Guardar Plantilla</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="save-template-form">
-                    <div class="mb-3">
-                        <label for="save-template-name" class="form-label">Nombre de la plantilla:</label>
-                        <input type="text" id="save-template-name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="save-template-description" class="form-label">Descripción (opcional):</label>
-                        <textarea id="save-template-description" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" id="save-template-default" class="form-check-input">
-                        <label for="save-template-default" class="form-check-label">Establecer como plantilla predeterminada</label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" id="confirm-save-btn" class="btn btn-primary">Guardar</button>
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Guardar Plantilla</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="save-template-form">
+          <div class="mb-3">
+            <label for="save-template-name" class="form-label"
+              >Nombre de la plantilla:</label
+            >
+            <input
+              type="text"
+              id="save-template-name"
+              class="form-control"
+              required />
+          </div>
+          <div class="mb-3">
+            <label for="save-template-description" class="form-label"
+              >Descripción (opcional):</label
+            >
+            <textarea
+              id="save-template-description"
+              class="form-control"
+              rows="3"></textarea>
+          </div>
+          <div class="mb-3 form-check">
+            <input
+              type="checkbox"
+              id="save-template-default"
+              class="form-check-input" />
+            <label for="save-template-default" class="form-check-label"
+              >Establecer como plantilla predeterminada</label
+            >
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="button" id="confirm-save-btn" class="btn btn-primary">
+          Guardar
+        </button>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Variables globales
-        const canvas = document.getElementById('template-canvas');
-        const zoomSlider = document.getElementById('zoom-slider');
-        const zoomValue = document.getElementById('zoom-value');
-        let selectedFrame = null;
-        let frameCounter = 0;
-        const cmToPixel = 37.8; // Factor de conversión aproximado (1cm ≈ 37.8px a 96dpi)
-        let isDragging = false;
-        let resizeHandle = null;
-        let offsetX, offsetY;
-        
-        // Convertir tamaño del canvas a píxeles
-        canvas.style.width = `${15 * cmToPixel}px`;
-        canvas.style.height = `${10 * cmToPixel}px`;
-        
-        // Inicializar con el color de fondo guardado
-        canvas.style.backgroundColor = document.getElementById('background-color').value;
-        
-        {% if template.background_image %}
-            canvas.style.backgroundImage = "url('{{ template.background_image.url }}')";
-            canvas.style.backgroundSize = "cover";
-            canvas.style.backgroundPosition = "center";
-        {% endif %}
-        
-        // Añadir controles de redimensionamiento a un marco
-        function addResizeHandles(frame) {
-            const positions = ['nw', 'ne', 'sw', 'se'];
-            positions.forEach(pos => {
-                const handle = document.createElement('div');
-                handle.className = `resize-handle handle-${pos}`;
-                handle.setAttribute('data-position', pos);
-                frame.appendChild(handle);
-            });
-        }
-        
-        // Seleccionar un marco
-        function selectFrame(frame) {
-            // Deseleccionar marco anterior
-            if (selectedFrame) {
-                selectedFrame.style.borderColor = '#FF6B6B';
-                selectedFrame.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
-            }
-            
-            // Seleccionar nuevo marco
-            selectedFrame = frame;
-            selectedFrame.style.borderColor = '#2196F3';
-            selectedFrame.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
-            
-            // Mostrar propiedades del marco
-            document.getElementById('frame-properties').style.display = 'block';
-            document.getElementById('no-frame-selected').style.display = 'none';
-            
-            // Actualizar campos con valores del marco
-            const width = parseInt(frame.style.width);
-            const height = parseInt(frame.style.height);
-            document.getElementById('frame-width').value = Math.round(width / cmToPixel * 10); // Convertir a mm
-            document.getElementById('frame-height').value = Math.round(height / cmToPixel * 10); // Convertir a mm
-            document.getElementById('frame-style').value = frame.style.borderStyle;
-        }
-        
-        // Función para crear un marco a partir de datos
-        function createFrame(frameData) {
-            const frame = document.createElement('div');
-            frame.className = 'photo-frame';
-            frame.id = frameData.id || `frame-${frameCounter}`;
-            frame.style.width = frameData.width;
-            frame.style.height = frameData.height;
-            frame.style.left = frameData.left;
-            frame.style.top = frameData.top;
-            frame.style.borderStyle = frameData.borderStyle || 'dashed';
-            
-            // Etiqueta del marco
-            const label = document.createElement('div');
-            label.className = 'frame-label';
-            label.textContent = frameData.label || `Foto ${frameCounter}`;
-            frame.appendChild(label);
-            
-            // Añadir controles de redimensionamiento
-            addResizeHandles(frame);
-            
-            // Evento para seleccionar el marco
-            frame.addEventListener('mousedown', function(e) {
-                if (e.target.classList.contains('resize-handle')) {
-                    startResize(e);
-                    return;
-                }
-                
-                selectFrame(frame);
-                startDrag(e);
-            });
-            
-            canvas.appendChild(frame);
-            selectFrame(frame);
-            return frame;
-        }
-        
-        // Deseleccionar marco al hacer clic fuera
-        canvas.addEventListener('mousedown', function(e) {
-            if (e.target === canvas) {
-                deselectFrame();
-            }
-        });
-        
-        function deselectFrame() {
-            if (selectedFrame) {
-                selectedFrame.style.borderColor = '#FF6B6B';
-                selectedFrame.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
-                selectedFrame = null;
-                document.getElementById('frame-properties').style.display = 'none';
-                document.getElementById('no-frame-selected').style.display = 'block';
-            }
-        }
-        
-        // Iniciar arrastre
-        function startDrag(e) {
-            if (!selectedFrame) return;
-            
-            isDragging = true;
-            resizeHandle = null;
-            
-            // Posición relativa del clic dentro del marco
-            const rect = selectedFrame.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
-            
-            // Añadir eventos temporales
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-        }
-        
-        // Función de arrastre
-        function drag(e) {
-            if (!isDragging || !selectedFrame) return;
-            
-            const canvasRect = canvas.getBoundingClientRect();
-            const frameWidth = parseInt(selectedFrame.style.width);
-            const frameHeight = parseInt(selectedFrame.style.height);
-            
-            // Calcular nueva posición
-            let newX = e.clientX - canvasRect.left - offsetX;
-            let newY = e.clientY - canvasRect.top - offsetY;
-            
-            // Limitar dentro del canvas
-            newX = Math.max(0, Math.min(newX, canvasRect.width - frameWidth));
-            newY = Math.max(0, Math.min(newY, canvasRect.height - frameHeight));
-            
-            // Aplicar nueva posición
-            selectedFrame.style.left = `${newX}px`;
-            selectedFrame.style.top = `${newY}px`;
-        }
-        
-        // Detener arrastre
-        function stopDrag() {
-            isDragging = false;
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', stopDrag);
-        }
-        
-        // Iniciar redimensionamiento
-        function startResize(e) {
-            if (!selectedFrame) return;
-            
-            isDragging = false;
-            resizeHandle = e.target;
-            
-            // Posición inicial
-            offsetX = e.clientX;
-            offsetY = e.clientY;
-            
-            // Dimensiones iniciales
-            resizeHandle.initialWidth = parseInt(selectedFrame.style.width);
-            resizeHandle.initialHeight = parseInt(selectedFrame.style.height);
-            resizeHandle.initialLeft = parseInt(selectedFrame.style.left);
-            resizeHandle.initialTop = parseInt(selectedFrame.style.top);
-            
-            // Añadir eventos temporales
-            document.addEventListener('mousemove', resize);
-            document.addEventListener('mouseup', stopResize);
-            
-            e.stopPropagation();
-        }
-        
-        // Función de redimensionamiento
-        function resize(e) {
-            if (!resizeHandle || !selectedFrame) return;
-            
-            const position = resizeHandle.getAttribute('data-position');
-            const deltaX = e.clientX - offsetX;
-            const deltaY = e.clientY - offsetY;
-            
-            let newWidth = resizeHandle.initialWidth;
-            let newHeight = resizeHandle.initialHeight;
-            let newLeft = resizeHandle.initialLeft;
-            let newTop = resizeHandle.initialTop;
-            
-            // Ajustar dimensiones según la esquina que se está arrastrando
-            if (position.includes('e')) {
-                newWidth = Math.max(30, resizeHandle.initialWidth + deltaX);
-            }
-            if (position.includes('w')) {
-                newWidth = Math.max(30, resizeHandle.initialWidth - deltaX);
-                newLeft = resizeHandle.initialLeft + resizeHandle.initialWidth - newWidth;
-            }
-            if (position.includes('s')) {
-                newHeight = Math.max(30, resizeHandle.initialHeight + deltaY);
-            }
-            if (position.includes('n')) {
-                newHeight = Math.max(30, resizeHandle.initialHeight - deltaY);
-                newTop = resizeHandle.initialTop + resizeHandle.initialHeight - newHeight;
-            }
-            
-            // Aplicar nuevas dimensiones
-            selectedFrame.style.width = `${newWidth}px`;
-            selectedFrame.style.height = `${newHeight}px`;
-            selectedFrame.style.left = `${newLeft}px`;
-            selectedFrame.style.top = `${newTop}px`;
-            
-            // Actualizar campos con nuevos valores
-            document.getElementById('frame-width').value = Math.round(newWidth / cmToPixel * 10); // Convertir a mm
-            document.getElementById('frame-height').value = Math.round(newHeight / cmToPixel * 10); // Convertir a mm
-        }
-        
-        // Detener redimensionamiento
-        function stopResize() {
-            resizeHandle = null;
-            document.removeEventListener('mousemove', resize);
-            document.removeEventListener('mouseup', stopResize);
-        }
-        
-        // Cargar marcos existentes si los hay
-        {% if template and template.template_data %}
-            try {
-                const templateData = JSON.parse('{{ template.template_data|escapejs }}');
-                if (templateData.frames && Array.isArray(templateData.frames)) {
-                    templateData.frames.forEach(frameData => {
-                        frameCounter++;
-                        createFrame(frameData);
-                    });
-                }
-            } catch (e) {
-                console.error('Error al cargar datos de la plantilla:', e);
-            }
-        {% endif %}
-        
-        // Zoom del canvas
-     //   zoomSlider.addEventListener('input', function() {
-     //       const zoom = this.value;
-     //       zoomValue.textContent = `${zoom}%`;
-     //       canvas.style.transform = `scale(${zoom / 100})`;
-     //   });
-        
-        // Añadir nuevo marco
-        document.getElementById('add-frame-btn').addEventListener('click', function() {
-            frameCounter++;
-            const frameData = {
-                id: `frame-${frameCounter}`,
-                width: '100px',
-                height: '100px',
-                left: '50px',
-                top: '50px',
-                borderStyle: 'dashed',
-                label: `Foto ${frameCounter}`
-            };
-            createFrame(frameData);
-        });
-        
-        // Cambiar propiedades del marco desde los controles
-        document.getElementById('frame-width').addEventListener('change', function() {
-            if (!selectedFrame) return;
-            const widthInMm = parseInt(this.value);
-            const widthInPx = (widthInMm / 10) * cmToPixel; // Convertir mm a píxeles
-            selectedFrame.style.width = `${widthInPx}px`;
-        });
-        
-        document.getElementById('frame-height').addEventListener('change', function() {
-            if (!selectedFrame) return;
-            const heightInMm = parseInt(this.value);
-            const heightInPx = (heightInMm / 10) * cmToPixel; // Convertir mm a píxeles
-            selectedFrame.style.height = `${heightInPx}px`;
-        });
-        
-        document.getElementById('frame-style').addEventListener('change', function() {
-            if (!selectedFrame) return;
-            selectedFrame.style.borderStyle = this.value;
-        });
-        
-        // Eliminar marco seleccionado
-        document.getElementById('delete-frame-btn').addEventListener('click', function() {
-            if (!selectedFrame) return;
-            canvas.removeChild(selectedFrame);
-            selectedFrame = null;
-            document.getElementById('frame-properties').style.display = 'none';
-            document.getElementById('no-frame-selected').style.display = 'block';
-        });
-        
-        // Cambiar color de fondo
-        document.getElementById('background-color').addEventListener('input', function() {
-            canvas.style.backgroundColor = this.value;
-        });
-        
-        // Cambiar imagen de fondo
-        document.getElementById('background-image').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Añadir opciones para el usuario
-        const bgFitOption = confirm('¿Deseas mantener las proporciones originales de la imagen?\n\nPresiona OK para mantener proporciones\nPresiona Cancelar para que la imagen cubra todo el espacio');
-                canvas.style.backgroundImage = `url('${e.target.result}')`;
-                canvas.style.backgroundSize = bgFitOption ? 'contain' :'cover';
-                canvas.style.backgroundPosition = 'center';
-                canvas.style.backgroundRepeat = 'no-repeat';
-                
-                // Mostrar vista previa
-                const preview = document.getElementById('bg-preview');
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        });
-        
-        // Limpiar canvas
-        document.getElementById('clear-canvas-btn').addEventListener('click', function() {
-            if (confirm('¿Estás seguro de que quieres eliminar todos los marcos y limpiar la plantilla?')) {
-                // Eliminar todos los marcos
-                const frames = canvas.querySelectorAll('.photo-frame');
-                frames.forEach(frame => canvas.removeChild(frame));
-                
-                // Restaurar fondo
-                canvas.style.backgroundColor = '#FFFFFF';
-                canvas.style.backgroundImage = 'none';
-                document.getElementById('background-color').value = '#FFFFFF';
-                document.getElementById('background-image').value = '';
-                document.getElementById('bg-preview').style.display = 'none';
-                
-                // Reiniciar selección
-                deselectFrame();
-                
-                // Reiniciar contador de marcos
-                frameCounter = 0;
-            }
-        });
-        
-        // Modal para guardar plantilla
-        const saveModal = new bootstrap.Modal(document.getElementById('saveTemplateModal'));
-        
-        // Abrir modal para guardar plantilla
-        document.getElementById('save-template-btn').addEventListener('click', function() {
-            const templateName = document.getElementById('template-name').value;
-            const templateDesc = document.getElementById('template-description').value;
-            
-            document.getElementById('save-template-name').value = templateName;
-            document.getElementById('save-template-description').value = templateDesc;
-            
-            saveModal.show();
-        });
-        
-        // Guardar plantilla
-        document.getElementById('confirm-save-btn').addEventListener('click', function() {
-            const name = document.getElementById('save-template-name').value;
-            if (!name) {
-                alert('Por favor ingresa un nombre para la plantilla');
-                return;
-            }
-            
-            // Capturar estado actual del canvas
-            const template = {
-                evento_id: {{ evento.id }},
-                id: '{{ template.template_id|default:"" }}',
-                name: name,
-                description: document.getElementById('save-template-description').value,
-                backgroundColor: canvas.style.backgroundColor,
-                backgroundImage: canvas.style.backgroundImage,
-                backgroundSize: canvas.style.backgroundSize,  // Añadir esta línea
-                backgroundPosition: canvas.style.backgroundPosition,  // Añadir esta línea
-                isDefault: document.getElementById('save-template-default').checked,
-                frames: []
-            };
-            
-            // Capturar información de cada marco
-            const frames = canvas.querySelectorAll('.photo-frame');
-            frames.forEach((frame, index) => {
-                template.frames.push({
-                    id: frame.id,
-                    label: `Foto ${index + 1}`,
-                    width: frame.style.width,
-                    height: frame.style.height,
-                    left: frame.style.left,
-                    top: frame.style.top,
-                    borderStyle: frame.style.borderStyle
-                });
-            });
-            
-            // Guardar en el servidor
-            saveTemplateToServer(template);
-            
-            // Cerrar modal
-            saveModal.hide();
-        });
-        
-        // Función para guardar plantilla en el servidor
-        function saveTemplateToServer(template) {
-            // Si hay imagen de fondo codificada en base64, incluirla
-            if (document.getElementById('background-image').files.length > 0) {
-                const bgPreview = document.getElementById('bg-preview');
-                if (bgPreview.src && bgPreview.src.startsWith('data:')) {
-                    template.backgroundImage = bgPreview.src;
-                }
-            }
-            
-            fetch('{% url "save_template" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify(template)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Plantilla guardada correctamente');
-                    
-                    // Redireccionar a la lista de plantillas
-                    window.location.href = "{% url 'template_list' evento.id %}";
-                } else {
-                    alert('Error al guardar la plantilla: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al guardar la plantilla');
-            });
-        }
-    });
+  document.addEventListener('DOMContentLoaded', function() {
+      // Variables globales
+      const canvas = document.getElementById('template-canvas');
+      const zoomSlider = document.getElementById('zoom-slider');
+      const zoomValue = document.getElementById('zoom-value');
+      let selectedFrame = null;
+      let frameCounter = 0;
+      const cmToPixel = 37.8; // Factor de conversión aproximado (1cm ≈ 37.8px a 96dpi)
+      let isDragging = false;
+      let resizeHandle = null;
+      let offsetX, offsetY;
+
+      // Convertir tamaño del canvas a píxeles
+      canvas.style.width = `${15 * cmToPixel}px`;
+      canvas.style.height = `${10 * cmToPixel}px`;
+
+      // Inicializar con el color de fondo guardado
+      canvas.style.backgroundColor = document.getElementById('background-color').value;
+
+      {% if template.background_image %}
+          canvas.style.backgroundImage = "url('{{ template.background_image.url }}')";
+          canvas.style.backgroundSize = "cover";
+          canvas.style.backgroundPosition = "center";
+      {% endif %}
+
+      // Añadir controles de redimensionamiento a un marco
+      function addResizeHandles(frame) {
+          const positions = ['nw', 'ne', 'sw', 'se'];
+          positions.forEach(pos => {
+              const handle = document.createElement('div');
+              handle.className = `resize-handle handle-${pos}`;
+              handle.setAttribute('data-position', pos);
+              frame.appendChild(handle);
+          });
+      }
+
+      // Seleccionar un marco
+      function selectFrame(frame) {
+          // Deseleccionar marco anterior
+          if (selectedFrame) {
+              selectedFrame.style.borderColor = '#FF6B6B';
+              selectedFrame.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
+          }
+
+          // Seleccionar nuevo marco
+          selectedFrame = frame;
+          selectedFrame.style.borderColor = '#2196F3';
+          selectedFrame.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
+
+          // Mostrar propiedades del marco
+          document.getElementById('frame-properties').style.display = 'block';
+          document.getElementById('no-frame-selected').style.display = 'none';
+
+          // Actualizar campos con valores del marco
+          const width = parseInt(frame.style.width);
+          const height = parseInt(frame.style.height);
+          document.getElementById('frame-width').value = Math.round(width / cmToPixel * 10); // Convertir a mm
+          document.getElementById('frame-height').value = Math.round(height / cmToPixel * 10); // Convertir a mm
+          document.getElementById('frame-style').value = frame.style.borderStyle;
+      }
+
+      // Función para crear un marco a partir de datos
+      function createFrame(frameData) {
+          const frame = document.createElement('div');
+          frame.className = 'photo-frame';
+          frame.id = frameData.id || `frame-${frameCounter}`;
+          frame.style.width = frameData.width;
+          frame.style.height = frameData.height;
+          frame.style.left = frameData.left;
+          frame.style.top = frameData.top;
+          frame.style.borderStyle = frameData.borderStyle || 'dashed';
+
+          // Etiqueta del marco
+          const label = document.createElement('div');
+          label.className = 'frame-label';
+          label.textContent = frameData.label || `Foto ${frameCounter}`;
+          frame.appendChild(label);
+
+          // Añadir controles de redimensionamiento
+          addResizeHandles(frame);
+
+          // Evento para seleccionar el marco
+          frame.addEventListener('mousedown', function(e) {
+              if (e.target.classList.contains('resize-handle')) {
+                  startResize(e);
+                  return;
+              }
+
+              selectFrame(frame);
+              startDrag(e);
+          });
+
+          canvas.appendChild(frame);
+          selectFrame(frame);
+          return frame;
+      }
+
+      // Deseleccionar marco al hacer clic fuera
+      canvas.addEventListener('mousedown', function(e) {
+          if (e.target === canvas) {
+              deselectFrame();
+          }
+      });
+
+      function deselectFrame() {
+          if (selectedFrame) {
+              selectedFrame.style.borderColor = '#FF6B6B';
+              selectedFrame.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
+              selectedFrame = null;
+              document.getElementById('frame-properties').style.display = 'none';
+              document.getElementById('no-frame-selected').style.display = 'block';
+          }
+      }
+
+      // Iniciar arrastre
+      function startDrag(e) {
+          if (!selectedFrame) return;
+          isDragging = true;
+          resizeHandle = null;
+          // Posición relativa del clic dentro del marco
+          const rect = selectedFrame.getBoundingClientRect();
+          offsetX = e.clientX - rect.left;
+          offsetY = e.clientY - rect.top;
+          // Añadir eventos temporales
+          document.addEventListener('mousemove', drag);
+          document.addEventListener('mouseup', stopDrag);
+      }
+
+      // Función de arrastre
+      function drag(e) {
+          if (!isDragging || !selectedFrame) return;
+
+          const canvasRect = canvas.getBoundingClientRect();
+          const frameWidth = parseInt(selectedFrame.style.width);
+          const frameHeight = parseInt(selectedFrame.style.height);
+
+          // Calcular nueva posición
+          let newX = e.clientX - canvasRect.left - offsetX;
+          let newY = e.clientY - canvasRect.top - offsetY;
+
+          // Limitar dentro del canvas
+          newX = Math.max(0, Math.min(newX, canvasRect.width - frameWidth));
+          newY = Math.max(0, Math.min(newY, canvasRect.height - frameHeight));
+
+          // Aplicar nueva posición
+          selectedFrame.style.left = `${newX}px`;
+          selectedFrame.style.top = `${newY}px`;
+      }
+
+      // Detener arrastre
+      function stopDrag() {
+          isDragging = false;
+          document.removeEventListener('mousemove', drag);
+          document.removeEventListener('mouseup', stopDrag);
+      }
+
+      // Iniciar redimensionamiento
+      function startResize(e) {
+          if (!selectedFrame) return;
+
+          isDragging = false;
+          resizeHandle = e.target;
+
+          // Posición inicial
+          offsetX = e.clientX;
+          offsetY = e.clientY;
+
+          // Dimensiones iniciales
+          resizeHandle.initialWidth = parseInt(selectedFrame.style.width);
+          resizeHandle.initialHeight = parseInt(selectedFrame.style.height);
+          resizeHandle.initialLeft = parseInt(selectedFrame.style.left);
+          resizeHandle.initialTop = parseInt(selectedFrame.style.top);
+
+          // Añadir eventos temporales
+          document.addEventListener('mousemove', resize);
+          document.addEventListener('mouseup', stopResize);
+
+          e.stopPropagation();
+      }
+
+      // Función de redimensionamiento
+      function resize(e) {
+          if (!resizeHandle || !selectedFrame) return;
+
+          const position = resizeHandle.getAttribute('data-position');
+          const deltaX = e.clientX - offsetX;
+          const deltaY = e.clientY - offsetY;
+
+          let newWidth = resizeHandle.initialWidth;
+          let newHeight = resizeHandle.initialHeight;
+          let newLeft = resizeHandle.initialLeft;
+          let newTop = resizeHandle.initialTop;
+
+          // Ajustar dimensiones según la esquina que se está arrastrando
+          if (position.includes('e')) {
+              newWidth = Math.max(30, resizeHandle.initialWidth + deltaX);
+          }
+          if (position.includes('w')) {
+              newWidth = Math.max(30, resizeHandle.initialWidth - deltaX);
+              newLeft = resizeHandle.initialLeft + resizeHandle.initialWidth - newWidth;
+          }
+          if (position.includes('s')) {
+              newHeight = Math.max(30, resizeHandle.initialHeight + deltaY);
+          }
+          if (position.includes('n')) {
+              newHeight = Math.max(30, resizeHandle.initialHeight - deltaY);
+              newTop = resizeHandle.initialTop + resizeHandle.initialHeight - newHeight;
+          }
+
+          // Aplicar nuevas dimensiones
+          selectedFrame.style.width = `${newWidth}px`;
+          selectedFrame.style.height = `${newHeight}px`;
+          selectedFrame.style.left = `${newLeft}px`;
+          selectedFrame.style.top = `${newTop}px`;
+
+          // Actualizar campos con nuevos valores
+          document.getElementById('frame-width').value = Math.round(newWidth / cmToPixel * 10); // Convertir a mm
+          document.getElementById('frame-height').value = Math.round(newHeight / cmToPixel * 10); // Convertir a mm
+      }
+
+      // Detener redimensionamiento
+      function stopResize() {
+          resizeHandle = null;
+          document.removeEventListener('mousemove', resize);
+          document.removeEventListener('mouseup', stopResize);
+      }
+
+      // Cargar marcos existentes si los hay
+      {% if template and template.template_data %}
+          try {
+              const templateData = JSON.parse('{{ template.template_data|escapejs }}');
+              if (templateData.frames && Array.isArray(templateData.frames)) {
+                  templateData.frames.forEach(frameData => {
+                      frameCounter++;
+                      createFrame(frameData);
+                  });
+              }
+          } catch (e) {
+              console.error('Error al cargar datos de la plantilla:', e);
+          }
+      {% endif %}
+
+      // Zoom del canvas
+   //   zoomSlider.addEventListener('input', function() {
+   //       const zoom = this.value;
+   //       zoomValue.textContent = `${zoom}%`;
+   //       canvas.style.transform = `scale(${zoom / 100})`;
+   //   });
+
+      // Añadir nuevo marco
+      document.getElementById('add-frame-btn').addEventListener('click', function() {
+          frameCounter++;
+          const frameData = {
+              id: `frame-${frameCounter}`,
+              width: '100px',
+              height: '100px',
+              left: '50px',
+              top: '50px',
+              borderStyle: 'dashed',
+              label: `Foto ${frameCounter}`
+          };
+          createFrame(frameData);
+      });
+
+      // Cambiar propiedades del marco desde los controles
+      document.getElementById('frame-width').addEventListener('change', function() {
+          if (!selectedFrame) return;
+          const widthInMm = parseInt(this.value);
+          const widthInPx = (widthInMm / 10) * cmToPixel; // Convertir mm a píxeles
+          selectedFrame.style.width = `${widthInPx}px`;
+      });
+
+      document.getElementById('frame-height').addEventListener('change', function() {
+          if (!selectedFrame) return;
+          const heightInMm = parseInt(this.value);
+          const heightInPx = (heightInMm / 10) * cmToPixel; // Convertir mm a píxeles
+          selectedFrame.style.height = `${heightInPx}px`;
+      });
+
+      document.getElementById('frame-style').addEventListener('change', function() {
+          if (!selectedFrame) return;
+          selectedFrame.style.borderStyle = this.value;
+      });
+
+      // Eliminar marco seleccionado
+      document.getElementById('delete-frame-btn').addEventListener('click', function() {
+          if (!selectedFrame) return;
+          canvas.removeChild(selectedFrame);
+          selectedFrame = null;
+          document.getElementById('frame-properties').style.display = 'none';
+          document.getElementById('no-frame-selected').style.display = 'block';
+      });
+
+      // Cambiar color de fondo
+      document.getElementById('background-color').addEventListener('input', function() {
+          canvas.style.backgroundColor = this.value;
+      });
+
+      // Cambiar imagen de fondo
+      document.getElementById('background-image').addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = function(e) {
+              // Añadir opciones para el usuario
+      const bgFitOption = confirm('¿Deseas mantener las proporciones originales de la imagen?\n\nPresiona OK para mantener proporciones\nPresiona Cancelar para que la imagen cubra todo el espacio');
+              canvas.style.backgroundImage = `url('${e.target.result}')`;
+              canvas.style.backgroundSize = bgFitOption ? 'contain' :'cover';
+              canvas.style.backgroundPosition = 'center';
+              canvas.style.backgroundRepeat = 'no-repeat';
+
+              // Mostrar vista previa
+              const preview = document.getElementById('bg-preview');
+              preview.src = e.target.result;
+              preview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+      });
+
+      // Limpiar canvas
+      document.getElementById('clear-canvas-btn').addEventListener('click', function() {
+          if (confirm('¿Estás seguro de que quieres eliminar todos los marcos y limpiar la plantilla?')) {
+              // Eliminar todos los marcos
+              const frames = canvas.querySelectorAll('.photo-frame');
+              frames.forEach(frame => canvas.removeChild(frame));
+
+              // Restaurar fondo
+              canvas.style.backgroundColor = '#FFFFFF';
+              canvas.style.backgroundImage = 'none';
+              document.getElementById('background-color').value = '#FFFFFF';
+              document.getElementById('background-image').value = '';
+              document.getElementById('bg-preview').style.display = 'none';
+
+              // Reiniciar selección
+              deselectFrame();
+
+              // Reiniciar contador de marcos
+              frameCounter = 0;
+          }
+      });
+
+      // Modal para guardar plantilla
+      const saveModal = new bootstrap.Modal(document.getElementById('saveTemplateModal'));
+
+      // Abrir modal para guardar plantilla
+      document.getElementById('save-template-btn').addEventListener('click', function() {
+          const templateName = document.getElementById('template-name').value;
+          const templateDesc = document.getElementById('template-description').value;
+
+          document.getElementById('save-template-name').value = templateName;
+          document.getElementById('save-template-description').value = templateDesc;
+
+          saveModal.show();
+      });
+
+      // Guardar plantilla
+      document.getElementById('confirm-save-btn').addEventListener('click', function() {
+          const name = document.getElementById('save-template-name').value;
+          if (!name) {
+              alert('Por favor ingresa un nombre para la plantilla');
+              return;
+          }
+
+          // Capturar estado actual del canvas
+          const template = {
+              evento_id: {{ evento.id }},
+              id: '{{ template.template_id|default:"" }}',
+              name: name,
+              description: document.getElementById('save-template-description').value,
+              backgroundColor: canvas.style.backgroundColor,
+              backgroundImage: canvas.style.backgroundImage,
+              backgroundSize: canvas.style.backgroundSize,  // Añadir esta línea
+              backgroundPosition: canvas.style.backgroundPosition,  // Añadir esta línea
+              isDefault: document.getElementById('save-template-default').checked,
+              frames: []
+          };
+
+          // Capturar información de cada marco
+          const frames = canvas.querySelectorAll('.photo-frame');
+          frames.forEach((frame, index) => {
+              template.frames.push({
+                  id: frame.id,
+                  label: `Foto ${index + 1}`,
+                  width: frame.style.width,
+                  height: frame.style.height,
+                  left: frame.style.left,
+                  top: frame.style.top,
+                  borderStyle: frame.style.borderStyle
+              });
+          });
+
+          // Guardar en el servidor
+          saveTemplateToServer(template);
+
+          // Cerrar modal
+          saveModal.hide();
+      });
+
+      // Función para guardar plantilla en el servidor
+      function saveTemplateToServer(template) {
+          // Si hay imagen de fondo codificada en base64, incluirla
+          if (document.getElementById('background-image').files.length > 0) {
+              const bgPreview = document.getElementById('bg-preview');
+              if (bgPreview.src && bgPreview.src.startsWith('data:')) {
+                  template.backgroundImage = bgPreview.src;
+              }
+          }
+
+          fetch('{% url "save_template" %}', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: JSON.stringify(template)
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Plantilla guardada correctamente');
+
+                  // Redireccionar a la lista de plantillas
+                  window.location.href = "{% url 'template_list' evento.id %}";
+              } else {
+                  alert('Error al guardar la plantilla: ' + data.error);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('Error al guardar la plantilla');
+          });
+      }
+  });
 </script>
 {% endblock %}
-        
-        {% comment %} // Zoom del canvas
-        zoomSlider.addEventListener('input', function() {
-            const zoom = this.value;
-            zoomValue.textContent = `${zoom}%`;
-            canvas.style.transform = `scale(${zoom / 100})`;
-        }); {% endcomment %}
-        
-        // Añadir nuevo marco
-        document.getElementById('add-frame-btn').addEventListener('click', function() {
-            frameCounter++;
-            const frameData = {
-                id: `frame-${frameCounter}`,
-                width: '100px',
-                height: '100px',
-                left: '50px',
-                top: '50px',
-                borderStyle: 'dashed',
-                label: `Foto ${frameCounter}`
-            };
-            createFrame(frameData);
-        });
-        
-        // Función para crear un marco a partir de datos
-        function createFrame(frameData) {
-            const frame = document.createElement('div');
-            frame.className = 'photo-frame';
-            frame.id = frameData.id || `frame-${frameCounter}`;
-            frame.style.width = frameData.width;
-            frame.style.height = frameData.height;
-            frame.style.left = frameData.left;
-            frame.style.top = frameData.top;
-            frame.style.borderStyle = frameData.borderStyle || 'dashed';
-            
-            // Etiqueta del marco
-            const label = document.createElement('div');
-            label.className = 'frame-label';
-            label.textContent = frameData.label || `Foto ${frameCounter}`;
-            frame.appendChild(label);
-            
-            // Añadir controles de redimensionamiento
-            addResizeHandles(frame);
-            
-            // Evento para seleccionar el marco
-            frame.addEventListener('mousedown', function(e) {
-                if (e.target.classList.contains('resize-handle')) {
-                    startResize(e);
-                    return;
-                }
-                
-                selectFrame(frame);
-                startDrag(e);
-            });
-            
-            canvas.appendChild(frame);
-            selectFrame(frame);
-            return frame;
-        }
-        
-        // Añadir controles de redimensionamiento a un marco
-        function addResizeHandles(frame) {
-            const positions = ['nw', 'ne', 'sw', 'se'];
-            positions.forEach(pos => {
-                const handle = document.createElement('div');
-                handle.className = `resize-handle handle-${pos}`;
-                handle.setAttribute('data-position', pos);
-                frame.appendChild(handle);
-            });
-        }
-        
-        // Seleccionar un marco
-        function selectFrame(frame) {
-            // Deseleccionar marco anterior
-            if (selectedFrame) {
-                selectedFrame.style.borderColor = '#FF6B6B';
-                selectedFrame.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
-            }
-            
-            // Seleccionar nuevo marco
-            selectedFrame = frame;
-            selectedFrame.style.borderColor = '#2196F3';
-            selectedFrame.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
-            
-            // Mostrar propiedades del marco
-            document.getElementById('frame-properties').style.display = 'block';
-            document.getElementById('no-frame-selected').style.display = 'none';
-            
-            // Actualizar campos con valores del marco
-            const width = parseInt(frame.style.width);
-            const height = parseInt(frame.style.height);
-            document.getElementById('frame-width').value = Math.round(width / cmToPixel * 10); // Convertir a mm
-            document.getElementById('frame-height').value = Math.round(height / cmToPixel * 10); // Convertir a mm
-            document.getElementById('frame-style').value = frame.style.borderStyle;
-        }
-        
-        // Deseleccionar marco al hacer clic fuera
-        canvas.addEventListener('mousedown', function(e) {
-            if (e.target === canvas) {
-                deselectFrame();
-            }
-        });
-        
-        function deselectFrame() {
-            if (selectedFrame) {
-                selectedFrame.style.borderColor = '#FF6B6B';
-                selectedFrame.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
-                selectedFrame = null;
-                document.getElementById('frame-properties').style.display = 'none';
-                document.getElementById('no-frame-selected').style.display = 'block';
-            }
-        }
-        
-        // Iniciar arrastre
-        function startDrag(e) {
-            if (!selectedFrame) return;
-            
-            isDragging = true;
-            resizeHandle = null;
-            
-            // Posición relativa del clic dentro del marco
-            const rect = selectedFrame.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
-            
-            // Añadir eventos temporales
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-        }
-        
-        // Función de arrastre
-        function drag(e) {
-            if (!isDragging || !selectedFrame) return;
-            
-            const canvasRect = canvas.getBoundingClientRect();
-            const frameWidth = parseInt(selectedFrame.style.width);
-            const frameHeight = parseInt(selectedFrame.style.height);
-            
-            // Calcular nueva posición
-            let newX = e.clientX - canvasRect.left - offsetX;
-            let newY = e.clientY - canvasRect.top - offsetY;
-            
-            // Limitar dentro del canvas
-            newX = Math.max(0, Math.min(newX, canvasRect.width - frameWidth));
-            newY = Math.max(0, Math.min(newY, canvasRect.height - frameHeight));
-            
-            // Aplicar nueva posición
-            selectedFrame.style.left = `${newX}px`;
-            selectedFrame.style.top = `${newY}px`;
-        }
-        
-        // Detener arrastre
-        function stopDrag() {
-            isDragging = false;
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', stopDrag);
-        }
-        
-        // Iniciar redimensionamiento
-        function startResize(e) {
-            if (!selectedFrame) return;
-            
-            isDragging = false;
-            resizeHandle = e.target;
-            
-            // Posición inicial
-            offsetX = e.clientX;
-            offsetY = e.clientY;
-            
-            // Dimensiones iniciales
-            resizeHandle.initialWidth = parseInt(selectedFrame.style.width);
-            resizeHandle.initialHeight = parseInt(selectedFrame.style.height);
-            resizeHandle.initialLeft = parseInt(selectedFrame.style.left);
-            resizeHandle.initialTop = parseInt(selectedFrame.style.top);
-            
-            // Añadir eventos temporales
-            document.addEventListener('mousemove', resize);
-            document.addEventListener('mouseup', stopResize);
-            
-            e.stopPropagation();
-        }
-        
-        
