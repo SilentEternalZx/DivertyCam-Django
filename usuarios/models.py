@@ -1,7 +1,7 @@
 import json
 from time import timezone
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
@@ -10,11 +10,17 @@ from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from multiselectfield import MultiSelectField
-
-
+from django.forms.widgets import ClearableFileInput
+from django.core.validators import MinLengthValidator
 # Modelo de Usuario personalizado
 class User(AbstractUser):
    pass
+
+
+class CustomGroup(Group):
+    pass
+
+
 
 
 #Modelo de invitado
@@ -25,26 +31,38 @@ class Invitado(models.Model):
     def __str__(self):
         return f'{self.nombre} {self.telefono}'
     
+    
+
+    
 #Modelo de cliente
 class Cliente(models.Model):
     nombre = models.CharField(
-        max_length=100,
+        max_length=50, 
         verbose_name=_("Nombre"),
+        validators=[MinLengthValidator(3, 'El nombre debe ser de al menos 3 caracteres')]
         
     )
+    
     
     usuario=models.ForeignKey(User,related_name="cliente" , on_delete=models.CASCADE, null=True)
     
     apellido = models.CharField(
-        max_length=100,
-        verbose_name=_("Apellido"),
         
+        max_length=50,
+        verbose_name=_("Apellido"),
+         validators=[MinLengthValidator(3, 'El apellido debe ser de al menos 3 caracteres')]
+       
+     
     )
+    
+
     
     cedula = models.CharField(
         max_length=20,
         unique=True,
         verbose_name=_("Cédula"),
+        validators=[MinLengthValidator(5, 'La cédula debe tener al menos 5 dígitos.')],
+       
         db_index=True
     )
     
@@ -54,16 +72,13 @@ class Cliente(models.Model):
     )
     
     direccion = models.CharField(
-        max_length=255,
+        max_length=50,
         verbose_name=_("Dirección"),
-        
+        validators=[MinLengthValidator(5, 'La dirección debe tener al menos 5 caracteres.')],
+      
     )
     
-    correo = models.EmailField(
-        unique=True,
-        verbose_name=_("Correo Electrónico"),
-        db_index=True
-    )
+ 
     
     telefono_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$',
@@ -97,7 +112,6 @@ class Cliente(models.Model):
         ordering = ["apellido", "nombre"]
         indexes = [
             models.Index(fields=['cedula']),
-            models.Index(fields=['correo']),
             GinIndex(fields=['search_vector']),
         ]
 
@@ -114,14 +128,13 @@ def update_search_vector(sender, instance, **kwargs):
         SearchVector('nombre', weight='A') +
         SearchVector('apellido', weight='A') +
         SearchVector('cedula', weight='B') +
-        SearchVector('correo', weight='B') +
         SearchVector('direccion', weight='C')
     )
 
 
 class CategoriaEvento(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
-    album_facebook_id = models.CharField(max_length=50, null=True, blank=True)  # ID del álbum en Facebook
+    album_facebook_id = models.CharField(max_length=50, null=False, blank=False)  # ID del álbum en Facebook
 
     def __str__(self):
         return self.nombre
@@ -138,10 +151,14 @@ class Evento(models.Model):
         ('clip_inicio', _('Clip de inicio')),
     ]
     
-    nombre = models.CharField(max_length=100, verbose_name=_("Nombre del evento"))
+    nombre = models.CharField(max_length=100, verbose_name=_("Nombre del evento"),
+    validators=[MinLengthValidator(7, 'El nombre del evento debe tener al menos 7 caracteres')]),
     fecha_hora = models.DateTimeField(verbose_name=_("Fecha y hora del evento"))
-    servicios = MultiSelectField(choices=SERVICIOS_CHOICES, max_length=100, verbose_name=_("Servicios"))
-    direccion = models.CharField(max_length=255, verbose_name=_("Dirección del evento"))
+    servicios = MultiSelectField(choices=SERVICIOS_CHOICES, verbose_name=_("Servicios"),
+                                validators= [MinLengthValidator(1, 'El evento debe contener al menos 1 servicio')])
+    
+    # direccion = models.CharField(max_length=50, verbose_name=_("Dirección del evento"),
+    #                              validators=[MinLengthValidator(7, 'La dirección debe tener al menos 7 caracteres.')])
     cliente = models.ForeignKey(
         "Cliente",
         on_delete=models.CASCADE,
@@ -168,7 +185,7 @@ class Evento(models.Model):
     
     fecha_hora = models.DateTimeField(
         verbose_name=_("Fecha y hora del evento"),
-        
+      
     )
     
     servicios = MultiSelectField(
@@ -866,14 +883,20 @@ class CollageResult(models.Model):
         verbose_name_plural = "Resultados de Collage"
 #Modelo de fotografia
 class Fotografia(models.Model):
-    
-    img=models.ImageField(null=True,blank=True, upload_to="imagenes/")
-    descripcion=models.TextField()
-    invitado=models.ForeignKey(Invitado, related_name="fotografias", on_delete=models.CASCADE, null=True)
-    evento=models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
-    
+    img = models.ImageField(null=False, blank=False, upload_to="imagenes/")
+    descripcion = models.TextField(max_length=34,   
+                                 validators=[MinLengthValidator(5, 'La descripción debe tener al menos 5 caracteres.')],)
+    invitados = models.ManyToManyField('Invitado', related_name="fotografias", blank=True)
+    evento = models.ForeignKey(Evento, related_name="fotografias", on_delete=models.CASCADE)
+
     def __str__(self):
-        return f'{self.descripcion} {self.invitado}'
+        invitados_str = ", ".join([str(inv) for inv in self.invitados.all()])
+        return f'{self.descripcion} | Invitados: {invitados_str}'
+
+
+
+
+
     
 # Agregar este modelo a tu models.py existente
 

@@ -1,76 +1,65 @@
+{% extends 'layout/layout.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de sesión</title>
-    <link rel="stylesheet" href="{% static 'login/css/login.css' %}"> <!--Llamar estilo css-->
-</head>
-<body>
-   
-<div class="container"> <!--División de contenido-->
- <div class="container-form">
-    <div class="comeback-button">
-        <a href="{% url 'index' %}">Volver atrás</a>
-    </div>
+{% block title %}
+Iniciar sesión
+{% endblock %}
 
- 
-    <!--Formulario-->
-    <form class="sign-in" action="{% url 'login' %}" method="post">
-        {% csrf_token %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'login/css/login.css' %}">
+{% endblock %}
 
-        {% if messages %}
-        <div>
-            {% for message in messages %}
-                {% if message.tags == "error" %}
-                    <p style="color: red;">{{ message }}</p>
-                {% elif message.tags == "success" %}
-                    <p style="color: green;">{{ message }}</p>
-                {% else %}
-                    <p>{{ message }}</p>
+{% block content %}
+<div class="login-main">
+    <div class="login-container">
+        <!-- Lado izquierdo: formulario -->
+        <div class="login-form-side">
+            <div class="comeback-button">
+                <a href="{% url 'index' %}">← Ir a inicio</a>
+            </div>
+            <form class="login-form" action="{% url 'login' %}" method="post" autocomplete="on">
+                {% csrf_token %}
+                <h1 class="login-title">Iniciar sesión</h1>
+                <p class="login-desc">Usa tu nombre de usuario y contraseña para acceder</p>
+
+                {% if messages %}
+                    <div class="login-messages">
+                        {% for message in messages %}
+                            <p class="{% if message.tags == 'error' %}msg-error{% elif message.tags == 'success' %}msg-success{% else %}msg-info{% endif %}">
+                                {{ message }}
+                            </p>
+                        {% endfor %}
+                    </div>
                 {% endif %}
-            {% endfor %}
-        </div>
-    {% endif %}
-    
-        
-        <h2>Iniciar sesión</h2>
-        <span>Use su nombre de usuario y contraseña</span>
-        <div class="container-input">
-           <ion-icon name="person-outline"></ion-icon>
-           <input type="text" id="nombre_usuario" placeholder="Nombre de usuario" name="nombre_usuario" required autofocus>
 
+                <div class="input-group">
+                    <ion-icon name="person-outline"></ion-icon>
+                    <input type="text" id="nombre_usuario" name="nombre_usuario" placeholder="Nombre de usuario" required autofocus>
+                </div>
+                <div class="input-group">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                    <input type="password" id="contraseña" name="contraseña" placeholder="Contraseña" required autocomplete="current-password">
+                </div>
+                <div class="login-links">
+                    <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+                    <a href="{% url 'register' %}">¿No tienes una cuenta?</a>
+                </div>
+                <button class="login-btn" type="submit">Iniciar sesión</button>
+            </form>
         </div>
-         <div class="container-input">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" id="contraseña" placeholder="Contraseña" name="contraseña" required autocomplete="current-password">
-
-         </div>
-        <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
-        <a href="{% url 'register' %}">¿No tienes una cuenta?</a>
-        <div class="button-input"> 
-            <button type="submit">Iniciar sesión</button>
-        </div>
-    </form>
-</div>
-
-<!--Forma-->
-<div class="container">
-    <div class="container-shape">
-        <div class="shape-content">
-            <h3>¡Hola!</h3>
-            <p>Inicia sesión para acceder al sitio</p>
+        <!-- Lado derecho: mensaje de bienvenida -->
+        <div class="login-shape-side">
+            <div class="shape-content">
+                <h2>¡Hola!</h2>
+                <p>Inicia sesión para acceder al sitio y descubrir todo lo que tenemos para ti.</p>
+            </div>
         </div>
     </div>
 </div>
 
-</div>
+{% endblock %}
 
-<!--Scripts-->
+{% block extra_scripts %}
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-</body>
-</html>
+{% endblock %}

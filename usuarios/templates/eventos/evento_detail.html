@@ -1,163 +1,180 @@
-{# templates/eventos/evento_detail.html #}
 {% extends 'eventos/base.html' %}
 
 {% block title %}{{ evento.nombre }}{% endblock %}
 
-{% block content %}
+{% block body %}
+{% include 'partials/navbar.html' %}
 
-<div class="main-content">        
-     <h2>Detalles del Evento</h2>
-</div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Información del Evento</h4>
-                    <dl class="row">
-                        <dt class="col-sm-4">Nombre</dt>
-                        <dd class="col-sm-8">{{ evento.nombre }}</dd>
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="main-content w-100" style="max-width: 1050px;">
+    <!-- Header y botones principales -->
+    <div class="evento-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+      <div class="title-container d-flex align-items-center mb-2 mb-md-0">
+        <i class="fa-solid fa-calendar-day fa-2x me-2"></i>
+        <h2 class="section-title mb-0" id="titulo-detalles">Detalles del Evento</h2>
+      </div>
+      <div class="action-buttons">
+        <a href="{% url 'evento_update' evento.pk %}" class="btn btn-warning shadow-sm">
+          <i class="fa-solid fa-pen"></i> Editar
+        </a>
+       <form method="post" action="{% url 'evento_delete' evento.pk %}" class="d-inline form-eliminar-evento">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger shadow-sm me-2">
+    <i class="fa-solid fa-trash"></i> Eliminar
+  </button>
+</form>
+        <a href="{% url 'evento_list' %}" class="btn btn-blanco shadow-sm">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+      </div>
+    </div>
 
-                        <dt class="col-sm-4">Fecha y Hora</dt>
-                        <dd class="col-sm-8">{{ evento.fecha_hora|date:"d/m/Y H:i" }}</dd>
-
-                        <dt class="col-sm-4">Dirección</dt>
-                        <dd class="col-sm-8">{{ evento.direccion }}</dd>
-                    </dl>
-                </div>
-                <div class="col-md-6">
-                    <h4>Información del Cliente</h4>
-                    <dl class="row">
-                        <dt class="col-sm-4">Cliente</dt>
-                        <dd class="col-sm-8">
-                            <a href="{% url 'cliente_detail' evento.cliente.pk %}">
-                                {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
-                            </a>
-                        </dd>
-
-                        <dt class="col-sm-4">Teléfono</dt>
-                        <dd class="col-sm-8">{{ evento.cliente.telefono }}</dd>
-
-                        <dt class="col-sm-4">Correo</dt>
-                        <dd class="col-sm-8">{{ evento.cliente.correo }}</dd>
-                    </dl>
-                </div>
+    <div class="card mb-4 shadow-sm evento-detail-card">
+      <div class="card-body">
+        <div class="row g-4">
+          <!-- Columna izquierda: Información general y cliente -->
+          <div class="col-lg-6 d-flex flex-column gap-3">
+            <!-- Nombre y categoría -->
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <div class="avatar-circle avatar-lg" title="{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}">
+                {{ evento.cliente.nombre|slice:":1" }}{{ evento.cliente.apellido|slice:":1" }}
+              </div>
+              <div>
+                <h3 class="mb-1 fw-bold">{{ evento.nombre }}</h3>
+                <span class="badge rounded-pill badge-morado">{{ evento.categoria }}</span>
+              </div>
             </div>
-            
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h4>Servicios Contratados</h4>
-                    <div class="mt-2">
-                        {% for servicio in evento.servicios %}
-                            <span class="badge bg-primary p-2 mb-2 me-2">{{ servicio }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
+            <!-- Información del Evento -->
+            <div class="evento-info-box p-3">
+              <h5 class="mb-3 border-bottom pb-2"><i class="fa-solid fa-info-circle me-2 text-primary"></i>Información del Evento</h5>
+              <dl class="row mb-0">
+                <dt class="col-sm-5">Fecha y Hora</dt>
+                <dd class="col-sm-7">{{ evento.fecha_hora|date:"d/m/Y H:i" }}</dd>
+                <dt class="col-sm-5">Dirección</dt>
+                <dd class="col-sm-7">{{ evento.direccion }}</dd>
+              </dl>
             </div>
+            <!-- Información del Cliente -->
+            <div class="evento-info-box p-3">
+              <h5 class="mb-3 border-bottom pb-2"><i class="fa-solid fa-user me-2 text-primary"></i>Cliente</h5>
+              <dl class="row mb-0">
+                <dt class="col-sm-5">Nombre</dt>
+                <dd class="col-sm-7 d-flex align-items-center gap-2">
+                  <div class="avatar-circle" title="{{ evento.cliente.nombre }} {{ evento.cliente.apellido }}">
+                    {{ evento.cliente.nombre|slice:":1" }}{{ evento.cliente.apellido|slice:":1" }}
+                  </div>
+                  <a href="{% url 'cliente_detail' evento.cliente.pk %}" class="fw-semibold">
+                    {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
+                  </a>
+                </dd>
+                <dt class="col-sm-5">Teléfono</dt>
+                <dd class="col-sm-7">{{ evento.cliente.telefono }}</dd>
+                <dt class="col-sm-5">Correo</dt>
+                <dd class="col-sm-7">{{ evento.cliente.usuario.email}}</dd>
+              </dl>
+            </div>
+          </div>
+          <!-- Columna derecha: Servicios, Photobooth y Sesiones -->
+          <div class="col-lg-6 d-flex flex-column gap-3">
+            <!-- Servicios Contratados -->
+            <div class="evento-info-box p-3">
+              <h5 class="mb-3 border-bottom pb-2"><i class="fa-solid fa-briefcase me-2 text-primary"></i>Servicios Contratados</h5>
+              <div class="mt-2">
+                {% for servicio in evento.servicios %}
+                  <span class="badge badge-morado mb-2 me-2">{{ servicio }}</span>
+                {% empty %}
+                  <span class="text-muted">No hay servicios contratados.</span>
+                {% endfor %}
+              </div>
+            </div>
+            <!-- Photobooth Configuración y acciones -->
+            <div class="evento-info-box p-3">
+              <h5 class="mb-3 border-bottom pb-2"><i class="fa-solid fa-camera-retro me-2 text-primary"></i>Photobooth</h5>
+              <div class="d-flex flex-wrap gap-2 justify-content-end mb-3 align-items-center">
+                {% if evento.photobooth_config %}
+                  <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-blanco shadow-sm d-flex align-items-center">
+                    <i class="fas fa-cog"></i> <span class="ms-1">Configurar</span>
+                  </a>
+                  <a href="{% url 'preview_photobooth' evento.pk %}" class="btn btn-blanco shadow-sm d-flex align-items-center">
+                    <i class="fas fa-eye"></i> <span class="ms-1">Vista Previa</span>
+                  </a>
+                {% else %}
+                  <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-primary btn-sm d-flex align-items-center">
+                    <i class="fas fa-plus-circle"></i> <span class="ms-1">Configurar Photobooth</span>
+                  </a>
+                {% endif %}
+              </div>
+              <div class="photobooth-action-box p-3 mb-3 text-center">
+                {% if evento.photobooth_config and evento.photobooth_config.plantilla_collage %}
+                  <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-success btn-lg" id="btn-morado">
+                    <i class="fas fa-play-circle fa-lg me-2"></i> INICIAR PHOTOBOOTH
+                  </a>
+                  <small class="text-muted mt-2 d-block">Inicia la sesión en modo pantalla completa</small>
+                {% else %}
+                  <div class="alert alert-warning py-2 mb-0">
+                    <i class="fas fa-info-circle"></i> Configura el photobooth primero para poder iniciarlo
+                  </div>
+                {% endif %}
+              </div>
+              {% if evento.photobooth_config %}
+                <div class="row">
+                  <div class="col-md-8">
+                    <p><strong>Estado:</strong> <span class="badge" id="btn-morado">Configurado</span></p>
+                    <p><strong>Mensaje de bienvenida:</strong> {{ evento.photobooth_config.mensaje_bienvenida }}</p>
+                    {% if evento.photobooth_config.imagen_fondo %}
+                      <p>
+                        <strong>Imagen de fondo:</strong><br>
+                        <img src="{{ evento.photobooth_config.imagen_fondo.url }}" alt="Fondo" class="img-thumbnail photobooth-bg-thumb mt-2">
+                      </p>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          
+          </div>
         </div>
-        
-            <!-- Nueva sección para el photobooth -->
-            
-            <div class="card mb-2">
-                <div class="card-body">
-                <div class="col-12" style="padding: 0px 20px; border: 0;">
-                    
-                    
-                        <div class="card-body">
-                            {% if evento.photobooth_config %}
-                                
-                                    
-                                    <!-- Añadir este código en la plantilla evento_detail.html -->
-                                    <!-- Idealmente en la sección de acciones o en una sección destacada -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-primary text-white">
-                                            <h4><i class="fas fa-camera"></i> Photobooth</h4>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-8">
-                                                    <p>El Photobooth permite tomar fotos automáticamente y crear collages personalizados para los invitados del evento.</p>
-                                                    
-                                                    {% if evento.photobooth_config %}
-                                                        <p class="mb-0"><strong>Estado:</strong> 
-                                                            {% if evento.photobooth_config.activo %}
-                                                                <span class="badge bg-success">Configurado y Activo</span>
-                                                            {% else %}
-                                                                <span class="badge bg-warning">Configurado pero Inactivo</span>
-                                                            {% endif %}
-                                                        </p>
-                                                        
-                                                        {% if evento.photobooth_config.plantilla_collage %}
-                                                            <p class="mb-0 mt-2"><strong>Plantilla:</strong> {{ evento.photobooth_config.plantilla_collage.nombre }}</p>
-                                                        {% else %}
-                                                            <p class="text-danger mb-0 mt-2"><i class="fas fa-exclamation-triangle"></i> No hay plantilla de collage seleccionada.</p>
-                                                        {% endif %}
-                                                        
-                                                        <div class="mt-3">
-                                                            <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-primary">
-                                                                <i class="fas fa-cog"></i> Configurar
-                                                            </a>
-                                                            <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-outline-info">
-                                                                <i class="fas fa-eye"></i> Vista Previa
-                                                            </a>
-                                                        </div>
-                                                    {% else %}
-                                                        <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> El photobooth aún no está configurado para este evento.</p>
-                                                        
-                                                        <div class="mt-3">
-                                                            <a href="{% url 'configurar_photobooth' evento.id %}" class="btn btn-outline-primary">
-                                                                <i class="fas fa-cog"></i> Configurar Photobooth
-                                                            </a>
-                                                        </div>
-                                                    {% endif %}
-                                                </div>
-                                                
-                                                <div class="col-md-4 text-center">
-                                                    {% if evento.photobooth_config and evento.photobooth_config.plantilla_collage %}
-                                                        <div class="photobooth-action mb-3">
-                                                            <a href="{% url 'launch_photobooth' evento.id %}" class="btn btn-success btn-lg d-block">
-                                                                <i class="fas fa-play-circle fa-lg me-2"></i> INICIAR PHOTOBOOTH
-                                                            </a>
-                                                            <small class="text-muted mt-2">Inicia la sesión en modo pantalla completa</small>
-                                                        </div>
-                                                    {% else %}
-                                                        <div class="alert alert-warning">
-                                                            <i class="fas fa-info-circle"></i> Configura el photobooth primero para poder iniciarlo
-                                                        </div>
-                                                    {% endif %}
-                                                    
-                                                    {% if evento.collage_sessions.exists %}
-                                                        <div class="mt-4">
-                                                            <p><strong>{{ evento.collage_sessions.count }}</strong> sesiones realizadas</p>
-                                                            <a href="#" class="btn btn-outline-secondary btn-sm">
-                                                                <i class="fas fa-images"></i> Ver sesiones anteriores
-                                                            </a>
-                                                        </div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                            {% else %}
-                                <p>El photobooth no está configurado para este evento.</p>
-                                <a href="{% url 'configurar_photobooth' evento.pk %}" class="btn btn-primary">
-                                    <i class="fas fa-plus-circle"></i> Configurar Photobooth
-                                </a>
-                            {% endif %}
-                        </div>
-                </div>
-                </div>
-                <div class="card-footer">
-                    <a href="{% url 'evento_update' evento.pk %}" class="btn btn-warning">Editar Evento</a>
-                    <a href="{% url 'evento_delete' evento.pk %}" class="btn btn-danger">Eliminar Evento</a>
-                    <a href="{% url 'evento_list' %}" class="btn btn-secondary">Volver al Listado</a>
-                </div>
-            </div>
-    </div>    
-    
-    
-    
-    
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('.form-eliminar-evento');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡Esta acción eliminará el evento!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
 
+  {% if messages %}
+    {% for message in messages %}
+      Swal.fire({
+        icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}",
+        title: "{{ message|escapejs }}",
+        showConfirmButton: false,
+        timer: 3000
+      });
+    {% endfor %}
+  {% endif %}
+});
+</script>
 {% endblock %}

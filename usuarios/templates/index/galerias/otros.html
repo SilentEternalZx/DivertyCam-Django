@@ -1,0 +1,99 @@
+{% extends "layout/layout.html" %}
+{% load static %}
+
+{% block title %}
+Inicio
+{% endblock %}
+
+{% block content %}
+
+<!-- header section -->
+<div class="header_section">
+   {% include 'partials/navbar.html' %}
+
+   <!-- banner -->
+   <div class="banner_section layout_padding">
+      <div class="contenido-banner">
+         <h1 id="header-banner">¡Hola {{ user.username }}!</h1>
+         <p id="parrafo-banner">Bienvenido a DivertyCam</p>
+      </div>
+   </div>
+</div>
+
+<div style="text-align: center;">
+   <h1 class="services_taital">Galería de Eventos</h1>
+   <p class="services_text">El amor es efímero en el tiempo, pero eterno en una imagen</p>
+</div>
+
+<div class="services_section layout_padding">
+   <div class="container">
+      <div class="row g-4">
+         {% comment %} Repite o ajusta la cantidad de imágenes aquí {% endcomment %}
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/report3690509125010332477aiease_flux_06937_.png' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/55875043-2002-47d6-989f-a1b870f1db3e.webp' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/c470d893d53f46158dd9b2c297c537e2.webp' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/b00e06e7-a9c8-41b1-b829-c098dd8cca3f.webp' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/piclumen-1746903404456.png' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/c470d893d53f46158dd9b2c297c537e2.webp' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/piclumen-1746903400883.png' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+         <div class="col-md-4">
+            <img src="{% static 'assets/imagenes_layout/piclumen-1746903395554.png' %}" class="galeria-img img-fluid" data-bs-toggle="modal" data-bs-target="#modalImagen" onclick="ampliarImagen(this.src)" />
+         </div>
+      </div>
+   </div>
+</div>
+
+<div class="modal fade" id="modalImagen" tabindex="-1" aria-labelledby="modalImagenLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark">
+      <div class="modal-body text-center">
+        <img src="" id="imagenAmpliada" class="img-fluid" style="max-height: 80vh;" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+   .galeria-img {
+      width: 100%;
+      height: 500px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+   }
+
+   .galeria-img:hover {
+      transform: scale(1.03);
+   }
+
+   .mb-4 {
+      margin-bottom: 1.5rem;
+   }
+</style>
+
+<script>
+  function ampliarImagen(src) {
+    const img = document.getElementById("imagenAmpliada");
+    img.src = src;
+  }
+</script>
+
+{% endblock %}

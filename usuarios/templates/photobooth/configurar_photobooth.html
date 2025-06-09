@@ -1,5 +1,4 @@
-
-    {# templates/photobooth/configurar_photobooth.html - VERSIÓN MEJORADA #}
+{# templates/photobooth/configurar_photobooth.html - VERSIÓN MEJORADA #}
 {% extends 'layout/layout.html' %}
 
 {% block title %}Configurar Photobooth - {{ evento.nombre }}{% endblock %}
@@ -9,6 +8,10 @@
     /* Estilos personalizados para mejorar la apariencia */
     body {
         background-color: #f8f9fa;
+    }
+
+    .navbar{
+        background-color: #000;
     }
     
     .main-card {
@@ -246,6 +249,56 @@
         box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
     }
     
+    /* --- ESTILOS PERSONALIZADOS DE BOTONES PARA PHOTBOOTH, ARMONIZADOS CON EVENTO_LIST Y EVENTO_DETAIL --- */
+    .btn-morado-gradiente {
+        background: linear-gradient(135deg, #2b2278 0%, #764ba2 100%);
+        color: #fff !important;
+        border: none;
+        box-shadow: 0 2px 8px rgba(43,34,120,0.10);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-morado-gradiente:hover, .btn-morado-gradiente:focus {
+        background: linear-gradient(135deg, #764ba2 0%, #2b2278 100%);
+        color: #fff !important;
+    }
+    .btn-negro {
+        background: #232323;
+        color: #fff !important;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-negro:hover, .btn-negro:focus {
+        background: #444;
+        color: #fff !important;
+    }
+    .pulse-btn {
+        animation: pulse-shadow 1.2s infinite;
+    }
+    @keyframes pulse-shadow {
+        0% { box-shadow: 0 0 0 0 rgba(43,34,120,0.25); }
+        70% { box-shadow: 0 0 0 10px rgba(43,34,120,0); }
+        100% { box-shadow: 0 0 0 0 rgba(43,34,120,0); }
+    }
+    
+    /* Botón de Vista Previa personalizado */
+    .btn-preview-blanco {
+        background: #fff;
+        color: #232323 !important;
+        border: 1.5px solid #232323;
+        font-weight: 600;
+        transition: background 0.18s, color 0.18s;
+    }
+    .btn-preview-blanco:hover, .btn-preview-blanco:focus {
+        background: #232323;
+        color: #fff !important;
+        border-color: #232323;
+    }
+    
     /* Responsive improvements */
     @media (max-width: 768px) {
         .nav-tabs {
@@ -273,71 +326,55 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="card main-card">
-        <div class="card-header">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h2 class="mb-0">
-                        <i class="fas fa-cog me-2"></i>
-                        Configurar Photobooth
-                    </h2>
-                    <p class="mb-0 mt-2 opacity-75">
-                        <strong>{{ evento.nombre }}</strong> • {{ evento.cliente.nombre }} {{ evento.cliente.apellido }}
-                    </p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <div class="d-flex gap-2 justify-content-end">
-                        <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-light btn-sm">
-                            <i class="fas fa-eye"></i> Vista Previa
-                        </a>
-                        <a href="{% url 'evento_detail' evento.id %}" class="btn btn-outline-light btn-sm">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <form method="post" enctype="multipart/form-data" novalidate>
-            {% csrf_token %}
-            
-            <div class="card-body p-0">
-                <ul class="nav nav-tabs" id="configTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button">
-                            <i class="fas fa-home"></i> General
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="plantilla-tab" data-bs-toggle="tab" data-bs-target="#plantilla" type="button">
-                            <i class="fas fa-th-large"></i> Plantilla
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="camara-tab" data-bs-toggle="tab" data-bs-target="#camara" type="button">
-                            <i class="fas fa-camera"></i> Cámara
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tiempos-tab" data-bs-toggle="tab" data-bs-target="#tiempos" type="button">
-                            <i class="fas fa-clock"></i> Tiempos
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="impresora-tab" data-bs-toggle="tab" data-bs-target="#impresora" type="button">
-                            <i class="fas fa-print"></i> Impresora
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button">
-                            <i class="fas fa-eye"></i> Vista Previa
-                        </button>
-                    </li>
-                </ul>
-                
-                <div class="tab-content" id="configTabsContent">
-                    <!-- ========== PESTAÑA GENERAL ========== -->
+{% include 'partials/navbar.html' %}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+  <div class="main-content w-100" style="max-width: 1050px; padding-top: 75px;">
+    <!-- Header solo con título e ícono, sin action-buttons duplicados -->
+    <div class="evento-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+      <div class="title-container d-flex align-items-center mb-2 mb-md-0">
+        <i class="fa-solid fa-camera-retro fa-2x me-2"></i>
+        <h2 class="section-title mb-0">Configurar Photobooth</h2>
+      </div>
+      <!-- action-buttons eliminados aquí -->
+    </div>
+    <div class="card shadow-sm mb-4">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="card-body p-0">
+          <ul class="nav nav-tabs" id="configTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                    <i class="fas fa-home"></i> General
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="plantilla-tab" data-bs-toggle="tab" data-bs-target="#plantilla" type="button">
+                    <i class="fas fa-th-large"></i> Plantilla
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="camara-tab" data-bs-toggle="tab" data-bs-target="#camara" type="button">
+                    <i class="fas fa-camera"></i> Cámara
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tiempos-tab" data-bs-toggle="tab" data-bs-target="#tiempos" type="button">
+                    <i class="fas fa-clock"></i> Tiempos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="impresora-tab" data-bs-toggle="tab" data-bs-target="#impresora" type="button">
+                    <i class="fas fa-print"></i> Impresora
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button">
+                    <i class="fas fa-eye"></i> Vista Previa
+                </button>
+            </li>
+          </ul>
+          <div class="tab-content" id="configTabsContent">
+            <!-- ========== PESTAÑA GENERAL ========== -->
                     <div class="tab-pane fade show active" id="general" role="tabpanel">
                         <div class="row">
                             <div class="col-lg-6">
@@ -813,7 +850,7 @@
                             </div>
                         </div>
                     </div>
-                    
+            
                     <!-- ========== PESTAÑA VISTA PREVIA ========== -->
                     <div class="tab-pane fade" id="preview" role="tabpanel">
                         <div class="row">
@@ -877,32 +914,27 @@
                             </div>
                         </div>
                     </div>
-                </div>
+          </div>
+        </div>
+        <!-- Footer fijo con botones de acción -->
+        <div class="sticky-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-morado-gradiente btn-lg pulse-btn">
+                <i class="fas fa-save me-2"></i>Guardar Configuración
+              </button>
+              <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-preview-blanco btn-lg">
+                <i class="fas fa-eye me-2"></i>Vista Previa Completa
+              </a>
             </div>
-            
-            <!-- Footer fijo con botones de acción -->
-            <div class="sticky-footer">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-2"></i>Guardar Configuración
-                        </button>
-                        <a href="{% url 'preview_photobooth' evento.id %}" class="btn btn-outline-primary btn-lg">
-                            <i class="fas fa-eye me-2"></i>Vista Previa Completa
-                        </a>
-                        <button type="button" class="btn btn-outline-secondary" onclick="debugFormData()">
-                            <i class="fas fa-bug me-2"></i>Debug
-                        </button>
-                    </div>
-                    <div>
-                        <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Volver al Evento
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </form>
+            <a href="{% url 'evento_detail' evento.id %}" class="btn btn-negro btn-lg">
+              <i class="fas fa-arrow-left me-2"></i>Volver al Evento
+            </a>
+          </div>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <script>
@@ -1027,6 +1059,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Refuerza la selección de cámara y manejo de errores
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> Tu navegador no soporta acceso a cámaras.', 'danger');
+        if (startPreviewBtn) startPreviewBtn.disabled = true;
+    } else {
+        navigator.mediaDevices.enumerateDevices().then(function(devices) {
+            const videoInputs = devices.filter(device => device.kind === 'videoinput');
+            if (videoInputs.length === 0) {
+                showAlert(cameraAlert, '<i class="fas fa-exclamation-triangle"></i> No se detectaron cámaras.', 'danger');
+                if (startPreviewBtn) startPreviewBtn.disabled = true;
+            } else {
+                // Habilita el botón solo si hay cámaras
+                if (startPreviewBtn) startPreviewBtn.disabled = false;
+            }
+        });
+    }
+
+    if (cameraSelect) {
+        cameraSelect.addEventListener('change', function() {
+            if (cameraSelect.value) {
+                if (startPreviewBtn) startPreviewBtn.disabled = false;
+            } else {
+                if (startPreviewBtn) startPreviewBtn.disabled = true;
+            }
+        });
+    }
+
     async function startCameraPreview() {
         console.log('Iniciando vista previa...');
         
@@ -1049,11 +1108,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedCameraIdInput.value = deviceId;
             }
             
-            // Configurar stream
+            // Configurar stream con deviceId seleccionado
             const constraints = {
                 video: {
                     deviceId: { exact: deviceId },
-                    width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
                 audio: false
@@ -1079,7 +1137,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Error al iniciar vista previa:', error);
-            showAlert(cameraAlert, `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`, 'danger');
+            showAlert(cameraAlert, `<i class=\"fas fa-exclamation-triangle\"></i> Error: ${error.message}`, 'danger');
+            if (startPreviewBtn) startPreviewBtn.disabled = false;
             return false;
         }
     }

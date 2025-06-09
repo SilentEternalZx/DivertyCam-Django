@@ -1,14 +1,19 @@
-
 import json
 from django import forms
 import json
 from .models import *
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Div
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
+import re
+from django.utils import timezone
+from django.db.models import Q
+
+
 
 User = get_user_model()
 
@@ -20,57 +25,60 @@ class CustomPasswordResetForm(PasswordResetForm):
         return email
     
 class ClienteForm(forms.ModelForm):
+
     class Meta:
         model = Cliente
-        fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento', 
-                  'direccion', 'correo', 'telefono', 'usuario']
+        fields = ['nombre', 'apellido', 'cedula', 'fechaNacimiento',
+                  'direccion', 'telefono', 'usuario']
         widgets = {
-            'fechaNacimiento': forms.DateInput(attrs={'type': 'date'}),
-            'direccion': forms.Textarea(attrs={'rows': 3}),
+            'fechaNacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'fechaNacimiento'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        clientes = Cliente.objects.values_list('usuario_id', flat=True)
+
+        if self.instance.pk and self.instance.usuario:
+            self.fields['usuario'].queryset = User.objects.filter(
+                is_superuser=False
+            ).filter(
+                Q(~Q(id__in=clientes)) | Q(id=self.instance.usuario.pk)
+            )
+        else:
+            self.fields['usuario'].queryset = User.objects.filter(
+                is_superuser=False
+            ).exclude(id__in=clientes)
+            
+              # Forzar formato YYYY-MM-DD para el campo fechaNacimiento
+        if self.instance and self.instance.pk and self.instance.fechaNacimiento:
+         self.initial['fechaNacimiento'] = self.instance.fechaNacimiento.strftime('%Y-%m-%d')
+
     def clean_fechaNacimiento(self):
         fechaNacimiento = self.cleaned_data.get('fechaNacimiento')
-        
         if fechaNacimiento:
-            # Importar datetime
             import datetime
-            
-            # Calcular la edad
             hoy = datetime.date.today()
-            edad = hoy.year - fechaNacimiento.year - ((hoy.month, hoy.day) < (fechaNacimiento.month, fechaNacimiento.day))
-            
-            # Verificar si es menor de 18 años
+            edad = hoy.year - fechaNacimiento.year - (
+                (hoy.month, hoy.day) < (fechaNacimiento.month, fechaNacimiento.day)
+            )
             if edad < 18:
                 raise forms.ValidationError("El cliente debe ser mayor de edad (18 años o más).")
-        
         return fechaNacimiento
-        
-        
-        
+
     def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
-        # Validaciones adicionales de cédula si es necesario
         if not cedula.isdigit():
             raise forms.ValidationError("La cédula debe contener solo números.")
         if not (6 <= len(cedula) <= 10):
             raise forms.ValidationError("La cédula debe tener entre 6 y 10 dígitos.")
         return cedula
-        
-    def clean_correo(self):
-        correo = self.cleaned_data.get('correo')
-        # Validaciones adicionales de correo si es necesario
-        return correo
+      
 
 
-class FotografiaForm(forms.ModelForm):
-    class Meta:
-        model = Fotografia
-        fields = ['img', 'descripcion', 'invitado']
-        
 class RegistroForm(UserCreationForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput(),
-        max_length=20,  # 📌 Máximo 20 caracteres
+        max_length=20,
         help_text="La contraseña debe tener entre 8 y 20 caracteres.",
     )
     password2 = forms.CharField(
@@ -82,6 +90,89 @@ class RegistroForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '')
+
+        # Longitud
+        if not (6 <= len(username) <= 30):
+            raise forms.ValidationError("El nombre de usuario debe tener entre 6 y 30 caracteres.")
+
+        # Alfanumérico y espacios
+        if not re.match(r'^[\w\s]+$', username):
+            raise forms.ValidationError("El nombre de usuario solo puede contener letras, números y espacios.")
+
+        # No vacío (por claridad, aunque la longitud ya lo cubre)
+        if not username.strip():
+            raise forms.ValidationError("El nombre de usuario no puede estar vacío.")
+
+        return username
+    
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1', '')
+
+        # Longitud
+        if not (8 <= len(password) <= 15):
+            raise forms.ValidationError("La contraseña debe tener entre 8 y 15 caracteres.")
+
+        # No vacío (por claridad, aunque la longitud ya lo cubre)
+        if not password.strip():
+            raise forms.ValidationError("La contraseña no puede estar vacía.")
+        # Al menos una letra mayúscula
+        if not re.search(r'[A-Z]', password):
+            raise forms.ValidationError("La contraseña debe contener al menos una letra mayúscula.")
+        # Al menos un número
+        if not re.search(r'\d', password):
+            raise forms.ValidationError("La contraseña debe contener al menos un número.")
+        # Al menos un carácter especial
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            raise forms.ValidationError("La contraseña debe contener al menos un carácter especial.")
+        # No espacios
+        if re.search(r'\s', password):
+            raise forms.ValidationError("La contraseña no puede contener espacios.")
+        # No puede ser igual al nombre de usuario
+        username = self.cleaned_data.get('username', '')
+        if username and password.lower() == username.lower():
+            raise forms.ValidationError("La contraseña no puede ser igual al nombre de usuario.")
+        # No puede ser igual a la contraseña anterior
+        if hasattr(self, 'instance') and self.instance and self.instance.password:
+            if password == self.instance.password:
+                raise forms.ValidationError("La nueva contraseña no puede ser igual a la anterior.")
+        # No puede ser igual a la contraseña anterior (si existe)
+        if hasattr(self, 'instance') and self.instance and self.instance.password:
+            if password == self.instance.password:
+                raise forms.ValidationError("La nueva contraseña no puede ser igual a la anterior.")
+        # No puede contener el nombre de usuario
+        if username and username.lower() in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener el nombre de usuario.")
+        # No puede contener la palabra "password"
+        if "password" in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener la palabra 'password'.")
+        # No puede contener la palabra "user"
+        if "user" in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener la palabra 'user'.")
+        # No puede contener la palabra "admin"
+        if "admin" in password.lower():
+            raise forms.ValidationError("La contraseña no puede contener la palabra 'admin'.")
+        # No puede contener la palabra "1234"
+        if re.search(r'1234', password):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia '1234'.")
+        # No puede contener la palabra "qwerty"
+        if re.search(r'qwerty', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'qwerty'.")
+        # No puede contener la palabra "abc"
+        if re.search(r'abc', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'abc'.")
+        # No puede contener la palabra "letmein"
+        if re.search(r'letmein', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia   'letmein'.")
+        # No puede contener la palabra "welcome"
+        if re.search(r'welcome', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'welcome'.")
+        # No puede contener la palabra "iloveyou"
+        if re.search(r'iloveyou', password, re.IGNORECASE):
+            raise forms.ValidationError("La contraseña no puede contener la secuencia 'iloveyou'.")
+        return password
         
 class EventoForm(forms.ModelForm):
     class Meta:
@@ -92,13 +183,20 @@ class EventoForm(forms.ModelForm):
                 attrs={
                     'class': 'form-control', 
                     'type': 'datetime-local'
-                }
+                },
+                
             ),
-            'servicios': forms.CheckboxSelectMultiple(),
+           
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+      
+        
+          # Elimina cualquier clase previa que pudiera venir de la definición del campo
+        if 'class' in self.fields['servicios'].widget.attrs:
+            del self.fields['servicios'].widget.attrs['class']
         
         # Asegurarse de que todos los campos sean requeridos
         for field in self.fields.values():
@@ -555,9 +653,42 @@ class CollageTemplateForm(forms.ModelForm):
         return instance
         
   
+  
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+    
+    
   #Formulario Django para añadir fotografía      
-class AñadirFotoForm(forms.Form):
-    img=forms.ImageField(widget=forms.ClearableFileInput(attrs={'class':'img'}),label="Imagen")
+
+class AñadirFotoForm(forms.ModelForm):
+    class Meta:
+        model = Fotografia
+        fields = ['img', 'descripcion', 'invitados']
+        widgets = {
+            
+            'invitados': forms.CheckboxSelectMultiple(),
+        }
+    img = MultipleFileField(label='Seleccionar archivos', required=False)
     descripcion = forms.CharField(widget=forms.Textarea(attrs={'class':'descripcion','name':'descripcion', 'rows':3, 'cols':5}),label="Descripción")
-    
-    
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['invitados'].queryset = Invitado.objects.all()
+        self.fields['invitados'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido}" if hasattr(obj, 'nombre') and hasattr(obj, 'apellido') else str(obj)
+
+

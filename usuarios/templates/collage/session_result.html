@@ -1,5 +1,5 @@
 {# templates/collage/session_result.html #}
-{% extends 'layout/layout.html' %}
+{% comment %} {% extends 'layout/layout.html' %}
 {% load custom_filters %}
 {% block title %}Resultado de Sesión - {{ evento.nombre }}{% endblock %}
 
@@ -349,4 +349,4 @@
         document.head.appendChild(styleSheet);
     });
 </script>
-{% endblock %}
+{% endblock %} {% endcomment %}

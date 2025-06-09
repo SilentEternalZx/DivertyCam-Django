@@ -1,4 +1,7 @@
 # Importaciones necesarias para views.py
+from django.utils.text import slugify
+from django.http import HttpResponseServerError
+import traceback
 import shutil
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
@@ -8,11 +11,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from urllib import request
 from django.utils import timezone
 from django import forms
-from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse
-from django.contrib import messages
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, StreamingHttpResponse, StreamingHttpResponse, HttpResponseBadRequest
 from .models import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.decorators.csrf import csrf_exempt
@@ -23,7 +25,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
 from django.contrib.messages.views import SuccessMessageMixin
 from .models import Evento, PhotoboothConfig, CollageTemplate, CollageSession, SessionPhoto, CollageResult, Cliente
-from .forms import ClienteForm, FotografiaForm, RegistroForm, EventoForm, AñadirFotoForm, PhotoboothConfigForm
+from .forms import ClienteForm, RegistroForm, EventoForm, AñadirFotoForm, PhotoboothConfigForm
 import json
 import uuid
 import base64
@@ -77,10 +79,16 @@ except ImportError:
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
+    
+  
+        
+
 
 def index(request):  #Función  para retornar vista principal
     return render(request, "index/index.html")
 
+def about(request):  #Función  para retornar vista principal
+    return render(request, "index/about.html")
 
 @csrf_exempt
 def vista_login(request): #Función para iniciar sesión
@@ -89,6 +97,8 @@ def vista_login(request): #Función para iniciar sesión
         nombre_usuario = request.POST.get("nombre_usuario")
         contraseña = request.POST.get("contraseña")
         usuario = authenticate(request, username=nombre_usuario, password=contraseña)
+        
+       
 
 
         if usuario is not None:  #Si el usuario existe
@@ -105,6 +115,7 @@ def vista_logout(request): #Función para cerrar sesión
    
     
     logout(request)
+    messages.success(request, "Has cerrado sesión correctamente.")
    
     return redirect("login")  # Redirige a la página de login tras cerrar sesión
 
@@ -113,8 +124,16 @@ def register_view(request):
     if request.method == "POST":
         form = RegistroForm(request.POST)
         if form.is_valid():
+            username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
+            # Validar si el usuario ya existe
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "El nombre de usuario ya está registrado. Por favor elige otro.")
+                return render(request, "register/register.html", {"form": form})
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "El correo electrónico ya está registrado. Por favor usa otro.")
+                return render(request, "register/register.html", {"form": form})
             usuario = form.save()
-            
             login(request, usuario)  # 🔹 Iniciar sesión automáticamente después del registro
             return redirect("index")
         else:
@@ -169,49 +188,31 @@ def eventos_cliente(request):
         cliente = Cliente.objects.get(usuario=request.user)  #Intentar obtener un cliente relacionado al usuario
     except ObjectDoesNotExist:  #De lo contrario 
         mensaje = "El usuario no tiene un cliente asignado"  #Retornar mensaje
-        return render(request, "fotografias/eventos_cliente.html", {
-            "mensaje": mensaje
+        return render(request, "eventos/error.html", {
+            "mensaje": mensaje,
+            
+            
         })
     
-    lista_eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
+    eventos = cliente.eventos.all()  #Obtener todos los eventos de un cliente específico
 
-    if not lista_eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
-        return render(request, "fotografias/eventos_cliente.html", {
+    if not eventos.exists():   #Si no existe ningún evento asociado, retornar mensaje
+        return render(request, "eventos/evento_list.html", {
             "mensaje": "No tiene eventos actualmente"
         })
     
-    # --- FILTRO POR BÚSQUEDA ---
-    query = request.GET.get('q')
-    if query:
-        lista_eventos = lista_eventos.filter(
-            Q(nombre__icontains=query)
-        )
-
-    # --- ORDENAMIENTO ---
-    orden = request.GET.get('orden')
-    if orden == 'nombre':
-        lista_eventos = lista_eventos.order_by('nombre')
-    elif orden == 'nombre_desc':
-        lista_eventos = lista_eventos.order_by('-nombre')
-    elif orden == 'cliente':
-        lista_eventos = lista_eventos.order_by('cliente__nombre')
-    elif orden == 'cliente_desc':
-        lista_eventos = lista_eventos.order_by('-cliente__nombre')
-    elif orden == 'fecha_hora':
-        lista_eventos = lista_eventos.order_by('fecha_hora')
-    elif orden == 'fecha_hora_desc':
-        lista_eventos = lista_eventos.order_by('-fecha_hora')
+  
 
     # Evento e imágenes para vista previa (por ejemplo, el primero)
-    evento = lista_eventos.first()
+    evento = eventos.first()
     imagenes = evento.fotografias.all() if evento else []
     
     #Retornar vista con respectivos contextos
 
-    return render(request, "fotografias/eventos_cliente.html", {
+    return render(request, "eventos/evento_list.html", {
         "evento": evento,
         "imagenes": imagenes,
-        "lista_eventos": lista_eventos
+        "eventos": eventos
     })
 
 class ClienteListView(LoginRequiredMixin, ListView):  
@@ -233,6 +234,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
         
         if query:
             # Tu código de búsqueda existente...
+            
             search_query = SearchQuery(query)
             queryset = queryset.annotate(
                 rank=SearchRank('search_vector', search_query)
@@ -244,7 +246,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
                         Q(nombre__icontains=query) |
                         Q(apellido__icontains=query) |
                         Q(cedula__icontains=query) |
-                        Q(correo__icontains=query) |
+                      
                         Q(telefono__icontains=query)
                     )
                 else:
@@ -252,7 +254,7 @@ class ClienteListView(LoginRequiredMixin, ListView):
                         Q(nombre__icontains=query) |
                         Q(apellido__icontains=query) |
                         Q(cedula__icontains=query) |
-                        Q(correo__icontains=query) |
+                    
                         Q(telefono__icontains=query),
                         activo=True
                     )
@@ -281,17 +283,30 @@ class ClienteCreateView(LoginRequiredMixin, CreateView):  #LoginRequiredMixin,
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Cliente creado exitosamente")
+        messages.success(self.request, "¡Cliente creado exitosamente!")
         return response
     
      
     
-class ClienteUpdateView(LoginRequiredMixin, UpdateView):
+class ClienteUpdateView(UpdateView):
     model = Cliente
     form_class = ClienteForm
     template_name = 'clientes/cliente_form.html'
-    success_url = reverse_lazy('cliente_list')
-    login_url = 'login'
+    success_url = reverse_lazy('cliente_list')  # O donde quieras redirigir
+
+    def form_valid(self, form):
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, 'Cliente actualizado correctamente.')
+            return response
+        except Exception as e:
+            print("ERROR:", str(e))
+            print(traceback.format_exc())
+            return HttpResponseServerError("Ocurrió un error actualizando el cliente.")
+        response = super().form_valid(form)
+        messages.success(self.request, 'Cliente actualizado correctamente.')
+        return response
+
 
 class ClienteDeleteView(LoginRequiredMixin, DeleteView):   #LoginRequiredMixin,
     model = Cliente
@@ -300,6 +315,10 @@ class ClienteDeleteView(LoginRequiredMixin, DeleteView):   #LoginRequiredMixin,
     success_url = reverse_lazy('cliente_list')
     login_url = 'login'
     
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Cliente eliminado exitosamente")
+        return response
 
 
 class ClienteActivarView(ListView):
@@ -307,16 +326,20 @@ class ClienteActivarView(ListView):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = True
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido reactivado.")
         return redirect('cliente_list')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Cliente activado exitosamente")
+        return response
 
 class ClienteInactivarView(ListView):
     def post(self, request, pk):
         cliente = get_object_or_404(Cliente, pk=pk)
         cliente.activo = False
         cliente.save()
-        messages.success(request, f"El cliente {cliente.nombre} {cliente.apellido} ha sido marcado como inactivo.")
-        return redirect('cliente_list')
+        messages.success(request, f'El cliente {cliente.nombre} {cliente.apellido} fue inactivado correctamente.')
+        return redirect('cliente_list') 
 
 #Mostrar las fotos guardadas
 def lista_fotos(request):
@@ -330,31 +353,25 @@ def subir_foto(request):
     if not request.user.is_authenticated:
         return redirect("login")
     if request.method == "POST":
-        form = FotografiaForm(request.POST, request.FILES)
+        form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
-            foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
-            foto.usuario = request.user  # 📌 Asigna el usuario autenticado
-
-            # 📌 Si el formulario no tiene evento, asignar un evento por defecto
+            foto = form.save(commit=False)
+            foto.usuario = request.user
             if not foto.evento:
-                foto.evento = Evento.objects.first()  # O elegir un evento válido
-
-            foto.save()  # 📌 Ahora sí guarda la foto
+                foto.evento = Evento.objects.first()
+            foto.save()
+            # Asociar los invitados seleccionados a la fotografía
+            invitados = form.cleaned_data.get('invitados')
+            if invitados:
+                foto.invitados.set(invitados)
             return redirect("lista_fotos")
         else:
             print("Errores en el formulario:", form.errors)
-
     else:
-        form = FotografiaForm()
+        form = AñadirFotoForm()
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
-def listar_categorias(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Vista que muestra todas las categorías de eventos."""
-    categorias = CategoriaEvento.objects.all()
-    return render(request, "fotografias/lista_categorias.html", {"categorias": categorias})
 
 def listar_eventos(request, categoria_id):
     if not request.user.is_authenticated:
@@ -388,7 +405,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+            "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
         )
 
         payload = {
@@ -426,7 +443,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://e8ee-191-156-33-165.ngrok-free.app "
+        "http://127.0.0.1:8000", " https://f25a-191-156-39-191.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -444,7 +461,8 @@ def publicar_foto_facebook(request, foto_id):
     data = response.json()
 
     if response.status_code == 200:
-        return JsonResponse({"success": "Foto publicada correctamente en Facebook"})
+        messages.success(request, "Foto publicada correctamente en Facebook")
+        return redirect('descargar_foto', evento_id=evento.id)
     else:
         return JsonResponse({"error": data}, status=400)
    
@@ -467,10 +485,9 @@ class EventoListView(LoginRequiredMixin, ListView):
                 rank=SearchRank('search_vector', search_query)
             ).filter(search_vector=search_query).order_by('-rank')
             
-            # Si no hay resultados con la búsqueda de texto completo, intentamos con LIKE
+            # Si no hay resultados, usamos búsqueda con LIKE
             if not queryset.exists():
                 queryset = Evento.objects.filter(
-        
                     Q(nombre__icontains=q) |
                     Q(cliente__nombre__icontains=q) |
                     Q(cliente__apellido__icontains=q) |
@@ -490,6 +507,9 @@ class EventoDetailView(LoginRequiredMixin,DetailView):
     template_name = 'eventos/evento_detail.html'
     login_url = 'login'
     
+    def form_valid(self, request, *args, **kwargs):
+        messages.success(self.request, "Evento eliminado exitosamente")
+        return super().form_valid(request, *args, **kwargs)
     
 class EventoForm(LoginRequiredMixin,forms.ModelForm):
     class Meta:
@@ -521,6 +541,9 @@ class EventoForm(LoginRequiredMixin,forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Filtra solo clientes activos
         self.fields['cliente'].queryset = Cliente.objects.filter(activo=True)
+        
+        if 'class' in self.fields['servicios'].widget.attrs:
+            del self.fields['servicios'].widget.attrs['class']
 
 class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):  
     model = Evento
@@ -531,7 +554,7 @@ class EventoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
    
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Evento creado exitosamente")
+        messages.success(self.request, "¡Evento creado exitosamente!")
         return response
 
 class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
@@ -542,19 +565,16 @@ class EventoUpdateView(LoginRequiredMixin,SuccessMessageMixin, UpdateView):
     login_url = 'login'
     
     def get_success_url(self):
-        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('evento_list')
 
-class EventoDeleteView(LoginRequiredMixin,SuccessMessageMixin, DeleteView):
+class EventoDeleteView(LoginRequiredMixin, DeleteView):
     model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_confirm_delete.html'
     success_url = reverse_lazy('evento_list')
     login_url = 'login'
-    
-    def form_valid(self, form):
-        response = super().form_valid(form)
+
+    def form_valid(self, request, *args, **kwargs):
         messages.success(self.request, "Evento eliminado exitosamente")
-        return response
+        return super().form_valid(request, *args, **kwargs)
 
 
 @login_required
@@ -1185,8 +1205,10 @@ def save_session_photo(request):
             ext = format.split('/')[-1]
             decoded_image = base64.b64decode(imgstr)
             
-            # Asegurar que existe el directorio destino
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'session_photos')
+            # Obtener el nombre del evento y crear carpeta segura
+
+            evento_nombre = slugify(session.evento.nombre)
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', evento_nombre)
             os.makedirs(upload_dir, exist_ok=True)
             
             # Generar nombre de archivo único
@@ -1206,12 +1228,12 @@ def save_session_photo(request):
                 
                 if photo:
                     # Actualizar foto existente
-                    relative_path = os.path.join('collage', 'session_photos', filename)
+                    relative_path = os.path.join('collage', evento_nombre, filename)
                     photo.image = relative_path
                     photo.save()
                 else:
                     # Crear nueva foto
-                    relative_path = os.path.join('collage', 'session_photos', filename)
+                    relative_path = os.path.join('collage', evento_nombre, filename)
                     photo = SessionPhoto(
                         session=session,
                         frame_index=frame_index,
@@ -1843,34 +1865,7 @@ def send_whatsapp(request):
     success_message = ("Evento eliminado exitosamente")
     
 
-def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
-    if not request.user.is_authenticated: #Si el usuario no está autenticado...
-        return redirect("login") #Redirigir al login
-    
-    if  not request.user.is_superuser:  #Si no es un superusuario...
-     return HttpResponse("No estás autorizado para acceder a esta página") #Retornar mensaje de error
-    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
-    
-    if request.method=="POST": #Si la petición es POST
-        form=FotografiaForm(request.POST, request.FILES) #Llamar al formulario
-        if form.is_valid(): #Si el formulario es válido obtener los datos
-            descripcion=form.cleaned_data["descripcion"]
-            img=form.cleaned_data["img"]
-            invitado=form.cleaned_data["invitado"]
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento, invitado=invitado)#Crear un objeto de Fotografia
-            fotografia.save() #Guardar objeto
-            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
-            
-        else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
-                "form":form
-            })
-        
-    
-    return render(request,"añadir_fotos/formulario.html",{
-        "evento":evento,
-        "form":FotografiaForm()
-    })
+
 
 def launch_photobooth(request, evento_id):
     """Vista principal que inicia el flujo del photobooth"""
@@ -1903,7 +1898,8 @@ def launch_photobooth(request, evento_id):
     session = CollageSession.objects.create(
         evento=evento,
         template=template,
-        session_id=str(uuid.uuid4())
+        session_id=str(uuid.uuid4()),
+        status='active'
     )
     
     return render(request, 'photobooth/session.html', {
@@ -1914,7 +1910,6 @@ def launch_photobooth(request, evento_id):
         'session_id': session.session_id,
         'return_url': request.META.get('HTTP_REFERER', f'/eventos/{evento_id}/')
     })
-
 
 def session_result(request, session_id):
     """Muestra el resultado de una sesión de photobooth"""
@@ -2030,6 +2025,7 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
     
     cliente = Cliente.objects.get(usuario=request.user)   #Obtener un cliente mediante el usuario por medio del ORM
     evento = Evento.objects.filter(cliente=cliente).first() #Obtener el primer evento
+    imagenes=evento.fotografias.all() #Obtener todas las fotografías
     imagenes=evento.fotografias.all() #Obtener todas las fotografías del evento
     return render(request,"fotografias/descargar_foto.html",{
         "evento":evento,
@@ -2040,12 +2036,12 @@ def mis_eventos(request):  #Función para retornar vista de los eventos de un cl
 #Mostrar las fotos guardadas
 def lista_fotos(request):
     fotos = Fotografia.objects.all()
-    return render(request, "fotografias/foto_list.html", {"fotografias": fotos})
+    return render(request, "fotografias/descargar_foto.html", {"fotografias": fotos})
 
 # Subir fotos de los eventos
 def subir_foto(request):
     if request.method == "POST":
-        form = FotografiaForm(request.POST, request.FILES)
+        form = AñadirFotoForm(request.POST, request.FILES)
         if form.is_valid():
             foto = form.save(commit=False)  # 📌 No guarda en la base de datos aún
             foto.usuario = request.user  # 📌 Asigna el usuario autenticado
@@ -2060,7 +2056,7 @@ def subir_foto(request):
             print("Errores en el formulario:", form.errors)
 
     else:
-        form = FotografiaForm()
+        form = AñadirFotoForm()
 
     return render(request, "fotografias/subir_foto.html", {"form": form})
 
@@ -2072,8 +2068,20 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "hhttps://22b3-179-15-25-167.ngrok-free.app "
+        "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
     )
+
+    # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
+    import requests
+    try:
+        test_response = requests.get(imagen_url)
+        print("[TEST] Status de acceso a la imagen:", test_response.status_code)
+        if test_response.status_code != 200:
+            print("[TEST] Contenido recibido:", test_response.content[:200])
+    except Exception as e:
+        print("[TEST] Error accediendo a la imagen:", e)
+
+    print("[TEST] URL enviada a Facebook:", imagen_url)
 
     url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
     payload = {
@@ -2087,98 +2095,49 @@ def publicar_foto_facebook(request, foto_id):
 
     if response.status_code == 200:
         print("✅ Foto publicada en la página DivertyApp correctamente.")
-        return redirect("lista_fotos")
+        return redirect("descargar_foto", evento_id=foto.evento.id)
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
-class EventoListView(ListView):
-    model = Evento
-    context_object_name = 'eventos'
-    paginate_by = 10
-    template_name = 'eventos/evento_list.html'
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        q = self.request.GET.get('q')
-        orden = self.request.GET.get('orden', 'fecha_hora')  # Orden por defecto
 
-        # Búsqueda por vector de búsqueda
-        if q:
-            search_query = SearchQuery(q)
-            queryset = queryset.annotate(
-                rank=SearchRank('search_vector', search_query)
-            ).filter(search_vector=search_query).order_by('-rank')
 
-            # Si no hay resultados, usamos búsqueda con LIKE
-            if not queryset.exists():
-                queryset = Evento.objects.filter(
-                    Q(nombre__icontains=q) |
-                    Q(cliente__nombre__icontains=q) |
-                    Q(cliente__apellido__icontains=q) |
-                    Q(direccion__icontains=q)
+def añadir_foto(request, evento_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if not request.user.is_superuser:
+        return HttpResponse("No estás autorizado para acceder a esta página")
+
+    evento = get_object_or_404(Evento, id=evento_id)
+
+    if request.method == "POST":
+        form = AñadirFotoForm(request.POST, request.FILES)
+        archivos = request.FILES.getlist('img')
+
+        if form.is_valid():
+            descripcion = form.cleaned_data["descripcion"]
+
+            for imagen in archivos:
+                Fotografia.objects.create(
+                    descripcion=descripcion,
+                    img=imagen,
+                    evento=evento
                 )
 
-        # Ordenamiento dinámico
-        if orden.endswith("_desc"):
-            orden = "-" + orden.replace("_desc", "")  # Convierte 'nombre_desc' en '-nombre'
+            # Mensaje de éxito
+            messages.success(request, "¡Fotografía(s) añadida(s) exitosamente!")
 
-        queryset = queryset.order_by(orden)
-        return queryset
-
-class EventoDetailView(DetailView):
-    model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_detail.html'
-
-class EventoCreateView( SuccessMessageMixin, CreateView):  
-    model = Evento
-    form_class = EventoForm
-    template_name = 'eventos/evento_form.html'
-    success_url = reverse_lazy('evento_list')
-    success_message = ("Evento creado exitosamente")
-
-class EventoUpdateView(SuccessMessageMixin, UpdateView):
-    model = Evento
-    form_class = EventoForm
-    template_name = 'eventos/evento_form.html'
-    success_message = ("Evento actualizado exitosamente")
-    
-    def get_success_url(self):
-        return reverse_lazy('evento_detail', kwargs={'pk': self.object.pk})
-
-class EventoDeleteView(SuccessMessageMixin, DeleteView):
-    model = Evento
-    context_object_name = 'evento'
-    template_name = 'eventos/evento_confirm_delete.html'
-    success_url = reverse_lazy('evento_list')
-    success_message = ("Evento eliminado exitosamente")
-
-def añadir_foto(request, evento_id): #Función que retorna el formulario para añadir una foto a un evento
-    if not request.user.is_authenticated: #Si el usuario no está autenticado...
-        return redirect("login") #Redirigir al login
-    
-    if  not request.user.is_superuser:  #Si no es un superusuario...
-     return HttpResponse("No estás autorizado para acceder a esta página") #Retornar mensaje de error
-    evento=Evento.objects.get(id=evento_id) #Obtener un evento en específico
-    
-    if request.method=="POST": #Si la petición es POST
-        form=AñadirFotoForm(request.POST, request.FILES) #Llamar al formulario
-        if form.is_valid(): #Si el formulario es válido obtener los datos
-            descripcion=form.cleaned_data["descripcion"]
-            img=form.cleaned_data["img"]
-            fotografia=Fotografia.objects.create(descripcion=descripcion, img=img, evento=evento)#Crear un objeto de Fotografia
-            fotografia.save() #Guardar objeto
-            return redirect(reverse("descargar_foto", kwargs={"evento_id":evento_id})) #Redirigir al la vista "descargar_foto"
-            
-        else: #Retornar el formulario si no fue válido mostrando el error
-            return render(request,"añadir_fotos/formulario.html",{
-                "form":form
+            # Redirige correctamente pasando el evento_id
+            return redirect(reverse("descargar_foto", kwargs={"evento_id": evento.id}))
+        else:
+            return render(request, "eventos/formulario_foto.html", {
+                "form": form,
+                "evento": evento
             })
-        
-    
-    return render(request,"añadir_fotos/formulario.html",{
-        "evento":evento,
-        "form":AñadirFotoForm()
+
+    return render(request, "eventos/formulario_foto.html", {
+        "evento": evento,
+        "form": AñadirFotoForm()
     })
 
 
@@ -2702,6 +2661,171 @@ def save_whatsapp_data(request):
 
 
 
+    
+
+def galeria_quinces(request):
+    return render(request, 'index/galerias/quinces.html')
+
+def galeria_bodas(request):
+    return render(request, 'index/galerias/bodas.html')
+
+def galeria_otros(request):
+    return render(request, 'index/galerias/otros.html')
+
+@csrf_exempt
+def latest_collage(request):
+    """
+    API endpoint para obtener el collage más reciente
+    Utilizado por la aplicación móvil para sincronizarse
+    """
+    try:
+        # Obtener el último collage creado
+        latest = CollageResult.objects.order_by('-created_at').first()
+        
+        # Si no hay collages, devolver error
+        if not latest:
+            return JsonResponse({
+                'success': False,
+                'error': 'No hay collages disponibles'
+            })
+            
+        # Construir la URL completa de la imagen
+        image_url = request.build_absolute_uri(latest.image.url)
+        
+        # Obtener información del evento para contexto
+        evento = latest.session.evento
+        client_name = f"{evento.cliente.nombre} {evento.cliente.apellido}" if evento.cliente else "Cliente"
+        event_name = evento.nombre
+        
+        # Devolver datos del collage
+        return JsonResponse({
+            'success': True,
+            'collage_id': latest.collage_id,
+            'image_url': image_url,
+            'created_at': latest.created_at.isoformat(),
+            'event_name': event_name,
+            'client_name': client_name
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en latest_collage: {str(e)}")
+        return JsonResponse({
+            'success': False, 
+            'error': str(e)
+        })
+
+@csrf_exempt
+@require_POST
+def update_share_count(request):
+    """
+    API endpoint para actualizar el contador de comparticiones
+    Llamado por la aplicación móvil cuando se comparte un collage
+    """
+    try:
+        # Leer datos del request
+        data = json.loads(request.body)
+        collage_id = data.get('collage_id')
+        
+        if not collage_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Collage ID no proporcionado'
+            })
+        
+        # Buscar el collage
+        collage = get_object_or_404(CollageResult, collage_id=collage_id)
+        
+        # Incrementar contador
+        collage.share_count += 1
+        collage.save()
+        
+        return JsonResponse({
+            'success': True,
+            'share_count': collage.share_count
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Formato JSON inválido'
+        }, status=400)
+        
+    except CollageResult.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Collage no encontrado'
+        }, status=404)
+        
+    except Exception as e:
+        logger.error(f"Error en update_share_count: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+def api_session_photos(request):
+    """
+    API para obtener las fotos individuales y el collage de una sesión de photobooth.
+    Recibe el session_id por GET o POST y responde con las URLs de las fotos y el collage.
+    """
+    session_id = request.GET.get('session_id') or request.POST.get('session_id')
+    if not session_id:
+        return JsonResponse({'success': False, 'error': 'session_id es requerido'}, status=400)
+
+    session = CollageSession.objects.filter(session_id=session_id).first()
+    if not session:
+        return JsonResponse({'success': False, 'error': 'Sesión no encontrada'}, status=404)
+
+    # Obtener fotos individuales
+    photos = SessionPhoto.objects.filter(session=session).order_by('frame_index')
+    photo_urls = [request.build_absolute_uri(photo.image.url) for photo in photos if photo.image]
+
+    # Obtener collage
+    collage_result = CollageResult.objects.filter(session=session).first()
+    collage_url = request.build_absolute_uri(collage_result.image.url) if collage_result and collage_result.image else None
+
+    return JsonResponse({
+        'success': True,
+        'photos': photo_urls,
+        'collage': collage_url
+    })
 
 
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
+def descargar_foto_publico(request, evento_id):
+    """
+    Vista pública para mostrar y descargar fotografías de un evento sin requerir autenticación.
+    Pensada para acceso desde dispositivos móviles o enlaces públicos.
+    """
+    try:
+        evento = Evento.objects.get(id=evento_id)
+        imagenes = evento.fotografias.all()
+    except Evento.DoesNotExist:
+        return render(request, "fotografias/descargar_foto.html", {
+            "evento": None,
+            "imagenes": [],
+            "error": "Evento no encontrado."
+        })
+    return render(request, "fotografias/descargar_foto.html", {
+        "evento": evento,
+        "imagenes": imagenes,
+        "publico": True  # Bandera para la plantilla si se quiere mostrar info diferente
+    })
+    
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def api_fotos_publico(request, evento_id):
+    try:
+        evento = Evento.objects.get(id=evento_id)
+        imagenes = evento.fotografias.all()
+        # Usar la IP y puerto del request para URLs accesibles desde cualquier dispositivo
+        host = request.get_host()
+        scheme = 'https' if request.is_secure() else 'http'
+        fotos = [f"{scheme}://{host}{img.img.url}" for img in imagenes]
+        return JsonResponse({"success": True, "fotos": fotos})
+    except Evento.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Evento no encontrado"}, status=404)

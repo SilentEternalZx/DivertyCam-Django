@@ -1,0 +1,101 @@
+
+
+.galeria-img-container {
+   position: relative;
+   overflow: hidden;
+   border-radius: 12px;
+}
+.galeria-img {
+   transition: transform 0.25s;
+   border-radius: 12px;
+   object-fit: cover;
+   height: 310px;
+   width: 100%;
+   box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+}
+.galeria-img-container:hover .galeria-img {
+   transform: scale(1.04) rotate(-0.5deg);
+   box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+.btn-success{
+     background: #2b2278;
+    color: #fff;
+    border:none;
+}
+
+.btn-success:hover{
+     background: #222;
+    color: #fff;
+    border:none;
+}
+
+.btn-blanco:hover{
+    background-color: #444 !important;
+    color:white !important;
+
+}
+
+.galeria-hover {
+   position: absolute;
+   top: 0; left: 0; width: 100%; height: 100%;
+   background: rgba(0,0,0,0.28);
+   color: #fff;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   opacity: 0;
+   transition: opacity 0.2s;
+   border-radius: 12px;
+}
+
+
+.galeria-img-container:hover .galeria-hover {
+   opacity: 1;
+}
+.galeria-download, .galeria-print {
+   position: absolute;
+   bottom: 12px;
+   right: 12px;
+   z-index: 2;
+   margin-left: 4px;
+   opacity: 0.88;
+}
+.galeria-print {
+   right: 48px;
+}
+.galeria-download:hover, .galeria-print:hover {
+   opacity: 1;
+   background: #e6e6e6;
+}
+@media (max-width: 991px) {
+   .galeria-img { height: 260px; }
+}
+@media (max-width: 767px) {
+   .galeria-img { height: 200px; }
+}
+
+@media (max-width: 1200px) {
+  .mt-3 { 
+      padding-top: 25px !important; 
+     
+      
+   }
+
+   .section-headings{
+
+      margin-top:1.5rem !important
+   }
+  
+
+
+}
+
+
+
+
+.banner_section::before {
+   
+    background-image: url('../../assets/imagenes_layout/izzy-gerosa-xniTNHp4UVE-unsplash.jpg');
+   
+}

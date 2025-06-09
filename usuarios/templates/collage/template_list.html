@@ -63,9 +63,9 @@
                             
                             <div class="card-footer">
                                 <div class="d-flex justify-content-between">
-                                    <a href="{% url 'start_session' evento.id template.template_id %}" class="btn btn-success">
+                                    {% comment %} <a href="{% url 'start_session' evento.id template.template_id %}" class="btn btn-success">
                                         <i class="fas fa-camera"></i> Iniciar Sesión
-                                    </a>
+                                    </a> {% endcomment %}
                                     
                                     <div class="btn-group">
                                         <a href="{% url 'template_editor_edit' evento.id template.template_id %}" class="btn btn-outline-primary">

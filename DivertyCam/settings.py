@@ -30,14 +30,32 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['e8ee-191-156-33-165.ngrok-free.app', '127.0.0.1', 'localhost',]  
+ALLOWED_HOSTS = ['f25a-191-156-39-191.ngrok-free.app', '127.0.0.1', 'localhost', '192.168.1.4']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOxxbkZBZBMHxdQWb670Ph3EAQQnXMYBxliZBYpcmAtNfZCASV96VxnfMoOznIQA4O7HxMMubPSIdhGOuqjeFyys7rfPG80RYQSMGZBMTP4czndCKOULzW8MgptYzRQ90ekoEWMusornIBp54dfetbTRuBWfWaw3MFW5Hk210sHWabhgF2dI6ZBNAkT1SaTXwdGz3uS1E08ovvF"
+FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOzITKSH19QEHdXO1sM99NUjV1Lh7OdvxMYLVQZCAGSCWXZBGmZAo0klaxZCRWsvwT195Jb6qmfoTUYqR5mxVHxDWAZC89HIjZCkrv6x39S73dZCWF1t2ZBC9EjIIeO32psGRkpZADECm4EZBbfg6U4kfnBZCqeRF19ZCTN3eZBKDfNZCVB8HQnzuJrWIyWvhLEEFBg6ZC3ggaNBS3T4OZCPUAxWLTP3u8QZDZD"
+
 FACEBOOK_PAGE_ID = "612248578630248"
+
+
+# Permitir credenciales
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Métodos permitidos
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
 
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+
 
 
 
@@ -47,6 +65,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 INSTALLED_APPS = [
     'usuarios',
     'jazzmin',
+    'corsheaders',
     'multiselectfield',
     'widget_tweaks',
     'requests',
@@ -65,6 +84,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,7 +93,7 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://e8ee-191-156-33-165.ngrok-free.app",
+    "https://f25a-191-156-39-191.ngrok-free.app",
     "http://127.0.0.1:8000",  # Para pruebas locales
     "http://localhost:8000",
 ]
@@ -110,7 +130,6 @@ DATABASES = {
         'PASSWORD': '123456',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
         'PORT': '5432',  # El puerto por defecto de PostgreSQL
-       
     }
 }
 
@@ -165,6 +184,52 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+
+JAZZMIN_SETTINGS={
+    "site_title":"DivertyCam",
+    "site_header":"DivertyCam",
+    "site_brand":"DivertyCam",
+    
+    "show_ui_builder":True,
+     "topmenu_links": [
+        {"name": "Inicio", "url": "/", "new_window": False, "icon": "fas fa-home"},
+        
+    ],
+    
+    
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": True,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-navy",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": False,
+    "sidebar": "sidebar-dark-purple",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "lux",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-outline-primary",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
 
 #SMTP configuration
 
