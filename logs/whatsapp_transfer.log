@@ -12,3 +12,4 @@ ERROR 2025-06-05 10:49:39,414 usb_communication 20160 17572 ADB no encontrado en
 ERROR 2025-06-05 10:50:08,893 usb_communication 20160 18360 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
 ERROR 2025-06-05 10:52:30,401 usb_communication 20160 18608 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
 ERROR 2025-06-05 10:53:00,411 usb_communication 20160 18608 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
+ERROR 2025-06-06 08:31:40,589 usb_communication 23976 34140 ADB no encontrado en la ruta: C:\Users\DELL\AppData\Local\Android\Sdk\platform-tools\adb.exe
