@@ -73,8 +73,9 @@ class USBCommunication:
             logger.error(f"Error configurando carpetas: {e}")
             return False
     
-    def send_collage_to_device(self, collage_path, session_id, metadata=None):
-        """Envía el collage al dispositivo móvil"""
+    def send_collage_to_device(self, collage_path, session_id, metadata=None, filename=None):
+        """
+        Envía un collage al dispositivo Android """
         try:
             # Verificar que el dispositivo esté conectado
             is_connected, devices = self.check_device_connected()
@@ -89,9 +90,9 @@ class USBCommunication:
             if not self.setup_device_folder():
                 return False, "Error configurando carpetas en el dispositivo"
             
-            # Nombre del archivo en el dispositivo
-            filename = f"collage_{session_id}.jpg"
-            device_image_path = f"{self.device_folder}images/{filename}"
+            # Nombre del archivo en el dispositivo (usa el filename recibido si existe)
+            collage_filename = filename if filename else f"collage_{session_id}.jpg"
+            device_image_path = f"{self.device_folder}images/{collage_filename}"
             
             logger.info(f"Enviando {collage_path} a {device_image_path}")
             
@@ -109,7 +110,7 @@ class USBCommunication:
             # Crear archivo de metadatos
             metadata_info = {
                 'session_id': session_id,
-                'filename': filename,
+                'filename': collage_filename,
                 'timestamp': timezone.now().isoformat(),
                 'status': 'pending',
                 'metadata': metadata or {}
@@ -133,7 +134,7 @@ class USBCommunication:
             # Crear archivo de señal para la app Android
             signal_file = os.path.join(self.temp_folder, f"signal_{session_id}.txt")
             with open(signal_file, 'w') as f:
-                f.write(f"NEW_COLLAGE:{session_id}:{filename}")
+                f.write(f"NEW_COLLAGE:{session_id}:{collage_filename}")
             
             device_signal_path = f"{self.device_folder}signal_{session_id}.txt"
             signal_result = subprocess.run([

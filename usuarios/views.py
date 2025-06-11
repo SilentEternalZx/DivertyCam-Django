@@ -2384,23 +2384,32 @@ def list_printers(request):
 @csrf_exempt
 @require_POST
 def save_collage(request):
-    """API para guardar un collage generado en el frontend"""
     try:
         data = json.loads(request.body)
         session_id = data.get('session_id')
         image_data = data.get('image_data')
-        
+        template_id = data.get('template_id')
+        evento_id = data.get('evento_id')
+
         logger.info(f"Recibida solicitud para guardar collage. Session ID: {session_id}")
-        
-        if not session_id or not image_data:
+
+        if not session_id or not image_data or not template_id or not evento_id:
             logger.error("Datos incompletos en solicitud save_collage")
             return JsonResponse({'success': False, 'error': 'Datos incompletos'})
-        
-        # Usar CollageSession directamente
-        try:
-            session = CollageSession.objects.get(session_id=session_id)
-        except CollageSession.DoesNotExist:
-            return JsonResponse({'success': False, 'error': f'Sesión con ID {session_id} no encontrada'})
+
+        # Obtener la plantilla y el evento
+        template = CollageTemplate.objects.get(template_id=template_id)
+        evento = Evento.objects.get(id=evento_id)
+
+        # Buscar o crear la sesión con todos los campos obligatorios
+        session, _ = CollageSession.objects.get_or_create(
+            session_id=session_id,
+            defaults={
+                'template': template,
+                'evento': evento,
+                'status': 'active'
+            }
+            )
         
         # Procesar la imagen base64
         if image_data.startswith('data:image'):
@@ -2411,21 +2420,15 @@ def save_collage(request):
             # Generar un ID único para el collage
             collage_id = str(uuid.uuid4())
             
-            # Verificar si ya existe un resultado para esta sesión
-            existing_collage = CollageResult.objects.filter(session=session).first()
-            if existing_collage:
-                logger.info(f"Actualizando collage existente: {existing_collage.collage_id}")
-                # Si ya existe, actualizar su imagen
-                collage_result = existing_collage
+            # Buscar o crear el collage para esa sesión
+            collage_result, created = CollageResult.objects.get_or_create(
+                session=session,
+                defaults={'collage_id': collage_id}
+            )
+            if not created:
+                # Si ya existe, actualiza la imagen y el collage_id
                 collage_result.collage_id = collage_id
-            else:
-                logger.info(f"Creando nuevo registro de collage con ID: {collage_id}")
-                # Crear un nuevo registro de collage
-                collage_result = CollageResult(
-                    collage_id=collage_id,
-                    session=session
-                )
-            
+
             # Asegurar que existe el directorio destino
             upload_dir = os.path.join(settings.MEDIA_ROOT, 'collage', 'results')
             os.makedirs(upload_dir, exist_ok=True)
@@ -2487,29 +2490,27 @@ def send_to_mobile_device(request):
         data = json.loads(request.body)
         session_id = data.get('session_id')
         collage_id = data.get('collage_id')
-        
-        logger.info(f"Solicitud de envío a móvil - Session: {session_id}, Collage: {collage_id}")
-        
+        filename = data.get('filename')  # <-- Nuevo: recibe el nombre de archivo
+
+        logger.info(f"Solicitud de envío a móvil - Session: {session_id}, Collage: {collage_id}, Filename: {filename}")
+
         if not session_id:
             return JsonResponse({'success': False, 'error': 'Session ID requerido'})
-        
+
         # Obtener la sesión y el collage
         try:
             session = CollageSession.objects.get(session_id=session_id)
-            
-            # Si hay collage_id específico, usarlo; si no, buscar por sesión
             if collage_id:
                 collage_result = CollageResult.objects.get(collage_id=collage_id)
             else:
                 collage_result = CollageResult.objects.get(session=session)
-                
         except (CollageSession.DoesNotExist, CollageResult.DoesNotExist) as e:
             return JsonResponse({'success': False, 'error': f'No se encontró la sesión o collage: {str(e)}'})
-        
+
         # Verificar que existe el archivo de imagen
         if not collage_result.image or not os.path.exists(collage_result.image.path):
             return JsonResponse({'success': False, 'error': 'Archivo de collage no encontrado'})
-        
+
         # Preparar metadatos para el dispositivo móvil
         metadata = {
             'evento_nombre': session.evento.nombre,
@@ -2518,19 +2519,22 @@ def send_to_mobile_device(request):
             'template_nombre': session.template.nombre if session.template else 'Sin plantilla',
             'created_at': collage_result.created_at.isoformat(),
         }
-        
+
         # Inicializar comunicación USB
         usb_comm = USBCommunication()
-        
+
+        # Usar el nombre de archivo único si se proporciona
+        collage_filename = filename if filename else os.path.basename(collage_result.image.path)
+
         # Enviar al dispositivo móvil
         success, message = usb_comm.send_collage_to_device(
             collage_path=collage_result.image.path,
             session_id=session_id,
-            metadata=metadata
+            metadata=metadata,
+            filename=collage_filename  # <-- Nuevo: pasa el nombre único
         )
-        
+
         if success:
-            # Registrar la transferencia en la base de datos
             WhatsAppTransfer.objects.create(
                 session=session,
                 collage_result=collage_result,
@@ -2538,15 +2542,14 @@ def send_to_mobile_device(request):
                 transfer_timestamp=timezone.now(),
                 metadata=metadata
             )
-            
             return JsonResponse({
-                'success': True, 
+                'success': True,
                 'message': 'Collage enviado al dispositivo móvil. Dirígete al móvil para completar el envío por WhatsApp.',
                 'session_id': session_id
             })
         else:
             return JsonResponse({'success': False, 'error': message})
-        
+
     except Exception as e:
         logger.error(f"Error enviando a dispositivo móvil: {str(e)}")
         import traceback

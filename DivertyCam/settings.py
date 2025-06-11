@@ -129,7 +129,7 @@ DATABASES = {
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
         'PASSWORD': '123456',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
-        'PORT': '5433',  # El puerto por defecto de PostgreSQL
+        'PORT': '5432',  # El puerto por defecto de PostgreSQL
     }
 }
 
