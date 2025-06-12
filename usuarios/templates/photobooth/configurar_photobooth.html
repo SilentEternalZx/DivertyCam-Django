@@ -1312,6 +1312,64 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar simulaciones iniciales
     updateTimeSimulation();
     updateWelcomePreview();
+
+    // ========== OPCIONES DE PAPEL SEGÚN IMPRESORA ==========
+
+const mitsubishiPaperOptions = [
+    {value: '10x15', text: '10x15 (4x6")'},
+    {value: '13x18', text: '13x18 (5x7")'},
+    {value: '15x20', text: '15x20 (6x8")'},
+    {value: '10x15x2_type1', text: '10x15x2 Type1 (4x6\"x2)'},
+    {value: '5x15x2_type1', text: '5x15x2 Type1 (2x6\"x2)'},
+    {value: '5x15x2_type2', text: '5x15x2 Type2 (2x6\"x2)'},
+    {value: '15x15', text: '15x15 (6x6")'},
+    {value: '10x15_white', text: '10x15 (4x6\") white border'},
+    {value: '13x18_white', text: '13x18 (5x7\") white border'},
+    {value: '15x20_white', text: '15x20 (6x8\") white border'},
+    {value: '13x13', text: '13x13 (5x5")'},
+    ];
+
+    const defaultPaperOptions = [
+    {value: 'A4', text: 'A4'},
+    {value: 'Letter', text: 'Letter'},
+    {value: '10x15', text: '10x15 (4x6")'},
+    {value: '13x18', text: '13x18 (5x7")'},
+    {value: '15x20', text: '15x20 (6x8")'},
+
+    // Puedes agregar más tamaños estándar aquí
+    ];
+
+    const printerSelect = document.getElementById('printer-select');
+const paperSizeSelect = document.getElementById('{{ form.paper_size.id_for_label }}');
+
+function updatePaperOptions() {
+    if (!printerSelect || !paperSizeSelect) return;
+    const printer = printerSelect.value.toLowerCase();
+    let options = defaultPaperOptions;
+    if (printer.includes('mitsubishi')) {
+        options = mitsubishiPaperOptions;
+    }
+    // Guardar selección previa si existe
+    const prevValue = paperSizeSelect.value;
+    paperSizeSelect.innerHTML = '';
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.text = opt.text;
+        paperSizeSelect.appendChild(option);
+    });
+
+    // Restaurar selección previa si sigue disponible
+    if (prevValue && options.some(opt => opt.value === prevValue)) {
+        paperSizeSelect.value = prevValue;
+    }
+    }
+
+    // Actualizar al cargar y cuando cambie la impresora
+    if (printerSelect && paperSizeSelect) {
+        printerSelect.addEventListener('change', updatePaperOptions);
+        updatePaperOptions();
+    }
     
     console.log('Configuración de photobooth lista');
 });

@@ -100,8 +100,8 @@
                 <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
             </button>
             
-            <button id="print-btn" class="btn btn-info btn-lg btn-photobooth">
-                <i class="fas fa-print"></i> Imprimir
+            <button id="print-btn" type="button" class="btn btn-info btn-lg btn-photobooth">
+            <i class="fas fa-print"></i> Imprimir
             </button>
             
             {% if return_url %}
@@ -941,14 +941,21 @@ function printCollage() {
             logging: true       // Activar logs para depuración
         })
         .then(canvas => {
-            console.log("Imagen del collage generada con éxito");
-            // Usar menor calidad para reducir tamaño
-            const imageData = canvas.toDataURL('image/jpeg', 0.7);
-            
+            // === ROTAR EL CANVAS 90 GRADOS ===
+            const rotatedCanvas = document.createElement('canvas');
+            rotatedCanvas.width = canvas.height;
+            rotatedCanvas.height = canvas.width;
+            const ctx = rotatedCanvas.getContext('2d');
+            ctx.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2);
+            ctx.rotate(-Math.PI / 2); // -90 grados (sentido horario)
+            ctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+
+            // Usar el canvas rotado para la impresión
+            const imageData = rotatedCanvas.toDataURL('image/jpeg', 0.7);
+
             console.log("Enviando datos a la API de impresión...");
             console.log("Tamaño de la imagen:", Math.round(imageData.length / 1024), "KB");
             
-            // Enviar a la API de impresión con un timeout explícito
             return fetch('{% url "print_document" %}', {
                 method: 'POST',
                 headers: {
@@ -958,12 +965,13 @@ function printCollage() {
                 body: JSON.stringify({
                     printer_name: selectedPrinter,
                     document_content: imageData,
-                    paper_size: config.paperSize || "A4", // Usar A4 como fallback si no hay tamaño específico
-                    copies: config.printCopies || 1,
+                    paper_size: config.paperSize || "A4",
+                    copies: config.printCopies || 0,
                     quality: config.printQuality || "high"
                 })
             });
         })
+        
         .then(response => {
             console.log("Respuesta recibida del servidor:", response.status);
             
@@ -1029,8 +1037,7 @@ function printCollage() {
         }, 1000);
     }
 }   
-    // ========== SOLUCIÓN PARA RESETEAR EL BOTÓN WHATSAPP ==========
-// Agregar estas funciones a tu código existente en session.html
+    // ========== SOLUCIÓN PARA RESETEAR EL BOTÓN WHATSAPP
 
 // Variable global para controlar el estado del botón
 let whatsappButtonReady = true;
@@ -1325,6 +1332,8 @@ function closeMobileInstructions() {
         document.body.removeChild(modal);
     }
 }
+// Hacer global la función para que el botón la encuentre
+window.closeMobileInstructions = closeMobileInstructions;
 
 // Función para monitorear el estado de la transferencia
 function startTransferStatusMonitoring(sessionId) {

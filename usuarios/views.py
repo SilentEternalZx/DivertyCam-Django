@@ -405,7 +405,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
+            "http://127.0.0.1:8000", "https://2ffc-191-95-49-95.ngrok-free.app"
         )
 
         payload = {
@@ -443,7 +443,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", " https://f25a-191-156-39-191.ngrok-free.app"
+        "http://127.0.0.1:8000", " https://2ffc-191-95-49-95.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -588,12 +588,13 @@ def configurar_photobooth(request, evento_id):
     if request.method == 'POST':
         # Depuración: imprime valores del POST
         print("POST data:", request.POST)
-        
+        printer_name = request.POST.get('printer_name') or config.printer_name
         form = PhotoboothConfigForm(
             request.POST, 
             request.FILES, 
             instance=config, 
-            evento=evento
+            evento=evento,
+            printer_name=printer_name
         )
         
         if form.is_valid():
@@ -642,7 +643,12 @@ def configurar_photobooth(request, evento_id):
             messages.error(request, "Hay errores en el formulario. Por favor revise los campos.")
     else:
         # En caso de GET
-        form = PhotoboothConfigForm(instance=config, evento=evento)
+        printer_name = config.printer_name
+        form = PhotoboothConfigForm(
+        instance=config, 
+        evento=evento,
+        printer_name=printer_name  # <-- También aquí
+    )
         
         # Si hay un template_id en la URL y no es un POST, actualizar valor inicial
         if template_id and not form.is_bound:
@@ -2068,7 +2074,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
+        "http://127.0.0.1:8000", "https://2ffc-191-95-49-95.ngrok-free.app"
     )
 
     # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook

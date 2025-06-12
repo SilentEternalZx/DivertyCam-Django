@@ -230,6 +230,20 @@ class EventoForm(forms.ModelForm):
         self.fields['cliente'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido}"
 
 
+MITSUBISHI_PAPER_CHOICES = [
+    ('10x15', '10x15 (4x6")'),
+    ('13x18', '13x18 (5x7")'),
+    ('15x20', '15x20 (6x8")'),
+    ('10x15x2_type1', '10x15x2 Type1 (4x6"x2)'),
+    ('5x15x2_type1', '5x15x2 Type1 (2x6"x2)'),
+    ('5x15x2_type2', '5x15x2 Type2 (2x6"x2)'),
+    ('15x15', '15x15 (6x6")'),
+    ('10x15_white', '10x15 (4x6") white border'),
+    ('13x18_white', '13x18 (5x7") white border'),
+    ('15x20_white', '15x20 (6x8") white border'),
+    ('13x13', '13x13 (5x5")'),
+]
+
 class PhotoboothConfigForm(forms.ModelForm):
     """Formulario actualizado para configurar el photobooth con soporte USB"""
     
@@ -396,6 +410,7 @@ class PhotoboothConfigForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        printer_name = kwargs.pop('printer_name', None)
         evento = kwargs.pop('evento', None)
         super().__init__(*args, **kwargs)
 
@@ -418,6 +433,19 @@ class PhotoboothConfigForm(forms.ModelForm):
         
         # Configurar lista de impresoras (se llenará con JavaScript)
         self.fields['printer_name'].choices = [('', '-- Seleccionar impresora --')]
+        
+        # Personalizar opciones de papel según la impresora
+        if printer_name and 'mitsubishi' in printer_name.lower():
+            self.fields['paper_size'].choices = MITSUBISHI_PAPER_CHOICES
+        else:
+            self.fields['paper_size'].choices = [
+                ('A4', 'A4'),
+                ('Letter', 'Letter'),
+                ('10x15', '10x15 (4x6")'),
+                ('13x18', '13x18 (5x7")'),
+                ('15x20', '15x20 (6x8")'),
+                # ...otros tamaños estándar...
+            ]
         
         # Organizar campos en grupos lógicos
         self.field_groups = {
