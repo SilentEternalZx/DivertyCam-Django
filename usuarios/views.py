@@ -1661,9 +1661,33 @@ def generate_collage(session, template_data, photos, frames):
         import traceback
         logger.error(traceback.format_exc())
         return None
+    
+LAST_PRINT_TIME = 0
+PRINT_ATTEMPTS = 0
+MAX_ATTEMPTS = 10
+PRINT_WAIT_SECONDS = 5
 
 @csrf_exempt
 def print_document(request):
+    global LAST_PRINT_TIME, PRINT_ATTEMPTS
+
+    now = time.time()
+    # Si se llegó al máximo de intentos, rechazar
+    if PRINT_ATTEMPTS >= MAX_ATTEMPTS:
+        return JsonResponse({'error': 'Se alcanzó el máximo de intentos de impresión.'}, status=429)
+
+    # Si no han pasado 5 segundos desde la última impresión, rechazar
+    if now - LAST_PRINT_TIME < PRINT_WAIT_SECONDS:
+        return JsonResponse({'error': 'Debes esperar 5 segundos antes de imprimir de nuevo.'}, status=429)
+
+    # Si pasa la validación, actualizar los valores y continuar
+    LAST_PRINT_TIME = now
+    PRINT_ATTEMPTS += 1
+
+    # ...tu código de impresión aquí...
+    # Si la impresión fue exitosa, puedes resetear PRINT_ATTEMPTS si lo deseas:
+    # PRINT_ATTEMPTS = 0
+    
     """Función de impresión simplificada sin modificar configuración de impresora"""
     print("Solicitud de impresión recibida")
     if request.method != 'POST':

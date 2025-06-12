@@ -492,3 +492,5 @@ INFO 2025-06-11 11:13:12,479 usb_communication 22136 18264 Enviando C:\django\Di
 INFO 2025-06-11 11:13:12,771 usb_communication 22136 18264 Collage enviado exitosamente a dispositivo móvil
 INFO 2025-06-11 15:37:08,489 usb_communication 21840 16828 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_d21dbc63-b11b-4053-8d1b-03ddcef13a56.jpeg a /sdcard/photobooth/images/collage_be4ba1c1-a1d7-4ac1-8c27-eaa2da043dd3_20250611_153707.jpg
 INFO 2025-06-11 15:37:08,941 usb_communication 21840 16828 Collage enviado exitosamente a dispositivo móvil
+INFO 2025-06-11 22:35:22,786 usb_communication 22076 23404 Enviando C:\django\DivertyCam-Django\media\collage\results\collage_b763a799-f089-4911-8528-2a0115d513db.jpeg a /sdcard/photobooth/images/collage_d82380cd-b9fd-441a-a8e5-272b594c19a7_20250611_223521.jpg
+INFO 2025-06-11 22:35:23,264 usb_communication 22076 23404 Collage enviado exitosamente a dispositivo móvil

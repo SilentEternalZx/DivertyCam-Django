@@ -500,7 +500,7 @@ function startSession() {
         html2canvas(collageResult, {
             useCORS: true,
             allowTaint: true,
-            scale: 2, // Mayor calidad
+            scale: 3, // Mayor calidad
             logging: true
         }).then(canvas => {
             // Restaurar estilos originales
@@ -932,12 +932,13 @@ function printCollage() {
     loadingIndicator.style.zIndex = '10000';
     
     document.body.appendChild(loadingIndicator);
-    
+    const collage = document.querySelector('.collage-result');
+    collage.classList.add('printing');
     try {
         html2canvas(collageResult, {
             useCORS: true,      // Permitir imágenes de diferentes dominios
             allowTaint: true,   // Permitir contenido que podría "contaminar" el canvas
-            scale: 1,           // Usar escala menor para reducir tamaño de datos
+            scale: 3,           // Usar escala menor para reducir tamaño de datos
             logging: true       // Activar logs para depuración
         })
         .then(canvas => {
@@ -951,7 +952,7 @@ function printCollage() {
             ctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
 
             // Usar el canvas rotado para la impresión
-            const imageData = rotatedCanvas.toDataURL('image/jpeg', 0.7);
+            const imageData = rotatedCanvas.toDataURL('image/jpeg', 1.0);
 
             console.log("Enviando datos a la API de impresión...");
             console.log("Tamaño de la imagen:", Math.round(imageData.length / 1024), "KB");
@@ -970,16 +971,24 @@ function printCollage() {
                     quality: config.printQuality || "high"
                 })
             });
+            collage.classList.remove('printing');
         })
         
         .then(response => {
-            console.log("Respuesta recibida del servidor:", response.status);
-            
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
+        console.log("Respuesta recibida del servidor:", response.status);
+
+        if (!response.ok) {
+            // Si es error 429 (demasiado rápido), NO intentar método alterno
+            if (response.status === 429) {
+                document.body.removeChild(loadingIndicator);
+                showPrintNotification(false, 'Debes esperar antes de volver a imprimir.');
+                // Aquí simplemente retornas y NO llamas a printCollageWithBrowser
+                return Promise.reject(new Error('Solicitud rechazada por límite de tiempo'));
             }
-            
-            return response.json();
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        return response.json();
         })
         .then(data => {
             console.log("Datos de respuesta:", data);
@@ -1005,17 +1014,15 @@ function printCollage() {
             }
         })
         .catch(error => {
-            console.error('Error en la solicitud de impresión:', error);
-            
-            // Quitar indicador de carga
+            // Solo intentar método alterno si el error NO es por límite de tiempo
+            if (error.message.includes('límite de tiempo') || error.message.includes('429')) {
+                // No hacer nada, ya se notificó al usuario
+                return;
+            }
             if (document.body.contains(loadingIndicator)) {
                 document.body.removeChild(loadingIndicator);
             }
-            
             showPrintNotification(false, 'Error de comunicación: ' + error.message);
-            
-            // Usar método de navegador automáticamente en caso de error
-            console.log("Usando método de navegador debido a error en la solicitud");
             setTimeout(() => {
                 printCollageWithBrowser();
             }, 1000);
