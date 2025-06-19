@@ -172,8 +172,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Solo una vez, evita duplicidad
+# En producción, Render solo necesita STATIC_ROOT, no STATICFILES_DIRS
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+# STATICFILES_DIRS solo es necesario si tienes archivos estáticos personalizados fuera de las apps
+# STATICFILES_DIRS = [BASE_DIR / "static"]  # Elimínalo o coméntalo si no existe la carpeta
 
 # WhiteNoise: configuración recomendada para producción
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

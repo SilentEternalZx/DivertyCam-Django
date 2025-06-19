@@ -37,9 +37,11 @@ import logging
 from django.contrib.auth.views import PasswordResetView
 from django.core.exceptions import ObjectDoesNotExist
 import requests
-import win32print
-import win32ui
-import win32con
+import sys
+if sys.platform == "win32":
+    import win32print
+    import win32ui
+    import win32con
 import cv2
 import time
 from PIL import Image, ImageDraw, ImageFont, ImageWin
@@ -445,7 +447,9 @@ def publicar_foto_facebook(request, foto_id):
     access_token = settings.FACEBOOK_ACCESS_TOKEN
 
     # Reemplazar la URL local con la de ngrok o tu dominio público si es necesario
-    imagen_url = request.build_absolute_uri(foto.img.url)
+    imagen_url = request.build_absolute_uri(foto.img.url).replace(
+        "http://127.0.0.1:8000", "https://8f67-179-15-25-167.ngrok-free.app"
+    )
 
     # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
     import requests
@@ -459,7 +463,6 @@ def publicar_foto_facebook(request, foto_id):
 
     print("[TEST] URL enviada a Facebook:", imagen_url)
 
-    # Cambia aquí: usa el album_id, NO el page_id
     url = f"https://graph.facebook.com/v22.0/{album_id}/photos"
     payload = {
         "url": imagen_url,  # URL pública de la imagen
