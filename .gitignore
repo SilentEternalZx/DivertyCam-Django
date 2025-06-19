@@ -1,3 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Entorno virtual
+venv/
+ENV/
+.env/
+.venv/
+
+# Archivos de entorno y secretos
 .env
-/__pycache__/
-*.pyc
+*.env
+*.secret
+*.key
+
+# Base de datos local
+*.sqlite3
+
+# Archivos de migraciones compilados
+**/__pycache__/
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de compilación
+*.egg-info/
+dist/
+build/
+
+# Archivos de usuario de editores
+.vscode/
+.idea/
+*.swp
+
+# Archivos estáticos y media generados
+staticfiles/
+media/
+
+# Otros
+*.pot
