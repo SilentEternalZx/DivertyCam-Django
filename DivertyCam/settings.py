@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 
 import os
-
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,12 +25,12 @@ load_dotenv()
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['8f67-179-15-25-167.ngrok-free.app', '127.0.0.1', 'localhost', '192.168.1.4']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '8f67-179-15-25-167.ngrok-free.app,127.0.0.1,localhost,192.168.1.4').split(',')
 
 FACEBOOK_ACCESS_TOKEN = os.getenv("FACEBOOK_ACCESS_TOKEN")
 FACEBOOK_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID")
@@ -82,6 +82,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise para servir estáticos en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,8 +92,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CORS y CSRF: seguridad para producción
+CORS_ALLOW_ALL_ORIGINS = False  # Mejor práctica: restringir orígenes
+CORS_ALLOWED_ORIGINS = [
+    "https://8f67-179-15-25-167.ngrok-free.app",
+    # Agrega aquí tu dominio de producción
+]
 CSRF_TRUSTED_ORIGINS = [
     "https://8f67-179-15-25-167.ngrok-free.app",
+    # Agrega aquí tu dominio de producción
     "http://127.0.0.1:8000",  # Para pruebas locales
     "http://localhost:8000",
 ]
@@ -122,15 +130,9 @@ WSGI_APPLICATION = 'DivertyCam.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
-        'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': 'Axel2201',  # La contraseña del usuario
-        'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
-        'PORT': '5433',  # El puerto por defecto de PostgreSQL
-    }
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
+
 
 AUTH_USER_MODEL = 'usuarios.User'
 
@@ -170,11 +172,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATICFILES_DIRS = [
-    BASE_DIR / "static",  # Para archivos globales
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Solo una vez, evita duplicidad
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# WhiteNoise: configuración recomendada para producción
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Media: advertencia para producción
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# NOTA: En producción (Render/Railway), los archivos MEDIA pueden perderse tras reinicio.
+# Se recomienda usar S3 o almacenamiento externo para MEDIA en producción.
+# Ejemplo de configuración S3 (descomentar y configurar si se usa):
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+# AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+# AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+# AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+# AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+# MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
