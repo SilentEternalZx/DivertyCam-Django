@@ -392,21 +392,21 @@ def listar_fotos_evento(request, evento_id):
 def publicar_album_facebook(request, evento_id):
     if not request.user.is_authenticated:
         return redirect("login")
-    """Envía todas las fotos de un evento en bloque a Facebook."""
+    """Envía todas las fotos de un evento en bloque al álbum de Facebook de la categoría del evento."""
     evento = get_object_or_404(Evento, id=evento_id)
     fotos = Fotografia.objects.filter(evento=evento)
 
+    # Verificar que el evento tenga una categoría y que la categoría tenga un album_facebook_id
     if not evento.categoria or not evento.categoria.album_facebook_id:
-        return JsonResponse({"error": "Este evento no tiene un álbum de Facebook asignado."}, status=400)
+        return JsonResponse({"error": "Este evento no tiene una categoría con álbum de Facebook asignado."}, status=400)
 
     album_id = evento.categoria.album_facebook_id
     access_token = settings.FACEBOOK_ACCESS_TOKEN
 
     errores = []
+    exitos = 0
     for foto in fotos:
-        imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
-        )
+        imagen_url = request.build_absolute_uri(foto.img.url)
 
         payload = {
             "url": imagen_url,
@@ -417,55 +417,66 @@ def publicar_album_facebook(request, evento_id):
         response = requests.post(f"https://graph.facebook.com/v22.0/{album_id}/photos", data=payload)
         data = response.json()
 
-        if response.status_code != 200:
-            errores.append(data)
+        if response.status_code == 200:
+            exitos += 1
+            print(f"✅ Foto publicada correctamente: {data}")
+        else:
+            errores.append({"foto_id": foto.id, "error": data})
+            print(f"❌ Error al publicar foto {foto.id}: {data}")
 
     if errores:
-        return JsonResponse({"error": errores}, status=400)
-    return JsonResponse({"success": "Todas las fotos se publicaron correctamente en Facebook"})
-
+        return JsonResponse({
+            "error": "Algunas fotos no se pudieron publicar.",
+            "detalles": errores,
+            "publicadas": exitos
+        }, status=207)
+    return JsonResponse({"success": f"Todas las fotos ({exitos}) se publicaron correctamente en Facebook"})
 #Envío de las fotos a facebook
+
 def publicar_foto_facebook(request, foto_id):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    """Sube manualmente una foto a Facebook cuando el usuario presiona un botón."""
     foto = get_object_or_404(Fotografia, id=foto_id)
     evento = foto.evento
 
-    # 📌 Verificar que el evento tenga una categoría asignada
-    if not evento.categoria:
-        return JsonResponse({"error": "Este evento no tiene una categoría asignada."}, status=400)
+    # Verificar que el evento tenga una categoría y que la categoría tenga un album_facebook_id
+    if not evento.categoria or not evento.categoria.album_facebook_id:
+        return JsonResponse({"error": "Este evento no tiene una categoría con álbum de Facebook asignado."}, status=400)
 
-    # 📌 Verificar que la categoría tenga un `album_facebook_id`
     album_id = evento.categoria.album_facebook_id
-    if not album_id:
-        return JsonResponse({"error": "Esta categoría no tiene un álbum en Facebook asignado."}, status=400)
+    access_token = settings.FACEBOOK_ACCESS_TOKEN
 
-    # 📌 Obtener la URL pública de la imagen
-    imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", " https://f25a-191-156-39-191.ngrok-free.app"
-    )
+    # Reemplazar la URL local con la de ngrok o tu dominio público si es necesario
+    imagen_url = request.build_absolute_uri(foto.img.url)
 
-    # 📌 Definir la descripción de la foto
-    caption = f"📸 {foto.descripcion} | 📅 {evento.fecha_hora.strftime('%d/%m/%Y %H:%M')} | 📍 {evento.direccion} | Categoría: {evento.categoria.nombre}"
+    # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
+    import requests
+    try:
+        test_response = requests.get(imagen_url)
+        print("[TEST] Status de acceso a la imagen:", test_response.status_code)
+        if test_response.status_code != 200:
+            print("[TEST] Contenido recibido:", test_response.content[:200])
+    except Exception as e:
+        print("[TEST] Error accediendo a la imagen:", e)
 
-    # 📌 Hacer la solicitud a Facebook
-    url = f"https://graph.facebook.com/v18.0/{album_id}/photos"
+    print("[TEST] URL enviada a Facebook:", imagen_url)
+
+    # Cambia aquí: usa el album_id, NO el page_id
+    url = f"https://graph.facebook.com/v22.0/{album_id}/photos"
     payload = {
-        "url": imagen_url,
-        "caption": caption,
-        "access_token": settings.FACEBOOK_ACCESS_TOKEN
+        "url": imagen_url,  # URL pública de la imagen
+        "caption": foto.descripcion,
+        "access_token": access_token
     }
 
     response = requests.post(url, data=payload)
-    data = response.json()
+    print(response.json())  # 📌 Ver la respuesta de Facebook en la terminal
 
     if response.status_code == 200:
-        messages.success(request, "Foto publicada correctamente en Facebook")
-        return redirect('descargar_foto', evento_id=evento.id)
+        print("✅ Foto publicada en el álbum de Facebook correctamente.")
+        return redirect("descargar_foto", evento_id=foto.evento.id)
     else:
-        return JsonResponse({"error": data}, status=400)
-   
+        print("❌ Error al publicar en Facebook:", response.json())  
+        return render(request, "error.html", {"error": response.json()})
+
 class EventoListView(LoginRequiredMixin, ListView):
     model = Evento
     context_object_name = 'eventos'
@@ -2063,12 +2074,18 @@ def subir_foto(request):
 #Envío de las fotos a facebook
 def publicar_foto_facebook(request, foto_id):
     foto = get_object_or_404(Fotografia, id=foto_id)
-    page_id = settings.FACEBOOK_PAGE_ID  # 📌 Obtiene el Page ID desde settings.py
-    access_token = settings.FACEBOOK_ACCESS_TOKEN  # 📌 Obtiene el Token de Página
+    evento = foto.evento
 
-    # Reemplazar la URL local con la de ngrok
+    # Verificar que el evento tenga una categoría y que la categoría tenga un album_facebook_id
+    if not evento.categoria or not evento.categoria.album_facebook_id:
+        return JsonResponse({"error": "Este evento no tiene una categoría con álbum de Facebook asignado."}, status=400)
+
+    album_id = evento.categoria.album_facebook_id
+    access_token = settings.FACEBOOK_ACCESS_TOKEN
+
+    # Reemplazar la URL local con la de ngrok o tu dominio público si es necesario
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://f25a-191-156-39-191.ngrok-free.app"
+        "http://127.0.0.1:8000", "https://8f67-179-15-25-167.ngrok-free.app"
     )
 
     # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
@@ -2083,10 +2100,10 @@ def publicar_foto_facebook(request, foto_id):
 
     print("[TEST] URL enviada a Facebook:", imagen_url)
 
-    url = f"https://graph.facebook.com/v22.0/{page_id}/photos"
+    url = f"https://graph.facebook.com/v22.0/{album_id}/photos"
     payload = {
         "url": imagen_url,  # URL pública de la imagen
-        "caption": Fotografia.descripcion,
+        "caption": foto.descripcion,
         "access_token": access_token
     }
 
@@ -2094,12 +2111,12 @@ def publicar_foto_facebook(request, foto_id):
     print(response.json())  # 📌 Ver la respuesta de Facebook en la terminal
 
     if response.status_code == 200:
-        print("✅ Foto publicada en la página DivertyApp correctamente.")
+        print("✅ Foto publicada en el álbum de Facebook correctamente.")
         return redirect("descargar_foto", evento_id=foto.evento.id)
     else:
         print("❌ Error al publicar en Facebook:", response.json())  
         return render(request, "error.html", {"error": response.json()})
-
+    
 
 def añadir_foto(request, evento_id):
     if not request.user.is_authenticated:

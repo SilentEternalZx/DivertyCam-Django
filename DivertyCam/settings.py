@@ -30,11 +30,10 @@ SECRET_KEY = 'django-insecure-61vr-l6&i^xa6pd6_294*7ke2xswq=v(1aljvsx2kuv_yqg9s#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['f25a-191-156-39-191.ngrok-free.app', '127.0.0.1', 'localhost', '192.168.1.4']
+ALLOWED_HOSTS = ['8f67-179-15-25-167.ngrok-free.app', '127.0.0.1', 'localhost', '192.168.1.4']
 
-FACEBOOK_ACCESS_TOKEN = "EAAQdEZB18le8BOzITKSH19QEHdXO1sM99NUjV1Lh7OdvxMYLVQZCAGSCWXZBGmZAo0klaxZCRWsvwT195Jb6qmfoTUYqR5mxVHxDWAZC89HIjZCkrv6x39S73dZCWF1t2ZBC9EjIIeO32psGRkpZADECm4EZBbfg6U4kfnBZCqeRF19ZCTN3eZBKDfNZCVB8HQnzuJrWIyWvhLEEFBg6ZC3ggaNBS3T4OZCPUAxWLTP3u8QZDZD"
-
-FACEBOOK_PAGE_ID = "612248578630248"
+FACEBOOK_ACCESS_TOKEN = os.getenv("FACEBOOK_ACCESS_TOKEN")
+FACEBOOK_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID")
 
 
 # Permitir credenciales
@@ -93,7 +92,7 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://f25a-191-156-39-191.ngrok-free.app",
+    "https://8f67-179-15-25-167.ngrok-free.app",
     "http://127.0.0.1:8000",  # Para pruebas locales
     "http://localhost:8000",
 ]
@@ -127,9 +126,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ProyectoDB',  # El nombre de la base de datos creada
         'USER': 'postgres',  # El nombre de usuario de PostgreSQL
-        'PASSWORD': '123456',  # La contraseña del usuario
+        'PASSWORD': 'Axel2201',  # La contraseña del usuario
         'HOST': 'localhost',  # El host donde está corriendo PostgreSQL
-        'PORT': '5432',  # El puerto por defecto de PostgreSQL
+        'PORT': '5433',  # El puerto por defecto de PostgreSQL
     }
 }
 

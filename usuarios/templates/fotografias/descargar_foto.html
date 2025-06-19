@@ -26,7 +26,7 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
   <div class="container">
     <div class="text-center mb-5">
       <!-- Botón añadir fotografía -->
-      <div class="container mt-3 d-flex justify-content-start">
+      <div class="container mt-3 d-flex justify-content-start gap-2">
         {% if evento and evento.id %}
         <a
           href="{% url 'añadir_foto' evento.id %}"
@@ -35,7 +35,15 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
           <i class="fa-solid fa-plus fa-lg"></i>
           <span class="d-none d-sm-inline">Añadir fotografía</span>
         </a>
-        {% endif %}
+        {% if request.user.is_superuser %}
+        <a
+          href="{% url 'publicar_album_facebook' evento.id %}"
+          class="btn btn-outline-primary btn-lg shadow-sm d-flex align-items-center gap-2"
+          style="font-size: 1.1rem">
+          <i class="fab fa-facebook"></i>
+          <span class="d-none d-sm-inline">Publicar todas en Facebook</span>
+        </a>
+        {% endif %} {% endif %}
       </div>
       <h2 class="section-heading text-uppercase">Estas son tus fotografías</h2>
       <h3 class="section-subheading text-muted">
@@ -80,7 +88,8 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
             </p>
             <div class="mb-2">
               <span class="badge bg-primary"
-                ><i class="fa fa-calendar"></i> {{ evento.fecha_hora|date:"d/m/Y H:i" }}</span
+                ><i class="fa fa-calendar"></i> {{ evento.fecha_hora|date:"d/m/Y
+                H:i" }}</span
               >
             </div>
             {% if request.user.is_superuser %}
@@ -119,7 +128,8 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
                 {{ imagen.descripcion|default:"Sin descripción" }}
               </p>
               <p class="text-muted small mb-3">
-                <i class="fa fa-calendar"></i> {{evento.fecha_creacion|date:"d/m/Y H:i" }}
+                <i class="fa fa-calendar"></i>
+                {{evento.fecha_creacion|date:"d/m/Y H:i" }}
               </p>
               <div class="d-flex justify-content-center gap-3">
                 <a href="{{ imagen.img.url }}" download class="btn btn-success">
@@ -146,21 +156,22 @@ Fotografías de {{evento.nombre}} {% endblock %} {% block extra_head %}
   </div>
 </section>
 
-
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>   
-function imprimirImagen(url) {
-   var ventana = window.open("", "_blank");
-   ventana.document.write("<html><head><title>Impresión</title></head><body style='margin:0;'>");
-   ventana.document.write("<img src='" + url + "' style='width:100vw;max-width:100%;'>");
-   ventana.document.write("</body></html>");
-   ventana.document.close();
-   ventana.focus();
-   ventana.print();
-}
+<script>
+  function imprimirImagen(url) {
+    var ventana = window.open("", "_blank");
+    ventana.document.write(
+      "<html><head><title>Impresión</title></head><body style='margin:0;'>"
+    );
+    ventana.document.write(
+      "<img src='" + url + "' style='width:100vw;max-width:100%;'>"
+    );
+    ventana.document.write("</body></html>");
+    ventana.document.close();
+    ventana.focus();
+    ventana.print();
+  }
 </script>
 
 {% if messages %}
@@ -176,5 +187,4 @@ function imprimirImagen(url) {
     {% endfor %}
   });
 </script>
-{% endif %}
-{% endblock %}
+{% endif %} {% endblock %}
