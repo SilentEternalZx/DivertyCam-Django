@@ -405,7 +405,7 @@ def publicar_album_facebook(request, evento_id):
     errores = []
     for foto in fotos:
         imagen_url = request.build_absolute_uri(foto.img.url).replace(
-            "http://127.0.0.1:8000", "https://2ffc-191-95-49-95.ngrok-free.app"
+            "http://127.0.0.1:8000", "https://6501-191-95-49-121.ngrok-free.app"
         )
 
         payload = {
@@ -443,7 +443,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # 📌 Obtener la URL pública de la imagen
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", " https://2ffc-191-95-49-95.ngrok-free.app"
+        "http://127.0.0.1:8000", " https://6501-191-95-49-121.ngrok-free.app"
     )
 
     # 📌 Definir la descripción de la foto
@@ -2098,7 +2098,7 @@ def publicar_foto_facebook(request, foto_id):
 
     # Reemplazar la URL local con la de ngrok
     imagen_url = request.build_absolute_uri(foto.img.url).replace(
-        "http://127.0.0.1:8000", "https://2ffc-191-95-49-95.ngrok-free.app"
+        "http://127.0.0.1:8000", "https://6501-191-95-49-121.ngrok-free.app"
     )
 
     # TEST: Verificar accesibilidad de la imagen antes de publicar en Facebook
@@ -2520,7 +2520,7 @@ def send_to_mobile_device(request):
         data = json.loads(request.body)
         session_id = data.get('session_id')
         collage_id = data.get('collage_id')
-        filename = data.get('filename')  # <-- Nuevo: recibe el nombre de archivo
+        filename = data.get('filename')  # <--  recibe el nombre de archivo
 
         logger.info(f"Solicitud de envío a móvil - Session: {session_id}, Collage: {collage_id}, Filename: {filename}")
 

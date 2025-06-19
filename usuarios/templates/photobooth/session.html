@@ -208,18 +208,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar cámara con la configuración establecida
     async function initCamera() {
-        try {
+        try {       
             // Obtener dimensiones de resolución
             let width = 1280, height = 720; // Valores predeterminados
             
-            if (config.cameraResolution) {
+            if (config.cameraResolution) {   
                 const [w, h] = config.cameraResolution.split('x').map(num => parseInt(num, 10));
-                width = w || width;
+                width = w || width;         
                 height = h || height;
             }
             
             // Configuraciones para la cámara
-            const videoConfig = {
+            const videoConfig = {       
                 video: {
                     width: { ideal: width },
                     height: { ideal: height }
@@ -228,23 +228,23 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Si hay una cámara específica configurada, usarla
-            if (config.cameraId) {
-                videoConfig.video.deviceId = { exact: config.cameraId };
+            if (config.cameraId) {         
+                videoConfig.video.deviceId = { exact: config.cameraId }; 
             }
             
             // Detener cualquier stream actual
-            if (mediaStream) {
+            if (mediaStream) {          
                 mediaStream.getTracks().forEach(track => track.stop());
             }
             
             // Intentar obtener acceso a la cámara especificada
-            try {
+            try {                   
                 mediaStream = await navigator.mediaDevices.getUserMedia(videoConfig);
                 videoPreview.srcObject = mediaStream;
                 
                 // Intentar aplicar configuraciones avanzadas si están disponibles
                 const videoTrack = mediaStream.getVideoTracks()[0];
-                if (videoTrack && videoTrack.getCapabilities && videoTrack.applyConstraints) {
+                if (videoTrack && videoTrack.getCapabilities && videoTrack.applyConstraints) {  
                     const capabilities = videoTrack.getCapabilities();
                     
                     // Construir restricciones avanzadas basadas en capacidades
@@ -262,30 +262,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Aplicar restricciones avanzadas si hay alguna
                     if (Object.keys(advancedConstraints).length > 0) {
-                        try {
-                            await videoTrack.applyConstraints({ advanced: [advancedConstraints] });
-                        } catch (constraintError) {
-                            console.warn('No se pudieron aplicar restricciones avanzadas:', constraintError);
+                        try { 
+                            await videoTrack.applyConstraints({ advanced: [advancedConstraints] }); 
+                        } catch (constraintError) { 
+                            console.warn('No se pudieron aplicar restricciones avanzadas:', constraintError); 
                         }
                     }
                 }
                 
-                return true;
-            } catch (specificError) {
-                console.warn('No se pudo acceder a la cámara especificada:', specificError);
+                return true; 
+            } catch (specificError) { 
+                console.warn('No se pudo acceder a la cámara especificada:', specificError); 
                 
                 // Si falló con una cámara específica, intentar con cualquier cámara
-                if (videoConfig.video.deviceId) {
-                    delete videoConfig.video.deviceId;
+                if (videoConfig.video.deviceId) { 
+                    delete videoConfig.video.deviceId;  
                     mediaStream = await navigator.mediaDevices.getUserMedia(videoConfig);
                     videoPreview.srcObject = mediaStream;
                     return true;
-                } else {
-                    throw specificError;
+                } else { 
+                    throw specificError; 
                 }
             }
-        } catch (error) {
-            console.error('Error al iniciar la cámara:', error);
+        } catch (error) { 
+            console.error('Error al iniciar la cámara:', error); 
             alert('Error al iniciar la cámara: ' + error.message);
             return false;
         }
